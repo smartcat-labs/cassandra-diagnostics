@@ -1,2 +1,3 @@
-# cassandra-diagnostics
-Cassandra Node Diagnostics Tools
+# Cassandra Diagnostics
+
+Cassandra node metrics and audit tools.

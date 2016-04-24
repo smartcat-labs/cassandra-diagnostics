@@ -59,18 +59,19 @@ public class QueryProcessorWrapper {
   private QueryReporter reporter;
 
   /**
-   * Wrapper for {@link QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)} method.
+   * Wrapper for {@link
+   *  org.apache.cassandra.cql3.QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)} method.
    * This method implements the same functionality as the original method and, in addition, measures the
    * statement execution time and reports the query if it is larger than the configured execution time
    * threshold.
    *
-   * @param statement {@see QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}
-   * @param queryState {@see QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}
-   * @param options {@see QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}
-   * @param origLogger internal class logger of {@link QueryProcessor}
-   * @return {@see QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}
-   * @throws RequestExecutionException {@see QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}
-   * @throws RequestValidationException {@see QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}
+   * @param statement QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)
+   * @param queryState QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)
+   * @param options QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)
+   * @param origLogger internal class logger of {@link org.apache.cassandra.cql3.QueryProcessor}
+   * @return QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)
+   * @throws RequestExecutionException QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)
+   * @throws RequestValidationException QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)
    */
   public ResultMessage processStatement(CQLStatement statement, QueryState queryState, QueryOptions options,
       Logger origLogger) throws RequestExecutionException, RequestValidationException {

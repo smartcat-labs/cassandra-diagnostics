@@ -23,16 +23,17 @@ public class QueryProcessorInterceptor {
   }
 
   /**
-   * Intercepter for {@link QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}.
+   * Intercepter for {@link
+   *   org.apache.cassandra.cql3.QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}.
    * Every invocation is being delegated to {@link QueryProcessorWrapper}.
    *
-   * @param statement {@see QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}
-   * @param queryState {@see QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}
-   * @param options {@see QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}
-   * @param logger internal class logger of {@link QueryProcessor}
-   * @return {@see QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}
-   * @throws RequestExecutionException {@see QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}
-   * @throws RequestValidationException {@see QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)}
+   * @param statement QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)
+   * @param queryState QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)
+   * @param options QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)
+   * @param logger internal class logger of {@link org.apache.cassandra.cql3.QueryProcessor}
+   * @return QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)
+   * @throws RequestExecutionException QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)
+   * @throws RequestValidationException QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)
    */
   @RuntimeType
   public static ResultMessage processStatement(CQLStatement statement, QueryState queryState, QueryOptions options,

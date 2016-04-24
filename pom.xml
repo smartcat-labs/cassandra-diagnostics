@@ -1,85 +1,223 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<groupId>io.smartcat</groupId>
 	<artifactId>cassandra-diagnostics</artifactId>
 	<version>2.1.13.1</version>
+	<packaging>jar</packaging>
 
 	<name>Cassandra Diagnostics</name>
-	<description>Monitoring and audit power kit for Cassandra</description>
+	<description>
+		Monitoring and audit power kit for Apache Cassandra. It uses Java instrumentation
+		to augment Cassandra server nodes with additional metrics and reporting. 
+	</description>
 	<url>https://github.com/smartcat-labs/cassandra-diagnostics</url>
+
+	<!-- There are several build profiles available: - extras: Creates additional 
+		artifacts containing source files and javadoc. (activated on release) - gpg: 
+		Sign all artifacts using gpg. (activated on release) - checks: Applies style 
+		checks to the source files. (activated by default, activated on release) 
+		- integration: Runs additional unit tests and executes static code analysis 
+		(activated on Travis CI) Additionally, the following reports are available 
+		via Maven: - cobertura:cobertura - Computes line coverage for test suite 
+		(all modules) - org.pitest:pitest-maven:mutationCoverage - Runs mutation 
+		tests (all modules) - findbugs:findbugs findbugs:gui - Runs findbugs and 
+		shows a report in a graphical interface (module specific) -->
 
 	<licenses>
 		<license>
-			<name>MIT License</name>
-			<url>http://www.opensource.org/licenses/mit-license.php</url>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 			<distribution>repo</distribution>
+			<comments>A business-friendly OSS license</comments>
 		</license>
 	</licenses>
+
 	<developers>
 		<developer>
 			<name>Nikola Ivancevic</name>
 			<email>nikola.ivancevic@smartcat.io</email>
 			<organization>SmartCat</organization>
 			<organizationUrl>http://smartcat.io</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>+1</timezone>
 		</developer>
 	</developers>
+
+	<issueManagement>
+		<system>github.com</system>
+		<url>https://github.com/smartcat-labs/cassandra-diagnostics/issues</url>
+	</issueManagement>
+
 	<scm>
 		<url>https://github.com/smartcat-labs/cassandra-diagnostics</url>
-		<connection>scm:git:git://github.com:smartcat-labs/cassandra-diagnostics.git</connection>
-		<developerConnection>scm:git:git://github.com:smartcat-labs/cassandra-diagnostics.git</developerConnection>
+		<connection>scm:git:git@github.com:smartcat-labs/cassandra-diagnostics.git</connection>
+		<developerConnection>scm:git:git@github.com:smartcat-labs/cassandra-diagnostics.git</developerConnection>
+		<tag>HEAD</tag>
 	</scm>
-
-
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<code.level>1.7</code.level>
+		<version.junit>4.12</version.junit>
+		<version.mockito>1.10.19</version.mockito>
+		<version.powermock>1.6.4</version.powermock>
+		<version.bytebuddy>1.3.12</version.bytebuddy>
+		<version.guice>4.0</version.guice>
+		<version.aopalliance>1.0</version.aopalliance>
+		<version.cassandra>2.1.13</version.cassandra>
+
+		<version.plugin.bundle>2.5.4</version.plugin.bundle>
+		<version.plugin.compiler>3.5.1</version.plugin.compiler>
+		<version.plugin.install>2.5.2</version.plugin.install>
+		<version.plugin.deploy>2.8.2</version.plugin.deploy>
+		<version.plugin.javadoc>2.10.3</version.plugin.javadoc>
+		<version.plugin.source>3.0.0</version.plugin.source>
+		<version.plugin.shade>2.4.3</version.plugin.shade>
+		<version.plugin.gpg>1.6</version.plugin.gpg>
+		<version.plugin.jar>2.6</version.plugin.jar>
+		<version.plugin.release>2.5.3</version.plugin.release>
+		<version.plugin.resources>2.7</version.plugin.resources>
+		<version.plugin.surefire>2.19.1</version.plugin.surefire>
+		<version.plugin.pitest>1.1.9</version.plugin.pitest>
+		<version.plugin.cobertura>2.7</version.plugin.cobertura>
+		<version.plugin.coveralls>4.1.0</version.plugin.coveralls>
+		<version.plugin.checkstyle>2.17</version.plugin.checkstyle>
+		<version.plugin.findbugs>3.0.3</version.plugin.findbugs>
+		<version.annotations.findbugs>3.0.1u2</version.annotations.findbugs>
 	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>net.bytebuddy</groupId>
+			<artifactId>byte-buddy</artifactId>
+			<version>${version.bytebuddy}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.bytebuddy</groupId>
+			<artifactId>byte-buddy-agent</artifactId>
+			<version>${version.bytebuddy}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+			<version>${version.guice}</version>
+		</dependency>
+		<dependency>
+			<groupId>aopalliance</groupId>
+			<artifactId>aopalliance</artifactId>
+			<version>${version.aopalliance}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cassandra</groupId>
+			<artifactId>cassandra-all</artifactId>
+			<version>${version.cassandra}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${version.junit}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>${version.mockito}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-api-mockito</artifactId>
+			<version>${version.powermock}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-module-junit4</artifactId>
+			<version>${version.powermock}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
+			<!-- Define release properties. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>${version.plugin.release}</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<useReleaseProfile>false</useReleaseProfile>
+					<releaseProfiles>extras,gpg</releaseProfiles>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<tagNameFormat>byte-buddy-@{project.version}</tagNameFormat>
 				</configuration>
 			</plugin>
-
+			<!-- Enable mutation testing. -->
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>3.0.0</version>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
+				<groupId>org.pitest</groupId>
+				<artifactId>pitest-maven</artifactId>
+				<version>${version.plugin.pitest}</version>
+				<configuration>
+					<targetClasses>
+						<param>${pitest.target}.*</param>
+					</targetClasses>
+					<targetTests>
+						<param>${pitest.target}.*</param>
+					</targetTests>
+				</configuration>
 			</plugin>
-
+			<!-- Configure Cobertura support for evaluating test case coverage. -->
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.3</version>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+				<version>${version.plugin.cobertura}</version>
+				<configuration>
+					<aggregate>true</aggregate>
+					<instrumentation>
+						<excludes>
+							<exclude>net/bytebuddy/benchmark/generated/**/*.class</exclude>
+							<exclude>org/openjdk/jmh/infra/generated/**/*.class</exclude>
+							<exclude>net/bytebuddy/benchmark/runner/**/*.class</exclude>
+							<exclude>net/bytebuddy/android/test/**/*.class</exclude>
+						</excludes>
+					</instrumentation>
+					<formats>
+						<format>html</format>
+						<format>xml</format>
+					</formats>
+					<check />
+				</configuration>
 			</plugin>
-
+			<!-- Generate coveralls reports from Travis. -->
+			<plugin>
+				<groupId>org.eluder.coveralls</groupId>
+				<artifactId>coveralls-maven-plugin</artifactId>
+				<version>${version.plugin.coveralls}</version>
+			</plugin>
+			<!-- Also allow for manual findbugs execution. Note that the generated 
+				warnings do not always apply for Byte Buddy's use case. -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>${version.plugin.findbugs}</version>
+				<configuration>
+					<effort>Max</effort>
+					<threshold>Low</threshold>
+					<xmlOutput>true</xmlOutput>
+					<failOnError>false</failOnError>
+					<findbugsXmlOutputDirectory>${project.build.directory}/findbugs</findbugsXmlOutputDirectory>
+				</configuration>
+			</plugin>
+			<!-- Define the content of the uber jar. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.3</version>
+				<version>${version.plugin.shade}</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -110,75 +248,148 @@
 					</execution>
 				</executions>
 			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.6</version>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
 		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>${version.plugin.jar}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>${version.plugin.resources}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>${version.plugin.install}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${version.plugin.surefire}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>${version.plugin.deploy}</version>
+					<configuration>
+						<updateReleaseInfo>true</updateReleaseInfo>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${version.plugin.compiler}</version>
+					<inherited>true</inherited>
+					<configuration>
+						<source>${source.level}</source>
+						<target>${code.level}</target>
+						<encoding>${project.build.sourceEncoding}</encoding>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
-	<dependencies>
-		<dependency>
-			<groupId>net.bytebuddy</groupId>
-			<artifactId>byte-buddy</artifactId>
-			<version>1.3.12</version>
-		</dependency>
-		<dependency>
-			<groupId>net.bytebuddy</groupId>
-			<artifactId>byte-buddy-agent</artifactId>
-			<version>1.3.12</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.inject</groupId>
-			<artifactId>guice</artifactId>
-			<version>4.0</version>
-		</dependency>
-		<dependency>
-			<groupId>aopalliance</groupId>
-			<artifactId>aopalliance</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cassandra</groupId>
-			<artifactId>cassandra-all</artifactId>
-			<version>2.1.13</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<version>1.10.19</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.powermock</groupId>
-			<artifactId>powermock-api-mockito</artifactId>
-			<version>1.6.4</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.powermock</groupId>
-			<artifactId>powermock-module-junit4</artifactId>
-			<version>1.6.4</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+	<profiles>
+		<!-- Creates additional artifacts that are required for deployment. -->
+		<profile>
+			<id>extras</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<!-- Create source code artifact. -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>${version.plugin.source}</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<!-- Create javadoc artifact. -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>${version.plugin.javadoc}</version>
+						<executions>
+							<execution>
+								<id>attach-javadoc</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<!-- Sign any created artifact. (Requires configuration of gpg on the executing 
+			machine.) -->
+		<profile>
+			<id>gpg</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<!-- Sign artifacts. -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${version.plugin.gpg}</version>
+						<executions>
+							<execution>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<!-- Basic checks that are not requiring too much runtime. -->
+		<profile>
+			<id>checks</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<!-- Check style on build. -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-checkstyle-plugin</artifactId>
+						<version>${version.plugin.checkstyle}</version>
+						<executions>
+							<execution>
+								<phase>validate</phase>
+								<goals>
+									<goal>check</goal>
+								</goals>
+								<configuration>
+									<configLocation>checkstyle.xml</configLocation>
+									<consoleOutput>true</consoleOutput>
+									<failsOnError>true</failsOnError>
+									<excludes>**/generated/**/*</excludes>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

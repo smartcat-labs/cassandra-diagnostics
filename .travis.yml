@@ -1,0 +1,19 @@
+language: java
+
+sudo: false
+
+branches:
+  only:
+    - master
+
+jdk:
+  - oraclejdk8
+
+matrix:
+  include:
+    - jdk: oraclejdk8
+
+script: mvn verify -Pintegration
+
+after_success:
+  - mvn clean cobertura:cobertura coveralls:report -Pintegration

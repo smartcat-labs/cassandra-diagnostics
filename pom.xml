@@ -14,16 +14,17 @@
 	</description>
 	<url>https://github.com/smartcat-labs/cassandra-diagnostics</url>
 
-	<!-- There are several build profiles available: - extras: Creates additional 
-		artifacts containing source files and javadoc. (activated on release) - gpg: 
-		Sign all artifacts using gpg. (activated on release) - checks: Applies style 
-		checks to the source files. (activated by default, activated on release) 
-		- integration: Runs additional unit tests and executes static code analysis 
-		(activated on Travis CI) Additionally, the following reports are available 
-		via Maven: - cobertura:cobertura - Computes line coverage for test suite 
-		(all modules) - org.pitest:pitest-maven:mutationCoverage - Runs mutation 
-		tests (all modules) - findbugs:findbugs findbugs:gui - Runs findbugs and 
-		shows a report in a graphical interface (module specific) -->
+	<!-- 
+	 There are several build profiles available: 
+    - extras: Creates additional artifacts containing source files and javadoc. (activated on release)
+    - gpg: Sign all artifacts using gpg. (activated on release)
+    - checks: Applies style	checks to the source files. (activated by default, activated on release) 
+		- integration: Runs additional unit tests and executes static code analysis (activated on Travis CI)
+	 Additionally, the following reports are available via Maven:
+		- cobertura:cobertura - Computes line coverage for test suite	(all modules)
+		- org.pitest:pitest-maven:mutationCoverage - Runs mutation tests (all modules)
+		- findbugs:findbugs findbugs:gui - Runs findbugs and shows a report in a graphical interface (module specific)
+	-->
 
 	<licenses>
 		<license>
@@ -80,7 +81,6 @@
 		<version.plugin.shade>2.4.3</version.plugin.shade>
 		<version.plugin.gpg>1.6</version.plugin.gpg>
 		<version.plugin.jar>2.6</version.plugin.jar>
-		<version.plugin.release>2.5.3</version.plugin.release>
 		<version.plugin.resources>2.7</version.plugin.resources>
 		<version.plugin.surefire>2.19.1</version.plugin.surefire>
 		<version.plugin.pitest>1.1.9</version.plugin.pitest>
@@ -146,18 +146,6 @@
 
 	<build>
 		<plugins>
-			<!-- Define release properties. -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>${version.plugin.release}</version>
-				<configuration>
-					<useReleaseProfile>false</useReleaseProfile>
-					<releaseProfiles>extras,gpg</releaseProfiles>
-					<autoVersionSubmodules>true</autoVersionSubmodules>
-					<tagNameFormat>byte-buddy-@{project.version}</tagNameFormat>
-				</configuration>
-			</plugin>
 			<!-- Enable mutation testing. -->
 			<plugin>
 				<groupId>org.pitest</groupId>
@@ -295,6 +283,13 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<distributionManagement>
+	  <repository>
+	    <id>bintray</id>
+	    <url>https://api.bintray.com/maven/nivancevic/maven/cassandra-diagnostics/;publish=1</url>
+	  </repository>
+	</distributionManagement>
 
 	<profiles>
 		<!-- Creates additional artifacts that are required for deployment. -->

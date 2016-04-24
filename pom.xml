@@ -287,7 +287,7 @@
 	<distributionManagement>
 	  <repository>
 	    <id>bintray</id>
-	    <url>https://api.bintray.com/maven/nivancevic/maven/cassandra-diagnostics/;publish=1</url>
+	    <url>https://api.bintray.com/maven/smartcat-labs/maven/cassandra-diagnostics/;publish=1</url>
 	  </repository>
 	</distributionManagement>
 

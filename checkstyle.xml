@@ -21,9 +21,14 @@
 
     <module name="TreeWalker">
 
-        <module name="JavadocMethod"/>
+        <module name="JavadocMethod">
+          <property name="scope" value="protected"/>
+        </module>
+        
         <module name="JavadocType"/>
-        <module name="JavadocVariable"/>
+        <module name="JavadocVariable">
+          <property name="scope" value="protected"/>
+        </module>
         <module name="JavadocStyle"/>
 
         <module name="TodoComment"/>

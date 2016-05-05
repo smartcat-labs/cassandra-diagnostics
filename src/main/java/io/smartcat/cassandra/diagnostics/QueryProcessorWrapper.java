@@ -1,10 +1,7 @@
 package io.smartcat.cassandra.diagnostics;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.apache.cassandra.cql3.CQLStatement;
 import org.apache.cassandra.cql3.QueryOptions;
@@ -44,7 +41,10 @@ public class QueryProcessorWrapper {
    * Executor service used for executing query reports.
    */
   private static ExecutorService executor = Executors.newFixedThreadPool(EXECUTOR_NO_THREADS,
-      new ThreadFactoryBuilder().setNameFormat("Cassandra-Diagnostics-%d").build());
+      new ThreadFactoryBuilder()
+        .setNameFormat("Cassandra-Diagnostics-%d")
+        .setPriority(Thread.MIN_PRIORITY)
+        .build());
 
   /**
    * Module configuration.
@@ -80,14 +80,7 @@ public class QueryProcessorWrapper {
     final long startTime = System.nanoTime();
     try {
 
-      // original implementation
-      origLogger.trace("Process {} @CL.{}", statement, options.getConsistency());
-      ClientState clientState = queryState.getClientState();
-      statement.checkAccess(clientState);
-      statement.validate(clientState);
-
-      result = statement.execute(queryState, options);
-      // end of the original implementation
+      result = originalProcessStatement(statement, queryState, options, origLogger);
 
       final long execTime = System.nanoTime() - startTime;
 
@@ -105,8 +98,21 @@ public class QueryProcessorWrapper {
 
   }
 
+  private ResultMessage originalProcessStatement(CQLStatement statement, QueryState queryState, QueryOptions options,
+      Logger logger) throws RequestExecutionException, RequestValidationException {
+
+    logger.trace("Process {} @CL.{}", statement, options.getConsistency());
+    ClientState clientState = queryState.getClientState();
+    statement.checkAccess(clientState);
+    statement.validate(clientState);
+
+    ResultMessage result = statement.execute(queryState, options);
+
+    return result == null ? new ResultMessage.Void() : result;
+  }
+
   /**
-   * Submits a query reports asynchronously using the executor service.
+   * Submits a query reports asynchronously.
    *
    * @param startTime execution start time, in nanoseconds
    * @param execTime execution time, in nanoseconds
@@ -117,40 +123,12 @@ public class QueryProcessorWrapper {
    */
   private void report(final long startTime, final long execTime, final CQLStatement statement,
       final QueryState queryState, final QueryOptions options, final String errorMessage) {
-
-    // execute the rest of the action later, in a separate thread
-    Future<Void> task = executor.submit(new Callable<Void>() {
-      @Override
-      public Void call() throws Exception {
-        reportExec(startTime, execTime, statement, queryState, options, errorMessage);
-        return null;
-      }
+    executor.submit(() -> {
+      reporter.report(new QueryReport(startTime,
+          execTime,
+          queryState.getClientState().getRemoteAddress().toString(),
+          statement.getClass().getSimpleName()));
     });
-    try {
-      task.get();
-    } catch (InterruptedException | ExecutionException e) {
-      logger.error("An error occured while executing audit.", e);
-    }
-  }
-
-  /**
-   * Creates a query report based on the given information and pass it to the query reporter.
-   *
-   * @param startTime execution start time, in nanoseconds
-   * @param execTime execution time, in nanoseconds
-   * @param statement CQL statement
-   * @param queryState CQL query state
-   * @param options CQL query options
-   * @param errorMessage error message in case there was a problem during query execution
-   */
-  private void reportExec(final long startTime, final long execTime, final CQLStatement statement,
-      final QueryState queryState, final QueryOptions options, final String errorMessage) {
-    QueryReport report = new QueryReport();
-    report.startTime = startTime;
-    report.executionTime = execTime;
-    report.clientAddress = queryState.getClientState().getRemoteAddress().toString();
-    report.statement = statement.getClass().getSimpleName();
-    reporter.report(report);
   }
 
 }

@@ -24,6 +24,22 @@ public class QueryReport {
    */
   public String statement;
 
+  /**
+   * Constructor.
+   *
+   * @param startTime query execution start time (epoch in nanoseconds)
+   * @param executionTime query execution time (in nanoseconds)
+   * @param clientAddress client address
+   * @param statement query statement
+   */
+  public QueryReport(long startTime, long executionTime, String clientAddress, String statement) {
+    super();
+    this.startTime = startTime;
+    this.executionTime = executionTime;
+    this.clientAddress = clientAddress;
+    this.statement = statement;
+  }
+
   @Override
   public String toString() {
     return "QueryReport [startTime=" + startTime + ", executionTime=" + executionTime + ", clientAddress="

@@ -71,7 +71,8 @@
 		<version.guice>4.0</version.guice>
 		<version.aopalliance>1.0</version.aopalliance>
 		<version.cassandra>2.1.13</version.cassandra>
-
+		<version.riemann-java-client>0.4.1</version.riemann-java-client>
+    <version.protobuf-java>2.6.1</version.protobuf-java>
 		<version.plugin.bundle>2.5.4</version.plugin.bundle>
 		<version.plugin.compiler>3.5.1</version.plugin.compiler>
 		<version.plugin.install>2.5.2</version.plugin.install>
@@ -118,6 +119,16 @@
 			<version>${version.cassandra}</version>
 			<scope>compile</scope>
 		</dependency>
+    <dependency>
+      <groupId>com.aphyr</groupId>
+      <artifactId>riemann-java-client</artifactId>
+      <version>${version.riemann-java-client}</version>
+    </dependency>
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>${version.protobuf-java}</version>
+		</dependency>    		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -223,6 +234,9 @@
 									<include>com.google.inject:*</include>
 									<include>aopalliance:aopalliance:*</include>
 									<include>javax.inject:*</include>
+									<include>com.aphyr:riemann-java-client:*</include>
+									<include>com.google.protobuf:protobuf-java:*</include>
+									<include>io.netty:netty:*</include>
 								</includes>
 							</artifactSet>
 							<transformers>
@@ -290,6 +304,13 @@
 	    <url>https://api.bintray.com/maven/smartcat-labs/maven/cassandra-diagnostics/;publish=1</url>
 	  </repository>
 	</distributionManagement>
+
+  <repositories>
+    <repository>
+      <id>clojars.org</id>
+      <url>http://clojars.org/repo</url>
+    </repository>
+  </repositories>
 
 	<profiles>
 		<!-- Creates additional artifacts that are required for deployment. -->

@@ -21,15 +21,17 @@ public class RiemannQueryReporter implements QueryReporter {
 
   private static final String HOST_PROP = "riemannHost";
 
-  private static final String DEFAULT_PORT_PROP = "riemannPort";
+  private static final String PORT_PROP = "riemannPort";
 
   private static final String DEFAULT_PORT = "5555";
 
-  private static final String DEFAULT_BATCH_SIZE_PROP = "riemannBatchSize";
+  private static final String BATCH_SIZE_PROP = "riemannBatchSize";
 
   private static final String DEFAULT_BATCH_SIZE = "10";
 
-  private static final String EVENT_SERVICE_NAME = "queryReport";
+  private static final String SERVICE_NAME_PROP = "riemannServiceName";
+
+  private static final String DEFAULT_SERVICE_NAME = "queryReport";
 
   /**
    * Class logger.
@@ -37,6 +39,8 @@ public class RiemannQueryReporter implements QueryReporter {
   private static final Logger logger = LoggerFactory.getLogger(RiemannQueryReporter.class);
 
   private Configuration config;
+
+  private String serviceName;
 
   private static IRiemannClient riemann;
 
@@ -55,10 +59,10 @@ public class RiemannQueryReporter implements QueryReporter {
     if (riemannClient() != null) {
       logger.debug("Sending QueryReport: execTime=" + queryReport.executionTime);
       riemannClient().event()
-        .service(EVENT_SERVICE_NAME)
+        .service(serviceName)
         .state("ok")
         //.time(queryReport.startTime / 1000000)
-        .metric(queryReport.executionTime)
+        .metric(queryReport.executionTime / 1000000f) // Log in ms so that we don't drown in high numbers
         .attribute("client", queryReport.clientAddress)
         .attribute("statement", queryReport.statement)
         .send();
@@ -68,6 +72,7 @@ public class RiemannQueryReporter implements QueryReporter {
   private IRiemannClient riemannClient() {
     if (riemann == null) {
       initRiemannClient(config);
+      serviceName = config.reporterOptions.getOrDefault(SERVICE_NAME_PROP, DEFAULT_SERVICE_NAME);
     }
     return riemann;
   }
@@ -76,9 +81,9 @@ public class RiemannQueryReporter implements QueryReporter {
     if (riemann != null) return;
     if (config.reporterOptions.containsKey(HOST_PROP)) {
       String host = config.reporterOptions.get(HOST_PROP);
-      int port = Integer.parseInt(config.reporterOptions.getOrDefault(DEFAULT_PORT_PROP, DEFAULT_PORT));
+      int port = Integer.parseInt(config.reporterOptions.getOrDefault(PORT_PROP, DEFAULT_PORT));
       int batchSize = Integer.parseInt(
-          config.reporterOptions.getOrDefault(DEFAULT_BATCH_SIZE_PROP, DEFAULT_BATCH_SIZE));
+          config.reporterOptions.getOrDefault(BATCH_SIZE_PROP, DEFAULT_BATCH_SIZE));
       try {
         riemann = new RiemannBatchClient(RiemannClient.tcp(host, port), batchSize);
         riemann.connect();

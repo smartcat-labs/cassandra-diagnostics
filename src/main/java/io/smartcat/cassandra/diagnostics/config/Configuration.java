@@ -1,5 +1,8 @@
 package io.smartcat.cassandra.diagnostics.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import io.smartcat.cassandra.diagnostics.report.LogQueryReporter;
 
 /**
@@ -19,5 +22,10 @@ public class Configuration {
    * {@code LogQueryReporter} is the default value.
    */
   public String reporter = LogQueryReporter.class.getName();
+
+  /**
+   * A map containing optional reporter specific options.
+   */
+  public Map<String, String> reporterOptions = new HashMap<String, String>();
 
 }

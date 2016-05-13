@@ -33,6 +33,7 @@ public class DiagnosticsAgent {
    * @param inst instrumentation handle
    */
   public static void premain(String args, Instrumentation inst) {
+    System.out.println("Cassandra Diagnostics Agent: starting");
     setIntercepters(args, inst);
     Diagnostics.init();
   }
@@ -44,6 +45,8 @@ public class DiagnosticsAgent {
    * @param inst instrumentation handle
    */
   private static void setIntercepters(String args, Instrumentation inst) {
+    System.out.println("Cassandra Diagnostics Agenet: injecting org.apache.cassandra.cql3.QueryProcessor interceptor");
+
     final ElementMatcher.Junction<NamedElement> type = ElementMatchers
         .named("org.apache.cassandra.cql3.QueryProcessor");
 

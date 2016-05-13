@@ -28,4 +28,14 @@ public class Configuration {
    */
   public Map<String, String> reporterOptions = new HashMap<String, String>();
 
+  @Override
+  public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("{ slowQueryThreshold: ").append(slowQueryThreshold)
+        .append(", reporter: \"").append(reporter)
+        .append("\", reporterOptions: ").append(reporterOptions)
+        .append(" }");
+      return sb.toString();
+  }
+
 }

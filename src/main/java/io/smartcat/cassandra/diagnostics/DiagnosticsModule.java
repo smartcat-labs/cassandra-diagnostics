@@ -1,5 +1,8 @@
 package io.smartcat.cassandra.diagnostics;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.AbstractModule;
 
 import io.smartcat.cassandra.diagnostics.config.Configuration;
@@ -16,6 +19,8 @@ import io.smartcat.cassandra.diagnostics.report.QueryReporter;
  */
 public class DiagnosticsModule extends AbstractModule {
 
+  private static final Logger logger = LoggerFactory.getLogger(DiagnosticsModule.class);
+
   @SuppressWarnings("unchecked")
   @Override
   protected void configure() {
@@ -25,8 +30,10 @@ public class DiagnosticsModule extends AbstractModule {
     try {
       config = loader.loadConfig();
     } catch (ConfigurationException e) {
+      logger.warn("A problem occured while loading configuration. Using default configuration.", e);
       config = new Configuration();
     }
+    logger.info("Effective configuration: {}", config);
 
     bind(ConfigurationLoader.class).toInstance(loader);
     bind(Configuration.class).toInstance(config);

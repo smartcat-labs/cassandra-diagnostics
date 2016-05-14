@@ -56,17 +56,18 @@ public class RiemannQueryReporter implements QueryReporter {
 
   @Override
   public void report(QueryReport queryReport) {
-    if (riemannClient() != null) {
-      logger.debug("Sending QueryReport: execTime=" + queryReport.executionTime);
-      riemannClient().event()
-        .service(serviceName)
-        .state("ok")
-        //.time(queryReport.startTime / 1000000)
-        .metric(queryReport.executionTime / 1000000f) // Log in ms so that we don't drown in high numbers
-        .attribute("client", queryReport.clientAddress)
-        .attribute("statement", queryReport.statement)
-        .send();
+    if (riemannClient() == null) {
+      logger.warn("Riemann client is not initialized!");
     }
+
+    logger.debug("Sending QueryReport: execTime=" + queryReport.executionTime);
+    riemannClient().event()
+      .service(serviceName)
+      .state("ok")
+      .metric(queryReport.executionTime / 1000000f) // Log in ms so that we don't drown in high numbers
+      .attribute("client", queryReport.clientAddress)
+      .attribute("statement", queryReport.statement)
+      .send();
   }
 
   private IRiemannClient riemannClient() {

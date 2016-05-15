@@ -9,21 +9,21 @@ import org.slf4j.LoggerFactory;
  */
 public class LogQueryReporter implements QueryReporter {
 
-  /**
-   * Class logger.
-   */
-  private static final Logger logger = LoggerFactory.getLogger(LogQueryReporter.class);
+    /**
+     * Class logger.
+     */
+    private static final Logger logger = LoggerFactory.getLogger(LogQueryReporter.class);
 
-  /**
-   * String template for logging query report.
-   */
-  private static final String LOG_TEMPLATE =
-      "QueryReport [startTime={}, executionTime={}, clientAddress={}, statement={}]";
+    /**
+     * String template for logging query report.
+     */
+    private static final String LOG_TEMPLATE =
+            "QueryReport [startTime={}, executionTime={}, clientAddress={}, statement={}]";
 
-  @Override
-  public void report(QueryReport queryReport) {
-    logger.info(LOG_TEMPLATE, queryReport.startTime, queryReport.executionTime, queryReport.clientAddress,
-        queryReport.statement);
-  }
+    @Override
+    public void report(QueryReport queryReport) {
+        logger.info(LOG_TEMPLATE, queryReport.startTime, queryReport.executionTime, queryReport.clientAddress,
+                queryReport.statement);
+    }
 
 }

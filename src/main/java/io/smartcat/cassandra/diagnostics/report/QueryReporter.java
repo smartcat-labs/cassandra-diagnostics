@@ -5,10 +5,10 @@ package io.smartcat.cassandra.diagnostics.report;
  */
 public interface QueryReporter {
 
-  /**
-   * Accepts and handles the given report.
-   *
-   * @param queryReport query report
-   */
-  void report(QueryReport queryReport);
+    /**
+     * Accepts and handles the given report.
+     *
+     * @param queryReport query report
+     */
+    void report(QueryReport queryReport);
 }

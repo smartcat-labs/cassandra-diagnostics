@@ -10,32 +10,34 @@ import io.smartcat.cassandra.diagnostics.report.LogQueryReporter;
  */
 public class Configuration {
 
-  /**
-   * Query execution time threshold. A query whose execution time is grater than
-   * this value is reported. The execution time is expressed in nanoseconds.
-   */
-  public long slowQueryThreshold = 50 * 1000 * 1000; // 50ms (given in
-                                                       // nanoseconds)
+    /**
+     * Query execution time threshold. A query whose execution time is grater than this value is reported. The execution
+     * time is expressed in milliseconds.
+     */
+    public long slowQueryThresholdInMillisecond = 50;
 
-  /**
-   * A fully qualified Java class name used for reporting slow queries.
-   * {@code LogQueryReporter} is the default value.
-   */
-  public String reporter = LogQueryReporter.class.getName();
+    /**
+     * Configuration option to log all queries instead of just slow queries.
+     */
+    public boolean logAllQueries = false;
 
-  /**
-   * A map containing optional reporter specific options.
-   */
-  public Map<String, String> reporterOptions = new HashMap<String, String>();
+    /**
+     * A fully qualified Java class name used for reporting slow queries. {@code LogQueryReporter} is the default value.
+     */
+    public String reporter = LogQueryReporter.class.getName();
 
-  @Override
-  public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("{ slowQueryThreshold: ").append(slowQueryThreshold)
-        .append(", reporter: \"").append(reporter)
-        .append("\", reporterOptions: ").append(reporterOptions)
-        .append(" }");
-      return sb.toString();
-  }
+    /**
+     * A map containing optional reporter specific options.
+     */
+    public Map<String, String> reporterOptions = new HashMap<String, String>();
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{ slowQueryThresholdInMilliseconds: ").append(slowQueryThresholdInMillisecond)
+                .append(", logAllQueries: ").append(logAllQueries).append(", reporter: \"").append(reporter)
+                .append("\", reporterOptions: ").append(reporterOptions).append(" }");
+        return sb.toString();
+    }
 
 }

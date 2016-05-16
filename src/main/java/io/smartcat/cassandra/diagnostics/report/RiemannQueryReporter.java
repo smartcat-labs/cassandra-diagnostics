@@ -50,7 +50,7 @@ public class RiemannQueryReporter implements QueryReporter {
     public void report(QueryReport queryReport) {
         IRiemannClient client = riemannClient();
         if (client == null) {
-            logger.warn("Trying to report riemann event without initialized client. Exiting...");
+            logger.warn("Cannot report riemann event without initialized client.");
             return;
         }
 
@@ -64,10 +64,17 @@ public class RiemannQueryReporter implements QueryReporter {
             initRiemannClient(config);
             serviceName = config.reporterOptions.getOrDefault(SERVICE_NAME_PROP, DEFAULT_SERVICE_NAME);
         }
+
         return riemann;
     }
 
     private static synchronized void initRiemannClient(Configuration config) {
+        if (riemann != null)
+        {
+            logger.debug("Riemann client already initialized");
+            return;
+        }
+
         logger.debug("Initializing riemann client with config: " + config.toString());
 
         if (!config.reporterOptions.containsKey(HOST_PROP)) {

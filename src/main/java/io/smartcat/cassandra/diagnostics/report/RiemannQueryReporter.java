@@ -58,6 +58,7 @@ public class RiemannQueryReporter implements QueryReporter {
   public void report(QueryReport queryReport) {
     if (riemannClient() == null) {
       logger.warn("Riemann client is not initialized!");
+      return;
     }
 
     logger.debug("Sending QueryReport: execTime=" + queryReport.executionTime);

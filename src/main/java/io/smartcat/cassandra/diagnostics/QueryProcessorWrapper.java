@@ -81,7 +81,7 @@ public class QueryProcessorWrapper {
 
             final long execTime = System.currentTimeMillis() - startTime;
 
-            if (config.logAllQueries || execTime >= config.slowQueryThresholdInMillisecond) {
+            if (config.logAllQueries || execTime >= config.slowQueryThresholdInMilliseconds) {
                 report(startTime, execTime, statement, queryState, options, null);
             }
 

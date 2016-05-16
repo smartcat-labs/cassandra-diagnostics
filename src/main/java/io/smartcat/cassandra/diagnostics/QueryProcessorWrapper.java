@@ -120,6 +120,10 @@ public class QueryProcessorWrapper {
      */
     private void report(final long startTime, final long execTime, final CQLStatement statement,
             final QueryState queryState, final QueryOptions options, final String errorMessage) {
+        if (queryState.getClientState().isInternal) {
+            return;
+        }
+
         QueryReport report = new QueryReport(startTime, execTime,
                 queryState.getClientState().getRemoteAddress().toString(), statement.getClass().getSimpleName());
 

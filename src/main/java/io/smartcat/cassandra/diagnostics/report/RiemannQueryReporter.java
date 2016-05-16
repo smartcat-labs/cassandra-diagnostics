@@ -69,8 +69,7 @@ public class RiemannQueryReporter implements QueryReporter {
     }
 
     private static synchronized void initRiemannClient(Configuration config) {
-        if (riemann != null)
-        {
+        if (riemann != null) {
             logger.debug("Riemann client already initialized");
             return;
         }

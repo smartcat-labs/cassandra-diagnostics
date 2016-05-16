@@ -102,7 +102,6 @@ attributes:
 
 - _riemannHost_ - Riemann server's host name (IP address). This parameter is required.
 - _riemannPort_ - Riemann server's TCP port number (5555 by default). This parameter is optional.
-- _riemannBatchSize_ - Riemann client's batch size (10 by default) - the number of Riemann Events that are send in a batch. This parameter is optional.
 
 ## Installation
 

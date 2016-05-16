@@ -1,17 +1,13 @@
 package io.smartcat.cassandra.diagnostics.report;
 
-import java.io.IOException;
-
+import com.aphyr.riemann.client.IRiemannClient;
+import com.aphyr.riemann.client.RiemannClient;
+import com.google.inject.Inject;
+import io.smartcat.cassandra.diagnostics.config.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.aphyr.riemann.client.IRiemannClient;
-import com.aphyr.riemann.client.RiemannBatchClient;
-import com.aphyr.riemann.client.RiemannClient;
-import com.aphyr.riemann.client.UnsupportedJVMException;
-import com.google.inject.Inject;
-
-import io.smartcat.cassandra.diagnostics.config.Configuration;
+import java.io.IOException;
 
 /**
  * A Riemann based {@link QueryReporter} implementation. Query reports are sending towards the configured Riemann server
@@ -24,10 +20,6 @@ public class RiemannQueryReporter implements QueryReporter {
     private static final String PORT_PROP = "riemannPort";
 
     private static final String DEFAULT_PORT = "5555";
-
-    private static final String BATCH_SIZE_PROP = "riemannBatchSize";
-
-    private static final String DEFAULT_BATCH_SIZE = "10";
 
     private static final String SERVICE_NAME_PROP = "riemannServiceName";
 
@@ -56,8 +48,9 @@ public class RiemannQueryReporter implements QueryReporter {
 
     @Override
     public void report(QueryReport queryReport) {
-        if (riemannClient() == null) {
-            logger.warn("Riemann client is not initialized!");
+        IRiemannClient client = riemannClient();
+        if (client == null) {
+            logger.warn("Trying to report riemann event without initialized client. Exiting...");
             return;
         }
 
@@ -75,21 +68,20 @@ public class RiemannQueryReporter implements QueryReporter {
     }
 
     private static synchronized void initRiemannClient(Configuration config) {
-        if (riemann != null) {
+        logger.debug("Initializing riemann client with config: " + config.toString());
+
+        if (!config.reporterOptions.containsKey(HOST_PROP)) {
+            logger.warn("Tried to init Riemann client. Not properly configured. Aborting initialization.");
             return;
         }
-        if (config.reporterOptions.containsKey(HOST_PROP)) {
-            String host = config.reporterOptions.get(HOST_PROP);
-            int port = Integer.parseInt(config.reporterOptions.getOrDefault(PORT_PROP, DEFAULT_PORT));
-            int batchSize = Integer.parseInt(config.reporterOptions.getOrDefault(BATCH_SIZE_PROP, DEFAULT_BATCH_SIZE));
-            try {
-                riemann = new RiemannBatchClient(RiemannClient.tcp(host, port), batchSize);
-                riemann.connect();
-            } catch (IOException | UnsupportedJVMException e) {
-                logger.warn("Riemann client cannot be initialized", e);
-            }
-        } else {
-            logger.warn("Tried to init Riemann client. Not properly configured. Aborting initialization.");
+
+        String host = config.reporterOptions.get(HOST_PROP);
+        int port = Integer.parseInt(config.reporterOptions.getOrDefault(PORT_PROP, DEFAULT_PORT));
+        try {
+            riemann = RiemannClient.tcp(host, port);
+            riemann.connect();
+        } catch (IOException e) {
+            logger.warn("Riemann client cannot be initialized", e);
         }
     }
 

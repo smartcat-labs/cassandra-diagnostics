@@ -19,32 +19,32 @@ import io.smartcat.cassandra.diagnostics.report.QueryReporter;
  */
 public class DiagnosticsModule extends AbstractModule {
 
-  private static final Logger logger = LoggerFactory.getLogger(DiagnosticsModule.class);
+    private static final Logger logger = LoggerFactory.getLogger(DiagnosticsModule.class);
 
-  @SuppressWarnings("unchecked")
-  @Override
-  protected void configure() {
-    ConfigurationLoader loader = new YamlConfigurationLoader();
-    Configuration config;
+    @SuppressWarnings("unchecked")
+    @Override
+    protected void configure() {
+        ConfigurationLoader loader = new YamlConfigurationLoader();
+        Configuration config;
 
-    try {
-      config = loader.loadConfig();
-    } catch (ConfigurationException e) {
-      logger.warn("A problem occured while loading configuration. Using default configuration.", e);
-      config = new Configuration();
+        try {
+            config = loader.loadConfig();
+        } catch (ConfigurationException e) {
+            logger.warn("A problem occured while loading configuration. Using default configuration.", e);
+            config = new Configuration();
+        }
+        logger.info("Effective configuration: {}", config);
+
+        bind(ConfigurationLoader.class).toInstance(loader);
+        bind(Configuration.class).toInstance(config);
+
+        try {
+            bind(QueryReporter.class).to((Class<? extends QueryReporter>) Class.forName(config.reporter));
+        } catch (ClassNotFoundException e) {
+            bind(QueryReporter.class).to(LogQueryReporter.class);
+        }
+
+        bind(DiagnosticsMXBean.class).to(DiagnosticsMXBeanImpl.class);
     }
-    logger.info("Effective configuration: {}", config);
-
-    bind(ConfigurationLoader.class).toInstance(loader);
-    bind(Configuration.class).toInstance(config);
-
-    try {
-      bind(QueryReporter.class).to((Class<? extends QueryReporter>) Class.forName(config.reporter));
-    } catch (ClassNotFoundException e) {
-      bind(QueryReporter.class).to(LogQueryReporter.class);
-    }
-
-    bind(DiagnosticsMXBean.class).to(DiagnosticsMXBeanImpl.class);
-  }
 
 }

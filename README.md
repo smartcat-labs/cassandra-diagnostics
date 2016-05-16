@@ -36,8 +36,11 @@ JVM_OPTS="$JVM_OPTS -Dcassandra.diagnostics.config=some-other-cassandra-diagnost
 The following is an example of the configuration file:
 
 ```
-# Slow query threshold (in nanoseconds)
-slowQueryThreshold: 1000000
+# Slow query threshold (in milliseconds)
+slowQueryThresholdInMillisecond: 100
+
+# Log all queries or just slow queries
+logAllQueries: false
 
 # Slow query reporter implementation
 reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
@@ -46,8 +49,8 @@ reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
 Specific query reporter may require additional configuration options. Those options could be specified using `reporterOptions` property. The following example shows a configuration options in case of `RiemannQueryReporter`:
 
 ```
-# Slow query threshold (in nanoseconds)
-slowQueryThreshold: 1000000
+# Slow query threshold
+slowQueryThresholdInMillisecond: 100
 
 # Slow query reporter implementation
 reporter: io.smartcat.cassandra.diagnostics.report.RiemannQueryReporter
@@ -76,7 +79,7 @@ package io.smartcat.cassandra.diagnostics.jmx:type=DiagnosticsMXBean
 QueryReport [startTime={}, executionTime={}, clientAddress={}, statement={}]
 ```
 
-Values for `startTime` and `executionTime` are given in nanoseconds.
+Values for `startTime` and `executionTime` are given in milliseconds.
 
 
 ### Riemann Query Reporter
@@ -89,7 +92,7 @@ Generated Riemann Events looks like the following:
 host: <originating host name>
 service: "queryReport"
 state: "ok"
-metric: <execution time in nanoseconds>
+metric: <execution time in milliseconds>
 attributes:
   client: <originating client's TCP socket address>
   statement: <executed statement description>

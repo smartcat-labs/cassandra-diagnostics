@@ -52,7 +52,7 @@ public class RiemannQueryReporter implements QueryReporter {
             return;
         }
 
-        logger.info("Sending QueryReport: execTime{}", queryReport.executionTimeInMilliseconds);
+        logger.debug("Sending QueryReport: execTime{}", queryReport.executionTimeInMilliseconds);
         riemann.event().service(serviceName).state("ok").metric(queryReport.executionTimeInMilliseconds).ttl(10)
                 .attribute("client", queryReport.clientAddress).attribute("statement", queryReport.statement).send();
     }
@@ -71,7 +71,7 @@ public class RiemannQueryReporter implements QueryReporter {
             return;
         }
 
-        logger.info("Initializing riemann client with config: " + config.toString());
+        logger.debug("Initializing riemann client with config: {}", config.toString());
 
         if (!config.options.containsKey(HOST_PROP)) {
             logger.warn("Tried to init Riemann client. Not properly configured. Aborting initialization.");

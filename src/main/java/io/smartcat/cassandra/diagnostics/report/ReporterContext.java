@@ -13,12 +13,12 @@ import java.util.List;
  * Reporter class that handles initialization of configured reporters and triggers report on each reporter.
  * All reporters are initialized as defined in configuration with LogQueryReporter being default one.
  */
-public class CompositeQueryReporter implements QueryReporter {
+public class ReporterContext {
 
     /**
      * Class logger.
      */
-    private static final Logger logger = LoggerFactory.getLogger(CompositeQueryReporter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReporterContext.class);
 
     private List<QueryReporter> reporters = new ArrayList<QueryReporter>();
 
@@ -28,7 +28,7 @@ public class CompositeQueryReporter implements QueryReporter {
      * @param config configuration
      */
     @Inject
-    public CompositeQueryReporter(Configuration config) {
+    public ReporterContext(Configuration config) {
         for (ReporterConfiguration reporterConfig : config.reporters) {
             try {
                 logger.info("Creating reporter for class name {}", reporterConfig.reporter);
@@ -41,12 +41,13 @@ public class CompositeQueryReporter implements QueryReporter {
         }
     }
 
-    @Override
+    /**
+     * Report using all configured reporters.
+     * @param queryReport Query report
+     */
     public void report(QueryReport queryReport) {
-        logger.info("CompositeQueryReporter: execTime={}", queryReport.executionTimeInMilliseconds);
-        for (QueryReporter reporter: reporters) {
-            reporter.report(queryReport);
-        }
+        logger.info("ReporterContext: execTime={}", queryReport.executionTimeInMilliseconds);
+        reporters.forEach(reporter -> reporter.report(queryReport));
     }
 
 }

@@ -7,7 +7,7 @@ import io.smartcat.cassandra.diagnostics.config.ConfigurationLoader;
 import io.smartcat.cassandra.diagnostics.config.YamlConfigurationLoader;
 import io.smartcat.cassandra.diagnostics.jmx.DiagnosticsMXBean;
 import io.smartcat.cassandra.diagnostics.jmx.DiagnosticsMXBeanImpl;
-import io.smartcat.cassandra.diagnostics.report.CompositeQueryReporter;
+import io.smartcat.cassandra.diagnostics.report.ReporterContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +34,8 @@ public class DiagnosticsModule extends AbstractModule {
 
         bind(ConfigurationLoader.class).toInstance(loader);
         bind(Configuration.class).toInstance(config);
-        CompositeQueryReporter reporter = new CompositeQueryReporter(config);
-        bind(CompositeQueryReporter.class).toInstance(reporter);
+        ReporterContext reporter = new ReporterContext(config);
+        bind(ReporterContext.class).toInstance(reporter);
         bind(DiagnosticsMXBean.class).to(DiagnosticsMXBeanImpl.class);
     }
 

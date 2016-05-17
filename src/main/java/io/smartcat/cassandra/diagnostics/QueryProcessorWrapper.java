@@ -3,7 +3,7 @@ package io.smartcat.cassandra.diagnostics;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
-import io.smartcat.cassandra.diagnostics.report.CompositeQueryReporter;
+import io.smartcat.cassandra.diagnostics.report.ReporterContext;
 import io.smartcat.cassandra.diagnostics.report.QueryReport;
 import org.apache.cassandra.cql3.CQLStatement;
 import org.apache.cassandra.cql3.QueryOptions;
@@ -52,7 +52,7 @@ public class QueryProcessorWrapper {
      * {@link QueryReport} used for query reporting.
      */
     @Inject
-    private CompositeQueryReporter reporter;
+    private ReporterContext reporter;
 
     /**
      * Wrapper for

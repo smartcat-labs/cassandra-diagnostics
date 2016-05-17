@@ -1,21 +1,12 @@
 package io.smartcat.cassandra.diagnostics.report;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.aphyr.riemann.client.IRiemannClient;
 import com.aphyr.riemann.client.RiemannClient;
-<<<<<<< cf51227aed548cc86b4a5c32ad393be7631920fa
-import com.google.inject.Inject;
-=======
 import io.smartcat.cassandra.diagnostics.config.ReporterConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
->>>>>>> Added composite reporter, updated configuration, added ttl
 
-import io.smartcat.cassandra.diagnostics.config.Configuration;
+import java.io.IOException;
 
 /**
  * A Riemann based {@link QueryReporter} implementation. Query reports are sending towards the configured Riemann server

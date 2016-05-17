@@ -1,15 +1,12 @@
 package io.smartcat.cassandra.diagnostics.report;
 
-import java.io.IOException;
-
+import com.aphyr.riemann.client.IRiemannClient;
+import com.aphyr.riemann.client.RiemannClient;
+import io.smartcat.cassandra.diagnostics.config.ReporterConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.aphyr.riemann.client.IRiemannClient;
-import com.aphyr.riemann.client.RiemannClient;
-import com.google.inject.Inject;
-
-import io.smartcat.cassandra.diagnostics.config.Configuration;
+import java.io.IOException;
 
 /**
  * A Riemann based {@link QueryReporter} implementation. Query reports are sending towards the configured Riemann server
@@ -32,7 +29,7 @@ public class RiemannQueryReporter implements QueryReporter {
      */
     private static final Logger logger = LoggerFactory.getLogger(RiemannQueryReporter.class);
 
-    private Configuration config;
+    private ReporterConfiguration config;
 
     private String serviceName;
 
@@ -43,8 +40,7 @@ public class RiemannQueryReporter implements QueryReporter {
      *
      * @param config configuration
      */
-    @Inject
-    public RiemannQueryReporter(Configuration config) {
+    public RiemannQueryReporter(ReporterConfiguration config) {
         this.config = config;
     }
 
@@ -56,36 +52,35 @@ public class RiemannQueryReporter implements QueryReporter {
             return;
         }
 
-        logger.debug("Sending QueryReport: execTime=" + queryReport.executionTimeInMilliseconds);
-        riemannClient().event().service(serviceName).state("ok").metric(queryReport.executionTimeInMilliseconds)
-                .attribute("client", queryReport.clientAddress).attribute("statement", queryReport.statement).ttl(10)
-                .send();
+        logger.debug("Sending QueryReport: execTime{}", queryReport.executionTimeInMilliseconds);
+        riemann.event().service(serviceName).state("ok").metric(queryReport.executionTimeInMilliseconds).ttl(10)
+                .attribute("client", queryReport.clientAddress).attribute("statement", queryReport.statement).send();
     }
 
     private IRiemannClient riemannClient() {
         if (riemann == null) {
             initRiemannClient(config);
-            serviceName = config.reporterOptions.getOrDefault(SERVICE_NAME_PROP, DEFAULT_SERVICE_NAME);
         }
 
         return riemann;
     }
 
-    private static synchronized void initRiemannClient(Configuration config) {
+    private synchronized void initRiemannClient(ReporterConfiguration config) {
         if (riemann != null) {
-            logger.debug("Riemann client already initialized");
+            logger.warn("Riemann client already initialized");
             return;
         }
 
-        logger.debug("Initializing riemann client with config: " + config.toString());
+        logger.debug("Initializing riemann client with config: {}", config.toString());
 
-        if (!config.reporterOptions.containsKey(HOST_PROP)) {
+        if (!config.options.containsKey(HOST_PROP)) {
             logger.warn("Tried to init Riemann client. Not properly configured. Aborting initialization.");
             return;
         }
 
-        String host = config.reporterOptions.get(HOST_PROP);
-        int port = Integer.parseInt(config.reporterOptions.getOrDefault(PORT_PROP, DEFAULT_PORT));
+        serviceName = config.options.getOrDefault(SERVICE_NAME_PROP, DEFAULT_SERVICE_NAME);
+        String host = config.options.get(HOST_PROP);
+        int port = Integer.parseInt(config.options.getOrDefault(PORT_PROP, DEFAULT_PORT));
         try {
             riemann = RiemannClient.tcp(host, port);
             riemann.connect();

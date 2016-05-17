@@ -18,7 +18,7 @@ Query Reporter implementations:
 
 - `io.smartcat.cassandra.diagnostics.report.LogQueryReporter` - LogQueryReporter uses the Cassandra logger system to report slow queries.
 - `io.smartcat.cassandra.diagnostics.report.RiemannQueryReporter` - RiemannQueryReporter sends query reports as Riemann events.
- 
+
 
 ## Configuration
 
@@ -36,28 +36,32 @@ JVM_OPTS="$JVM_OPTS -Dcassandra.diagnostics.config=some-other-cassandra-diagnost
 The following is an example of the configuration file:
 
 ```
-# Slow query threshold (in milliseconds)
-slowQueryThresholdInMillisecond: 100
+# Slow query threshold
+slowQueryThresholdInMilliseconds: 25
 
 # Log all queries or just slow queries
 logAllQueries: false
 
-# Slow query reporter implementation
-reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
+# Reporters
+reporters:
+  - reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
 ```
 
-Specific query reporter may require additional configuration options. Those options could be specified using `reporterOptions` property. The following example shows a configuration options in case of `RiemannQueryReporter`:
+Specific query reporter may require additional configuration options. Those options could be specified using `options` property. The following example shows a configuration options in case of `RiemannQueryReporter`:
 
 ```
 # Slow query threshold
-slowQueryThresholdInMillisecond: 100
+slowQueryThresholdInMilliseconds: 25
 
-# Slow query reporter implementation
-reporter: io.smartcat.cassandra.diagnostics.report.RiemannQueryReporter
+# Log all queries or just slow queries
+logAllQueries: false
 
-# Reporter specific options
-reporterOptions:
-    riemannHost: <riemann server host>
+# Reporters
+reporters:
+  - reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
+  - reporter: io.smartcat.cassandra.diagnostics.report.RiemannQueryReporter
+    options:
+      riemannHost: <riemann server host>
 ```
 
 ### Dynamic Configuration
@@ -93,12 +97,13 @@ host: <originating host name>
 service: "queryReport"
 state: "ok"
 metric: <execution time in milliseconds>
+ttl: 10
 attributes:
   client: <originating client's TCP socket address>
   statement: <executed statement description>
 ```
 
-`RiemannQueryReporter` has the following configuration parameters (that can be specified using `reporterOptions`):
+`RiemannQueryReporter` has the following configuration parameters (that can be specified using `options`):
 
 - _riemannHost_ - Riemann server's host name (IP address). This parameter is required.
 - _riemannPort_ - Riemann server's TCP port number (5555 by default). This parameter is optional.

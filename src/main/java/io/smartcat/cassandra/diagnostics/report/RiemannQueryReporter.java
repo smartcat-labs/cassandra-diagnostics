@@ -1,13 +1,15 @@
 package io.smartcat.cassandra.diagnostics.report;
 
-import com.aphyr.riemann.client.IRiemannClient;
-import com.aphyr.riemann.client.RiemannClient;
-import com.google.inject.Inject;
-import io.smartcat.cassandra.diagnostics.config.Configuration;
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import com.aphyr.riemann.client.IRiemannClient;
+import com.aphyr.riemann.client.RiemannClient;
+import com.google.inject.Inject;
+
+import io.smartcat.cassandra.diagnostics.config.Configuration;
 
 /**
  * A Riemann based {@link QueryReporter} implementation. Query reports are sending towards the configured Riemann server
@@ -56,7 +58,8 @@ public class RiemannQueryReporter implements QueryReporter {
 
         logger.debug("Sending QueryReport: execTime=" + queryReport.executionTimeInMilliseconds);
         riemannClient().event().service(serviceName).state("ok").metric(queryReport.executionTimeInMilliseconds)
-                .attribute("client", queryReport.clientAddress).attribute("statement", queryReport.statement).send();
+                .attribute("client", queryReport.clientAddress).attribute("statement", queryReport.statement).ttl(10)
+                .send();
     }
 
     private IRiemannClient riemannClient() {

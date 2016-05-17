@@ -1,14 +1,25 @@
 package io.smartcat.cassandra.diagnostics.config;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import io.smartcat.cassandra.diagnostics.report.LogQueryReporter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents the Cassandra Diagnostics configuration.
  */
 public class Configuration {
+
+    /**
+     * Get default configuration for fallback when no configuration is provided.
+     *
+     * @return Configuration object with default LogQueryReporter reporter
+     */
+    public static Configuration getDefaultConfiguration() {
+        return new Configuration() {
+            {
+                reporters.add(new ReporterConfiguration());
+            }
+        };
+    }
 
     /**
      * Query execution time threshold. A query whose execution time is grater than this value is reported. The execution
@@ -22,21 +33,18 @@ public class Configuration {
     public boolean logAllQueries = false;
 
     /**
-     * A fully qualified Java class name used for reporting slow queries. {@code LogQueryReporter} is the default value.
+     * Reporters configuration list with reporter specific properties.
      */
-    public String reporter = LogQueryReporter.class.getName();
-
-    /**
-     * A map containing optional reporter specific options.
-     */
-    public Map<String, String> reporterOptions = new HashMap<String, String>();
+    public List<ReporterConfiguration> reporters = new ArrayList<>();
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{ slowQueryThresholdInMilliseconds: ").append(slowQueryThresholdInMilliseconds)
-                .append(", logAllQueries: ").append(logAllQueries).append(", reporter: \"").append(reporter)
-                .append("\", reporterOptions: ").append(reporterOptions).append(" }");
+                .append(", logAllQueries: ").append(logAllQueries).append(", reporters: ");
+        reporters.forEach(
+                reporter -> sb.append(", reporter: \"").append(reporter.reporter).append("\", reporterOptions: ")
+                        .append(reporter.options).append(" }"));
         return sb.toString();
     }
 

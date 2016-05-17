@@ -1,0 +1,12 @@
+# Slow query threshold
+slowQueryThresholdInMilliseconds: 25
+
+# Log all queries or just slow queries
+logAllQueries: false
+
+# Reporters
+reporters:
+  - reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
+  - reporter: io.smartcat.cassandra.diagnostics.report.RiemannQueryReporter
+    options:
+      riemannHost: 52.49.27.253

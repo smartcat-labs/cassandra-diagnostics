@@ -1,5 +1,6 @@
 package io.smartcat.cassandra.diagnostics.report;
 
+import io.smartcat.cassandra.diagnostics.config.ReporterConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +20,15 @@ public class LogQueryReporter implements QueryReporter {
      */
     private static final String LOG_TEMPLATE =
             "QueryReport [startTimeInMilliseconds={}, executionTimeInMilliseconds={}, clientAddress={}, statement={}]";
+
+    /**
+     * Constructor.
+     *
+     * @param config configuration
+     */
+    public LogQueryReporter(ReporterConfiguration config) {
+
+    }
 
     @Override
     public void report(QueryReport queryReport) {

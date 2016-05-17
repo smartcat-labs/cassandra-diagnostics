@@ -1,18 +1,15 @@
 package io.smartcat.cassandra.diagnostics;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.AbstractModule;
-
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationLoader;
 import io.smartcat.cassandra.diagnostics.config.YamlConfigurationLoader;
 import io.smartcat.cassandra.diagnostics.jmx.DiagnosticsMXBean;
 import io.smartcat.cassandra.diagnostics.jmx.DiagnosticsMXBeanImpl;
-import io.smartcat.cassandra.diagnostics.report.LogQueryReporter;
-import io.smartcat.cassandra.diagnostics.report.QueryReporter;
+import io.smartcat.cassandra.diagnostics.report.CompositeQueryReporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Defines the main DI bindings.
@@ -37,13 +34,8 @@ public class DiagnosticsModule extends AbstractModule {
 
         bind(ConfigurationLoader.class).toInstance(loader);
         bind(Configuration.class).toInstance(config);
-
-        try {
-            bind(QueryReporter.class).to((Class<? extends QueryReporter>) Class.forName(config.reporter));
-        } catch (ClassNotFoundException e) {
-            bind(QueryReporter.class).to(LogQueryReporter.class);
-        }
-
+        CompositeQueryReporter reporter = new CompositeQueryReporter(config);
+        bind(CompositeQueryReporter.class).toInstance(reporter);
         bind(DiagnosticsMXBean.class).to(DiagnosticsMXBeanImpl.class);
     }
 

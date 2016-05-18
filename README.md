@@ -81,7 +81,7 @@ reporters:
   - reporter: io.smartcat.cassandra.diagnostics.report.InfluxQueryReporter
     options:
       influxDbAddress: <influx db addess>
-      influxUsername: <username> #Optional
+      influxUsername: <username>
       influxPassword: <password> #Optional
       influxDbName: <database name> #Optional
       influxMeasurement: <measurement name> #Optional

@@ -71,6 +71,11 @@ public class InfluxQueryReporter implements QueryReporter {
             return;
         }
 
+        if (!config.options.containsKey(USERNAME_PROP)) {
+            logger.warn("Not properly configured. Missing influx username. Aborting initialization.");
+            return;
+        }
+
         dbAddress = config.options.get(ADDRESS_PROP);
         username = config.options.getOrDefault(USERNAME_PROP, "");
         password = config.options.getOrDefault(PASSWORD_PROP, "");
@@ -100,12 +105,12 @@ public class InfluxQueryReporter implements QueryReporter {
         try {
             influx.write(dbName, retentionPolicy,
                     Point.measurement(measurementName).time(queryReport.startTimeInMilliseconds, TimeUnit.MILLISECONDS)
-                            .tag("id", UUID.randomUUID().toString())
-                            .addField("client", queryReport.clientAddress).addField("statement", queryReport.statement)
-                            .addField("host", hostname).addField("value", queryReport.executionTimeInMilliseconds)
-                            .build());
+                            .tag("id", UUID.randomUUID().toString()).addField("client", queryReport.clientAddress)
+                            .addField("statement", queryReport.statement).addField("host", hostname)
+                            .addField("value", queryReport.executionTimeInMilliseconds).build());
         } catch (Exception e) {
             logger.warn("Failed to send report to influx", e);
         }
     }
+
 }

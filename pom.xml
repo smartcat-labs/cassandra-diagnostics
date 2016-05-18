@@ -238,6 +238,11 @@
                                     <include>io.smartcat:*</include>
                                     <include>net.bytebuddy:*</include>
                                     <include>com.google.inject:*</include>
+                                    <include>org.influxdb:*</include>
+                                    <include>com.squareup.retrofit:*</include>
+                                    <include>com.google.code.gson:*</include>
+                                    <include>com.squareup.okhttp:*</include>
+                                    <include>com.squareup.okio:*</include>
                                     <include>aopalliance:aopalliance:*</include>
                                     <include>javax.inject:*</include>
                                     <include>com.aphyr:riemann-java-client:*</include>

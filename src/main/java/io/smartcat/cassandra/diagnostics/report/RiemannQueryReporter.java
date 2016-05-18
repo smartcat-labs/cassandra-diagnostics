@@ -1,12 +1,16 @@
 package io.smartcat.cassandra.diagnostics.report;
 
-import com.aphyr.riemann.client.IRiemannClient;
-import com.aphyr.riemann.client.RiemannClient;
-import io.smartcat.cassandra.diagnostics.config.ReporterConfiguration;
+import java.io.IOException;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import com.aphyr.riemann.Proto.Msg;
+import com.aphyr.riemann.client.IRiemannClient;
+import com.aphyr.riemann.client.RiemannClient;
+
+import io.smartcat.cassandra.diagnostics.config.ReporterConfiguration;
 
 /**
  * A Riemann based {@link QueryReporter} implementation. Query reports are sending towards the configured Riemann server
@@ -52,9 +56,48 @@ public class RiemannQueryReporter implements QueryReporter {
             return;
         }
 
-        logger.debug("Sending QueryReport: execTime{}", queryReport.executionTimeInMilliseconds);
-        riemann.event().service(serviceName).state("ok").metric(queryReport.executionTimeInMilliseconds).ttl(10)
-                .attribute("client", queryReport.clientAddress).attribute("statement", queryReport.statement).send();
+        logger.debug("Sending QueryReport: execTime={}", queryReport.executionTimeInMilliseconds);
+        try {
+            sendEvent(queryReport);
+        } catch (Exception e) {
+            logger.debug("Sending QueryReport failed, trying one more time: execTime={}, exception: {}",
+                    queryReport.executionTimeInMilliseconds, e.getMessage());
+            retry(queryReport);
+        }
+    }
+
+    private void retry(QueryReport queryReport) {
+        try {
+            sendEvent(queryReport);
+        } catch (IOException e) {
+            logger.debug("Sending QueryReport failed, ignoring message: execTime={}, exception: {}",
+                    queryReport.executionTimeInMilliseconds, e.getMessage());
+        }
+    }
+
+    /**
+     * Method which is sending event. Must be thread safe since deref is blocking until timeout, so if multiple threads
+     * attempt to send event last one will win.
+     *
+     * @param queryReport QueryReport to send
+     * @return message of outcome.
+     * @throws IOException
+     */
+    private synchronized Msg sendEvent(QueryReport queryReport) throws IOException {
+        Msg message = riemann.event().service(serviceName).state("ok").metric(queryReport.executionTimeInMilliseconds)
+                .ttl(30).attribute("client", queryReport.clientAddress).attribute("statement", queryReport.statement)
+                .attribute("id", UUID.randomUUID().toString()).tag("id").send()
+                .deref(1, java.util.concurrent.TimeUnit.SECONDS);
+
+        if (message == null || message.hasError()) {
+            throw new IOException("Message timed out.");
+        }
+
+        if (message.hasError()) {
+            throw new IOException(message.getError());
+        }
+
+        return message;
     }
 
     private IRiemannClient riemannClient() {

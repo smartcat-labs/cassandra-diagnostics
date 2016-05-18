@@ -62,6 +62,29 @@ reporters:
   - reporter: io.smartcat.cassandra.diagnostics.report.RiemannQueryReporter
     options:
       riemannHost: <riemann server host>
+      riemannPort: <riemann server port> #Optional
+      riemannServiceName: queryReport #Optional
+```
+
+Following example shows a configuration options in case of `InfluxQueryReporter`:
+
+```
+# Slow query threshold
+slowQueryThresholdInMilliseconds: 25
+
+# Log all queries or just slow queries
+logAllQueries: false
+
+# Reporters
+reporters:
+  - reporter: io.smartcat.cassandra.diagnostics.report.InfluxQueryReporter
+    options:
+      influxDbAddress: <influx db addess>
+      influxUsername: <username> #Optional
+      influxPassword: <password> #Optional
+      influxDbName: <database name> #Optional
+      influxMeasurement: <measurement name> #Optional
+      influxRetentionPolicy: <default> #Optional
 ```
 
 ### Dynamic Configuration

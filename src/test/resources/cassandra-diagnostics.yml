@@ -9,4 +9,14 @@ reporters:
   - reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
   - reporter: io.smartcat.cassandra.diagnostics.report.RiemannQueryReporter
     options:
-      riemannHost: 52.49.27.253
+      riemannHost: 127.0.0.1
+      riemannPort: 5555 #Optional
+  - reporter: io.smartcat.cassandra.diagnostics.report.InfluxQueryReporter
+    options:
+      influxDbAddress: http://127.0.0.1:8086
+      influxUsername: username #Optional
+      influxPassword: password #Optional
+      influxDbName: cassandradb #Optional
+      influxMeasurement: queryReport #Optional
+      influxRetentionPolicy: default #Optional
+

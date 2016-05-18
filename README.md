@@ -18,6 +18,7 @@ Query Reporter implementations:
 
 - `io.smartcat.cassandra.diagnostics.report.LogQueryReporter` - LogQueryReporter uses the Cassandra logger system to report slow queries.
 - `io.smartcat.cassandra.diagnostics.report.RiemannQueryReporter` - RiemannQueryReporter sends query reports as Riemann events.
+- `io.smartcat.cassandra.diagnostics.report.InfluxQueryReporter` - InfluxQueryReporter sends query reports to influx database.
 
 
 ## Configuration

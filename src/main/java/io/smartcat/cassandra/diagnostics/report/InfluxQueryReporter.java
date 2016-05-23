@@ -1,16 +1,17 @@
 package io.smartcat.cassandra.diagnostics.report;
 
-import io.smartcat.cassandra.diagnostics.config.ReporterConfiguration;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import io.smartcat.cassandra.diagnostics.config.ReporterConfiguration;
 
 /**
  * An InfluxDB based {@link QueryReporter} implementation. Query reports are sent to influxdb.
@@ -105,8 +106,8 @@ public class InfluxQueryReporter implements QueryReporter {
         try {
             influx.write(dbName, retentionPolicy,
                     Point.measurement(measurementName).time(queryReport.startTimeInMilliseconds, TimeUnit.MILLISECONDS)
-                            .tag("id", UUID.randomUUID().toString()).addField("client", queryReport.clientAddress)
-                            .addField("statement", queryReport.statement).addField("host", hostname)
+                            .tag("host", hostname).tag("id", UUID.randomUUID().toString())
+                            .addField("client", queryReport.clientAddress).addField("statement", queryReport.statement)
                             .addField("value", queryReport.executionTimeInMilliseconds).build());
         } catch (Exception e) {
             logger.warn("Failed to send report to influx", e);

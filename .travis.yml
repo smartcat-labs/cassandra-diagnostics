@@ -1,9 +1,5 @@
 language: java
 sudo: false
-branches:
-  only:
-  - master
-  - dev
 jdk:
 - oraclejdk8
 matrix:

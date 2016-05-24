@@ -1,7 +1,5 @@
 package io.smartcat.cassandra.diagnostics;
 
-
-
 import java.lang.instrument.Instrumentation;
 
 /**

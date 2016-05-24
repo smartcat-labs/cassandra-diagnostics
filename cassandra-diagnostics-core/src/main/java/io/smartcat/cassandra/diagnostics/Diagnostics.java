@@ -1,23 +1,14 @@
 package io.smartcat.cassandra.diagnostics;
 
-import java.lang.management.ManagementFactory;
-
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import io.smartcat.cassandra.diagnostics.connector.QueryReporter;
+import io.smartcat.cassandra.diagnostics.jmx.DiagnosticsMXBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-
-import io.smartcat.cassandra.diagnostics.connector.Query;
-import io.smartcat.cassandra.diagnostics.connector.QueryReporter;
-import io.smartcat.cassandra.diagnostics.jmx.DiagnosticsMXBean;
+import javax.management.*;
+import java.lang.management.ManagementFactory;
 
 /**
  * This class implements the Diagnostics module initialization.

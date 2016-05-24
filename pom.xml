@@ -33,7 +33,7 @@
         <module>cassandra-diagnostics-reporter-riemann</module>
         <module>cassandra-diagnostics-connector-api</module>
     </modules>
-    
+
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -103,7 +103,7 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.21</version>
-        </dependency>    
+        </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>

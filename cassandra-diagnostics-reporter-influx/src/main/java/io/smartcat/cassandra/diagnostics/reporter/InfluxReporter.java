@@ -1,8 +1,8 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
+import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.Reporter;
 import io.smartcat.cassandra.diagnostics.ReporterConfiguration;
-import io.smartcat.cassandra.diagnostics.connector.Query;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;

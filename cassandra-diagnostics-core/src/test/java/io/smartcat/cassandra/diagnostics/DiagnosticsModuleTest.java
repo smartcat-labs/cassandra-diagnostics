@@ -1,4 +1,4 @@
 package io.smartcat.cassandra.diagnostics;
 
-public class QueryProcessorWrapperTest {
+public class DiagnosticsModuleTest {
 }

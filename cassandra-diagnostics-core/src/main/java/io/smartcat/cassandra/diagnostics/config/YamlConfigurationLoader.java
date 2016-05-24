@@ -1,20 +1,15 @@
 package io.smartcat.cassandra.diagnostics.config;
 
-import com.google.common.base.Joiner;
-import com.google.common.io.ByteStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.error.YAMLException;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * This class is a YAML based implementation of {@link ConfigurationLoader}.
@@ -85,34 +80,20 @@ public class YamlConfigurationLoader implements ConfigurationLoader {
     public Configuration loadConfig(URL url) throws ConfigurationException {
         try {
             logger.info("Loading settings from {}", url);
-            byte[] configBytes;
-            try (InputStream is = url.openStream()) {
-                configBytes = ByteStreams.toByteArray(is);
-            } catch (IOException e) {
-                throw new AssertionError(e);
-            }
-
-            logConfig(configBytes);
 
             Constructor constructor = new Constructor(Configuration.class);
             Yaml yaml = new Yaml(constructor);
-            Configuration result = yaml.loadAs(new ByteArrayInputStream(configBytes), Configuration.class);
+            Configuration result;
+            try (InputStream is = url.openStream()) {
+                result = yaml.loadAs(is, Configuration.class);
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            }
 
             return result;
         } catch (YAMLException e) {
             throw new ConfigurationException("Invalid yaml", e);
         }
-    }
-
-    /**
-     * Prints the given configuration using the class logger.
-     *
-     * @param configBytes YAML configuration in raw format
-     */
-    private void logConfig(byte[] configBytes) {
-        Map<Object, Object> configMap = new TreeMap<>(
-                (Map<?, ?>) new Yaml().load(new ByteArrayInputStream(configBytes)));
-        logger.info("Node configuration:[" + Joiner.on("; ").join(configMap.entrySet()) + "]");
     }
 
 }

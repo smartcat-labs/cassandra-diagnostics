@@ -1,9 +1,13 @@
 package io.smartcat.cassandra.diagnostics;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import io.smartcat.cassandra.diagnostics.config.Configuration;
+import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
+import io.smartcat.cassandra.diagnostics.config.ConfigurationLoader;
+import io.smartcat.cassandra.diagnostics.config.YamlConfigurationLoader;
 import io.smartcat.cassandra.diagnostics.connector.QueryReporter;
 import io.smartcat.cassandra.diagnostics.jmx.DiagnosticsMXBean;
+import io.smartcat.cassandra.diagnostics.jmx.DiagnosticsMXBeanImpl;
+import io.smartcat.cassandra.diagnostics.report.ReporterContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,27 +23,42 @@ public class Diagnostics implements QueryReporter {
      */
     private static final Logger logger = LoggerFactory.getLogger(Diagnostics.class);
 
-    /**
-     * The module's DI injector.
-     */
-    private static final Injector INJECTOR = Guice.createInjector(new DiagnosticsModule());
+    private final Configuration config;
+
+    private final ReporterContext reporterContext;
 
     /**
      * Default constructor.
      */
     public Diagnostics() {
+        this.config = getConfiguration();
+        this.reporterContext = new ReporterContext(config);
+
         initMXBean();
+    }
+
+    private Configuration getConfiguration() {
+        ConfigurationLoader loader = new YamlConfigurationLoader();
+        Configuration config;
+        try {
+            config = loader.loadConfig();
+        } catch (ConfigurationException e) {
+            logger.warn("A problem occured while loading configuration. Using default configuration.", e);
+            config = new Configuration();
+        }
+        logger.info("Effective configuration: {}", config);
+        return config;
     }
 
     /**
      * Initializes the Diagnostics MXBean.
      */
-    private static void initMXBean() {
+    private void initMXBean() {
         final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         try {
             ObjectName objectName = new ObjectName(
                     DiagnosticsMXBean.class.getPackage() + ":type=" + DiagnosticsMXBean.class.getSimpleName());
-            final DiagnosticsMXBean mbean = INJECTOR.getInstance(DiagnosticsMXBean.class);
+            final DiagnosticsMXBean mbean = new DiagnosticsMXBeanImpl(config);
             server.registerMBean(mbean, objectName);
         } catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException
                 | NotCompliantMBeanException e) {
@@ -49,7 +68,7 @@ public class Diagnostics implements QueryReporter {
 
     @Override
     public void report(Query query) {
-        // TODO Auto-generated method stub
+        reporterContext.report(query);
     }
 
 }

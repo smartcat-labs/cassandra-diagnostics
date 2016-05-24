@@ -24,5 +24,11 @@
             <artifactId>snakeyaml</artifactId>
             <version>1.11</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${version.junit}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

@@ -1,6 +1,5 @@
 package io.smartcat.cassandra.diagnostics.jmx;
 
-import com.google.inject.Inject;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 
 /**
@@ -18,7 +17,6 @@ public class DiagnosticsMXBeanImpl implements DiagnosticsMXBean {
      *
      * @param config configuration object
      */
-    @Inject
     public DiagnosticsMXBeanImpl(Configuration config) {
         this.config = config;
     }

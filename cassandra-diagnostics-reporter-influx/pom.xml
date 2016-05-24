@@ -14,5 +14,10 @@
             <artifactId>cassandra-diagnostics-commons</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.influxdb</groupId>
+            <artifactId>influxdb-java</artifactId>
+            <version>${version.influxdb-java}</version>
+        </dependency>
     </dependencies>
 </project>

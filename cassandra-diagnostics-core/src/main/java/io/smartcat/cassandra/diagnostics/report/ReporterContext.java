@@ -1,6 +1,5 @@
 package io.smartcat.cassandra.diagnostics.report;
 
-import com.google.inject.Inject;
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.Reporter;
 import io.smartcat.cassandra.diagnostics.ReporterConfiguration;
@@ -29,7 +28,6 @@ public class ReporterContext {
      *
      * @param config configuration
      */
-    @Inject
     public ReporterContext(Configuration config) {
         for (ReporterConfiguration reporterConfig : config.reporters) {
             try {

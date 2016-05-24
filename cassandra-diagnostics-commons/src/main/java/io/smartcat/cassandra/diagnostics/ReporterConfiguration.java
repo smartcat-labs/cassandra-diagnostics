@@ -9,9 +9,9 @@ import java.util.Map;
 public class ReporterConfiguration {
 
     /**
-     * A fully qualified Java class name used for reporting slow queries. {@code LogQueryReporter} is the default value.
+     * A fully qualified Java class name used for reporting slow queries.
      */
-    public String reporter = LogQueryReporter.class.getName();
+    public String reporter;
 
     /**
      * A map containing optional reporter specific options.

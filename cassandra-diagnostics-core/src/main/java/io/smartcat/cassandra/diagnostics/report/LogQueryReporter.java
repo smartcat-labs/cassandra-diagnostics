@@ -1,5 +1,8 @@
-package io.smartcat.cassandra.diagnostics;
+package io.smartcat.cassandra.diagnostics.report;
 
+import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.Reporter;
+import io.smartcat.cassandra.diagnostics.ReporterConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +33,9 @@ public class LogQueryReporter implements Reporter {
     }
 
     @Override
-    public void report(Query queryReport) {
-        logger.info(LOG_TEMPLATE, queryReport.startTimeInMilliseconds, queryReport.executionTimeInMilliseconds,
-                queryReport.clientAddress, queryReport.statement);
+    public void report(Query query) {
+        logger.info(LOG_TEMPLATE, query.startTimeInMilliseconds, query.executionTimeInMilliseconds,
+                query.clientAddress, query.statement);
     }
 
 }

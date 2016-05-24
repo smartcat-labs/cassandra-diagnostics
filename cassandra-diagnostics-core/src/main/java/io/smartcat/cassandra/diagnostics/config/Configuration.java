@@ -1,6 +1,7 @@
 package io.smartcat.cassandra.diagnostics.config;
 
 import io.smartcat.cassandra.diagnostics.ReporterConfiguration;
+import io.smartcat.cassandra.diagnostics.report.LogQueryReporter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +14,14 @@ public class Configuration {
     /**
      * Get default configuration for fallback when no configuration is provided.
      *
-     * @return Configuration object with default LogQueryReporter reporter
+     * @return Configuration object with default {@code LogQueryReporter} reporter
      */
     public static Configuration getDefaultConfiguration() {
         return new Configuration() {
             {
-                reporters.add(new ReporterConfiguration());
+                final ReporterConfiguration configuration = new ReporterConfiguration();
+                configuration.reporter = LogQueryReporter.class.getName();
+                reporters.add(configuration);
             }
         };
     }

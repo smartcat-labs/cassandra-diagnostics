@@ -2,7 +2,12 @@
 slowQueryThresholdInMilliseconds: 25
 
 # Log all queries or just slow queries
-logAllQueries: false
+logAllQueries: true
+
+# use diagnostics only on these tables
+tables:
+  - keyspace: some_keyspace
+    name: some_table
 
 # Reporters
 reporters:
@@ -19,4 +24,3 @@ reporters:
       influxDbName: cassandradb #Optional
       influxMeasurement: queryReport #Optional
       influxRetentionPolicy: default #Optional
-

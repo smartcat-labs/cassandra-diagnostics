@@ -5,7 +5,6 @@ import java.util.concurrent.Executors;
 
 import org.apache.cassandra.cql3.CQLStatement;
 import org.apache.cassandra.cql3.QueryOptions;
-import org.apache.cassandra.cql3.QueryProcessor;
 import org.apache.cassandra.exceptions.RequestExecutionException;
 import org.apache.cassandra.exceptions.RequestValidationException;
 import org.apache.cassandra.service.ClientState;
@@ -20,8 +19,8 @@ import io.smartcat.cassandra.diagnostics.report.QueryReport;
 import io.smartcat.cassandra.diagnostics.report.ReporterContext;
 
 /**
- * This class is a Diagnostics wrapper for {@link QueryProcessor}. It reports CQL queries that are executed slower than
- * the configured execution threshold.
+ * This class is a Diagnostics wrapper for {@link org.apache.cassandra.cql3.QueryProcessor}. It reports CQL queries that
+ * are executed slower than the configured execution threshold.
  */
 public class QueryProcessorWrapper {
 

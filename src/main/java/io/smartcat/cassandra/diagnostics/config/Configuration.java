@@ -37,12 +37,19 @@ public class Configuration {
      */
     public List<ReporterConfiguration> reporters = new ArrayList<>();
 
+    /**
+     * List of tables to include in diagnostics.
+     */
+    public List<Table> tables = new ArrayList<>();
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{ slowQueryThresholdInMilliseconds: ").append(slowQueryThresholdInMilliseconds)
                 .append(", logAllQueries: ").append(logAllQueries).append(", reporters: ");
         reporters.forEach(reporter -> sb.append(reporter.toString()));
+        sb.append(", tables: ");
+        tables.forEach(table -> sb.append(table.toString()));
         return sb.toString();
     }
 

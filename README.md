@@ -43,6 +43,11 @@ slowQueryThresholdInMilliseconds: 25
 # Log all queries or just slow queries
 logAllQueries: false
 
+# Tables to apply diagnostics on (optional, if ommited all tables will be used)
+tables:
+  - keyspace: some_keyspace
+    table: some_table
+
 # Reporters
 reporters:
   - reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter

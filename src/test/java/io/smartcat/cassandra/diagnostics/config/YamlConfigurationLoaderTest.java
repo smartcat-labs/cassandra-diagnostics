@@ -21,7 +21,7 @@ public class YamlConfigurationLoaderTest {
         Configuration configuration = loader.loadConfig();
 
         assertThat(configuration.tables).hasSize(1);
-        assertThat(configuration.tables).extracting("table").contains("some_table");
+        assertThat(configuration.tables).extracting("name").contains("some_table");
         assertThat(configuration.tables).extracting("keyspace").contains("some_keyspace");
     }
 

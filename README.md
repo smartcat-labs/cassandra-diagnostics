@@ -46,7 +46,7 @@ logAllQueries: false
 # Tables to apply diagnostics on (optional, if ommited all tables will be used)
 tables:
   - keyspace: some_keyspace
-    table: some_table
+    name: some_table
 
 # Reporters
 reporters:

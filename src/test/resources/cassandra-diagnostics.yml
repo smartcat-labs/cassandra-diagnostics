@@ -7,7 +7,7 @@ logAllQueries: true
 # use diagnostics only on these tables
 tables:
   - keyspace: some_keyspace
-    table: some_table
+    name: some_table
 
 # Reporters
 reporters:

@@ -13,12 +13,12 @@ public class Table {
     /**
      * A table name in keyspace.
      */
-    public String table;
+    public String name;
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(", keyspace: \"").append(keyspace).append("\", table: ").append(table).append(" }");
+        sb.append(", keyspace: \"").append(keyspace).append("\", tableName: ").append(name).append(" }");
         return sb.toString();
     }
 

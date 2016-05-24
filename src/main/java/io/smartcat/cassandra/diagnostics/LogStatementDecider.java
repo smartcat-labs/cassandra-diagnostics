@@ -80,7 +80,7 @@ public class LogStatementDecider {
         }
 
         for (Table supportedTable : config.tables) {
-            if (supportedTable.keyspace.equals(keyspace) && supportedTable.table.equals(table)) {
+            if (supportedTable.keyspace.equals(keyspace) && supportedTable.name.equals(table)) {
                 logger.debug("Taable {}.{} is eligible for logging.", keyspace, table);
                 return true;
             }

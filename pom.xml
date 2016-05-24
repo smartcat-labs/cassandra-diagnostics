@@ -4,8 +4,8 @@
 
     <groupId>io.smartcat</groupId>
     <artifactId>cassandra-diagnostics</artifactId>
-    <version>2.1.13.7</version>
-    <packaging>jar</packaging>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
 
     <name>Cassandra Diagnostics</name>
     <description>
@@ -25,6 +25,14 @@
         - org.pitest:pitest-maven:mutationCoverage - Runs mutation tests (all modules)
         - findbugs:findbugs findbugs:gui - Runs findbugs and shows a report in a graphical interface (module specific)
     -->
+
+    <modules>
+        <module>cassandra-diagnostics-commons</module>
+        <module>cassandra-diagnostics-core</module>
+        <module>cassandra-diagnostics-reporter-influx</module>
+        <module>cassandra-diagnostics-reporter-riemann</module>
+        <module>cassandra-diagnostics-connector-api</module>
+    </modules>
 
     <licenses>
         <license>
@@ -67,11 +75,8 @@
         <version.junit>4.12</version.junit>
         <version.mockito>1.10.19</version.mockito>
         <version.powermock>1.6.4</version.powermock>
-        <version.bytebuddy>1.3.12</version.bytebuddy>
         <version.guice>4.0</version.guice>
         <version.aopalliance>1.0</version.aopalliance>
-        <version.cassandra>2.1.13</version.cassandra>
-        <version.riemann-java-client>0.4.1</version.riemann-java-client>
         <version.influxdb-java>2.2</version.influxdb-java>
         <version.protobuf-java>2.6.1</version.protobuf-java>
         <version.plugin.bundle>2.5.4</version.plugin.bundle>
@@ -95,69 +100,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-            <version>${version.bytebuddy}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy-agent</artifactId>
-            <version>${version.bytebuddy}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>${version.guice}</version>
-        </dependency>
-        <dependency>
-            <groupId>aopalliance</groupId>
-            <artifactId>aopalliance</artifactId>
-            <version>${version.aopalliance}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cassandra</groupId>
-            <artifactId>cassandra-all</artifactId>
-            <version>${version.cassandra}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.aphyr</groupId>
-            <artifactId>riemann-java-client</artifactId>
-            <version>${version.riemann-java-client}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.influxdb</groupId>
-            <artifactId>influxdb-java</artifactId>
-            <version>${version.influxdb-java}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>${version.protobuf-java}</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${version.junit}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>${version.mockito}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
-            <version>${version.powermock}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>${version.powermock}</version>
-            <scope>test</scope>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.21</version>
         </dependency>
     </dependencies>
 
@@ -421,4 +366,5 @@
             </build>
         </profile>
     </profiles>
+
 </project>

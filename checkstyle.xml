@@ -4,8 +4,6 @@
         "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 <module name="Checker">
 
-    <module name="JavadocPackage"/>
-
     <module name="NewlineAtEndOfFile">
         <property name="lineSeparator" value="lf"/>
     </module>
@@ -22,20 +20,20 @@
     <module name="TreeWalker">
 
         <module name="JavadocMethod">
-          <property name="scope" value="protected"/>
+            <property name="scope" value="protected"/>
         </module>
-        
+
         <module name="JavadocType"/>
         <module name="JavadocVariable">
-          <property name="scope" value="protected"/>
+            <property name="scope" value="protected"/>
         </module>
         <module name="JavadocStyle"/>
 
         <module name="TodoComment"/>
 
-				<module name="ConstantName">
-				    <property name="format" value="^log(ger)?|[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
-				</module>        
+        <module name="ConstantName">
+            <property name="format" value="^log(ger)?|[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
+        </module>
         <module name="LocalFinalVariableName"/>
         <module name="LocalVariableName"/>
         <module name="MemberName"/>
@@ -79,10 +77,10 @@
 
         <module name="ArrayTypeStyle"/>
         <module name="UpperEll"/>
-        
-		    <module name="LineLength">
-		        <property name="max" value="120"/>
-		    </module>
-        
+
+        <module name="LineLength">
+            <property name="max" value="120"/>
+        </module>
+
     </module>
 </module>

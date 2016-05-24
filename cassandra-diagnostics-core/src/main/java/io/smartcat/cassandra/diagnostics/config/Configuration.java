@@ -44,7 +44,9 @@ public class Configuration {
         StringBuilder sb = new StringBuilder();
         sb.append("{ slowQueryThresholdInMilliseconds: ").append(slowQueryThresholdInMilliseconds)
                 .append(", logAllQueries: ").append(logAllQueries).append(", reporters: ");
-        reporters.forEach(reporter -> sb.append(reporter.toString()));
+        for (ReporterConfiguration reporter: reporters) {
+            sb.append(reporter.toString());
+        }
         return sb.toString();
     }
 

@@ -50,7 +50,9 @@ public class ReporterContext {
      */
     public void report(Query queryReport) {
         logger.info("ReporterContext: execTime={}", queryReport.executionTimeInMilliseconds);
-        reporters.forEach(reporter -> reporter.report(queryReport));
+        for (Reporter reporter : reporters) {
+            reporter.report(queryReport);
+        }
     }
 
 }

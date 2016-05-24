@@ -16,9 +16,9 @@ public class ConfigurationException extends Exception {
     /**
      * Constructor.
      *
-     * @param message error message
-     * @param cause exception cause
-     * @param enableSuppression controls exception suppression
+     * @param message            error message
+     * @param cause              exception cause
+     * @param enableSuppression  controls exception suppression
      * @param writableStackTrace stack trace
      */
     public ConfigurationException(String message, Throwable cause, boolean enableSuppression,
@@ -30,7 +30,7 @@ public class ConfigurationException extends Exception {
      * Constructor.
      *
      * @param message error message
-     * @param cause exception cause
+     * @param cause   exception cause
      */
     public ConfigurationException(String message, Throwable cause) {
         super(message, cause);

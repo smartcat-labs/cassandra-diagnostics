@@ -1,22 +1,20 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
-import java.io.IOException;
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.aphyr.riemann.Proto.Msg;
 import com.aphyr.riemann.client.IRiemannClient;
 import com.aphyr.riemann.client.RiemannClient;
-
+import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.Reporter;
 import io.smartcat.cassandra.diagnostics.ReporterConfiguration;
-import io.smartcat.cassandra.diagnostics.connector.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.UUID;
 
 /**
- * A Riemann based {@link Reporter} implementation. Query reports are sending towards the configured Riemann server
- * as Riemann events.
+ * A Riemann based {@link Reporter} implementation. Query reports are sending towards the configured Riemann server as
+ * Riemann events.
  */
 public class RiemannReporter implements Reporter {
 

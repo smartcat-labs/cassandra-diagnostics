@@ -1,19 +1,18 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
+import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.Reporter;
+import io.smartcat.cassandra.diagnostics.ReporterConfiguration;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.smartcat.cassandra.diagnostics.Reporter;
-import io.smartcat.cassandra.diagnostics.ReporterConfiguration;
-import io.smartcat.cassandra.diagnostics.connector.Query;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An InfluxDB based {@link Reporter} implementation. Query reports are sent to influxdb.

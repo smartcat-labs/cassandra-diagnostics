@@ -1,5 +1,13 @@
 package io.smartcat.cassandra.diagnostics.config;
 
+import com.google.common.base.Joiner;
+import com.google.common.io.ByteStreams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.error.YAMLException;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -7,15 +15,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 import java.util.TreeMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
-import org.yaml.snakeyaml.error.YAMLException;
-
-import com.google.common.base.Joiner;
-import com.google.common.io.ByteStreams;
 
 /**
  * This class is a YAML based implementation of {@link ConfigurationLoader}.

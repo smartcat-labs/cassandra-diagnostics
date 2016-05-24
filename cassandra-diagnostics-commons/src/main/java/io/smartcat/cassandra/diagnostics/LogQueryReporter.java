@@ -3,11 +3,9 @@ package io.smartcat.cassandra.diagnostics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.smartcat.cassandra.diagnostics.connector.Query;
-
 /**
- * A SLF4J based {@link Reporter} implementation. This reporter is using {@link Logger} to print query reports to a
- * log at {@code INFO} level.
+ * A SLF4J based {@link Reporter} implementation. This reporter is using {@link Logger} to print query reports to a log
+ * at {@code INFO} level.
  */
 public class LogQueryReporter implements Reporter {
 
@@ -20,7 +18,7 @@ public class LogQueryReporter implements Reporter {
      * String template for logging query report.
      */
     private static final String LOG_TEMPLATE =
-            "Query [startTimeInMilliseconds={}, executionTimeInMilliseconds={}, clientAddress={}, statement={}]";
+            "Query [startTimeInMilliseconds={}, executionTimeInMilliseconds={}, " + "clientAddress={}, statement={}]";
 
     /**
      * Constructor.

@@ -1,8 +1,8 @@
 package io.smartcat.cassandra.diagnostics;
 
-import java.util.ServiceLoader;
-
 import io.smartcat.cassandra.diagnostics.connector.Connector;
+
+import java.util.ServiceLoader;
 
 /**
  * Factory class for obtaining {@link Connector} SPI implementation.

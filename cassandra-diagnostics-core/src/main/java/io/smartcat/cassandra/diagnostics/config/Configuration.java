@@ -1,9 +1,9 @@
 package io.smartcat.cassandra.diagnostics.config;
 
+import io.smartcat.cassandra.diagnostics.ReporterConfiguration;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import io.smartcat.cassandra.diagnostics.ReporterConfiguration;
 
 /**
  * This class represents the Cassandra Diagnostics configuration.

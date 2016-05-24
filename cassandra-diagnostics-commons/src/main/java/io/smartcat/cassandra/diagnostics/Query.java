@@ -1,4 +1,4 @@
-package io.smartcat.cassandra.diagnostics.connector;
+package io.smartcat.cassandra.diagnostics;
 
 /**
  * This class represents a query report.
@@ -27,10 +27,10 @@ public class Query {
     /**
      * Constructor.
      *
-     * @param startTimeInMilliseconds query execution start time
+     * @param startTimeInMilliseconds     query execution start time
      * @param executionTimeInMilliseconds query execution time
-     * @param clientAddress client address
-     * @param statement query statement
+     * @param clientAddress               client address
+     * @param statement                   query statement
      */
     public Query(long startTimeInMilliseconds, long executionTimeInMilliseconds, String clientAddress,
             String statement) {

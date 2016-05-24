@@ -1,21 +1,19 @@
 package io.smartcat.cassandra.diagnostics.report;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
-
+import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.Reporter;
 import io.smartcat.cassandra.diagnostics.ReporterConfiguration;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
-import io.smartcat.cassandra.diagnostics.connector.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Reporter class that handles initialization of configured reporters and triggers report on each reporter.
- * All reporters are initialized as defined in configuration with LogQueryReporter being default one.
+ * Reporter class that handles initialization of configured reporters and triggers report on each reporter. All
+ * reporters are initialized as defined in configuration with LogQueryReporter being default one.
  */
 public class ReporterContext {
 
@@ -47,6 +45,7 @@ public class ReporterContext {
 
     /**
      * Report using all configured reporters.
+     *
      * @param queryReport Query report
      */
     public void report(Query queryReport) {

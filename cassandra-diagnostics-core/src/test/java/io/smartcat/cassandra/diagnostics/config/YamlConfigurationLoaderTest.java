@@ -1,8 +1,8 @@
 package io.smartcat.cassandra.diagnostics.config;
 
-import static org.junit.Assert.assertNotNull;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
 
 public class YamlConfigurationLoaderTest {
 

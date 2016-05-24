@@ -1,7 +1,6 @@
 package io.smartcat.cassandra.diagnostics.jmx;
 
 import com.google.inject.Inject;
-
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 
 /**

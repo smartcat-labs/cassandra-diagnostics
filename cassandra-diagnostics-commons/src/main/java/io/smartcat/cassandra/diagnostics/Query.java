@@ -5,24 +5,50 @@ package io.smartcat.cassandra.diagnostics;
  */
 public class Query {
     /**
-     * Query execution start time.
+     * Query's execution start time.
      */
     public long startTimeInMilliseconds;
 
     /**
-     * Query execution time.
+     * Query's execution time.
      */
     public long executionTimeInMilliseconds;
 
     /**
-     * The originating client's address.
+     * Query's execution error message (if any).
+     */
+    public String executionErrorMessage;
+
+    /**
+     * The originating client's socket address.
      */
     public String clientAddress;
+
+    /**
+     * CQL statement type.
+     */
+    public String statementType;
+
+    /**
+     * Query's key-space name.
+     */
+    public String keyspace;
+
+    /**
+     * Query's table name (if applicable).
+     */
+    public String tableName;
 
     /**
      * CQL statement.
      */
     public String statement;
+
+    /**
+     * Default constructor.
+     */
+    public Query() {
+    }
 
     /**
      * Constructor.
@@ -43,8 +69,16 @@ public class Query {
 
     @Override
     public String toString() {
-        return "Query [startTimeInMilliseconds=" + startTimeInMilliseconds + ", executionTimeInMilliseconds="
-                + executionTimeInMilliseconds + ", clientAddress=" + clientAddress + ", statement=" + statement + "]";
+        return "Query [ " +
+                "startTimeInMilliseconds=" + startTimeInMilliseconds +
+                ", executionTimeInMilliseconds=" + executionTimeInMilliseconds +
+                ", clientAddress=" + clientAddress +
+                ", statementType=" + statementType +
+                ", statement=" + statement +
+                ", keyspace=" + keyspace +
+                ", tableName=" + tableName +
+                ", executionErrorMessage=" + executionErrorMessage +
+                " ]";
     }
 
 }

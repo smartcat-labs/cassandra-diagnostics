@@ -73,12 +73,7 @@
         <source.level>1.8</source.level>
         <code.level>1.8</code.level>
         <version.junit>4.12</version.junit>
-        <version.mockito>1.10.19</version.mockito>
-        <version.powermock>1.6.4</version.powermock>
-        <version.guice>4.0</version.guice>
-        <version.aopalliance>1.0</version.aopalliance>
-        <version.influxdb-java>2.2</version.influxdb-java>
-        <version.protobuf-java>2.6.1</version.protobuf-java>
+        <version.assertj>3.4.1</version.assertj>
         <version.plugin.bundle>2.5.4</version.plugin.bundle>
         <version.plugin.compiler>3.5.1</version.plugin.compiler>
         <version.plugin.install>2.5.2</version.plugin.install>

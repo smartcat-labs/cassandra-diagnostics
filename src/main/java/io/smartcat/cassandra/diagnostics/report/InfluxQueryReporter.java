@@ -41,8 +41,6 @@ public class InfluxQueryReporter implements QueryReporter {
 
     private static final String DEFAULT_RETENTION_POLICY = "default";
 
-    private ReporterConfiguration config;
-
     private String dbAddress;
 
     private String username;
@@ -65,8 +63,6 @@ public class InfluxQueryReporter implements QueryReporter {
      * @param config Reporter configuration
      */
     public InfluxQueryReporter(ReporterConfiguration config) {
-        this.config = config;
-
         if (!config.options.containsKey(ADDRESS_PROP)) {
             logger.warn("Not properly configured. Missing influx address. Aborting initialization.");
             return;
@@ -107,7 +103,7 @@ public class InfluxQueryReporter implements QueryReporter {
             influx.write(dbName, retentionPolicy,
                     Point.measurement(measurementName).time(queryReport.startTimeInMilliseconds, TimeUnit.MILLISECONDS)
                             .tag("host", hostname).tag("id", UUID.randomUUID().toString())
-                            .addField("client", queryReport.clientAddress).addField("statement", queryReport.statement)
+                            .tag("statement", queryReport.statement).addField("client", queryReport.clientAddress)
                             .addField("value", queryReport.executionTimeInMilliseconds).build());
         } catch (Exception e) {
             logger.warn("Failed to send report to influx", e);

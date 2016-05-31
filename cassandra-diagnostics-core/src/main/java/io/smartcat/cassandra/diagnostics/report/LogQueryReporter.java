@@ -34,8 +34,8 @@ public class LogQueryReporter implements Reporter {
 
     @Override
     public void report(Query query) {
-        logger.info(LOG_TEMPLATE, query.startTimeInMilliseconds, query.executionTimeInMilliseconds,
-                query.clientAddress, query.statement);
+        logger.info(LOG_TEMPLATE, query.startTimeInMilliseconds(), query.executionTimeInMilliseconds(),
+                query.clientAddress(), query.statement());
     }
 
 }

@@ -56,12 +56,12 @@ public class RiemannReporter implements Reporter {
             return;
         }
 
-        logger.debug("Sending Query: execTime={}", queryReport.executionTimeInMilliseconds);
+        logger.debug("Sending Query: execTime={}", queryReport.getExecutionTimeInMilliseconds());
         try {
             sendEvent(queryReport);
         } catch (Exception e) {
             logger.debug("Sending Query failed, trying one more time: execTime={}, exception: {}",
-                    queryReport.executionTimeInMilliseconds, e.getMessage());
+                    queryReport.getExecutionTimeInMilliseconds(), e.getMessage());
             retry(queryReport);
         }
     }
@@ -71,7 +71,7 @@ public class RiemannReporter implements Reporter {
             sendEvent(queryReport);
         } catch (IOException e) {
             logger.debug("Sending Query failed, ignoring message: execTime={}, exception: {}",
-                    queryReport.executionTimeInMilliseconds, e.getMessage());
+                    queryReport.getExecutionTimeInMilliseconds(), e.getMessage());
         }
     }
 
@@ -84,9 +84,16 @@ public class RiemannReporter implements Reporter {
      * @throws IOException
      */
     private synchronized Msg sendEvent(Query queryReport) throws IOException {
-        Msg message = riemann.event().service(serviceName).state("ok").metric(queryReport.executionTimeInMilliseconds)
-                .ttl(30).attribute("client", queryReport.clientAddress).attribute("statement", queryReport.statement)
-                .attribute("id", UUID.randomUUID().toString()).tag("id").send()
+        Msg message = riemann.event()
+                .service(serviceName)
+                .state("ok")
+                .metric(queryReport.getExecutionTimeInMilliseconds())
+                .ttl(30)
+                .attribute("client", queryReport.getClientAddress())
+                .attribute("statement", queryReport.getStatement())
+                .attribute("id", UUID.randomUUID().toString())
+                .tag("id")
+                .send()
                 .deref(1, java.util.concurrent.TimeUnit.SECONDS);
 
         if (message == null || message.hasError()) {

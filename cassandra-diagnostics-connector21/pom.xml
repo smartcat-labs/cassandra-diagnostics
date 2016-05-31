@@ -1,0 +1,127 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.smartcat</groupId>
+    <artifactId>cassandra-diagnostics</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>cassandra-diagnostics-connector21</artifactId>
+  <description>Cassandra Diagnostics Connector for Cassandra 2.1.x.</description>
+  
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <source.level>1.8</source.level>
+        <code.level>1.8</code.level>
+        <version.cassandra.diagnostics>1.0.0</version.cassandra.diagnostics>
+        <version.junit>4.12</version.junit>
+        <version.bytebuddy>1.3.12</version.bytebuddy>
+        <version.aopalliance>1.0</version.aopalliance>
+        <version.cassandra>2.1.9</version.cassandra>
+        <version.plugin.compiler>3.5.1</version.plugin.compiler>
+        <version.plugin.shade>2.4.3</version.plugin.shade>
+        <version.powermock>1.6.5</version.powermock>
+        <version.plugin.surfire>2.19.1</version.plugin.surfire>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.smartcat</groupId>
+            <artifactId>cassandra-diagnostics-connector-api</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>${version.bytebuddy}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>${version.bytebuddy}</version>
+        </dependency>
+        <!-- <dependency> -->
+        <!-- <groupId>aopalliance</groupId> -->
+        <!-- <artifactId>aopalliance</artifactId> -->
+        <!-- <version>${version.aopalliance}</version> -->
+        <!-- </dependency> -->
+        <!-- 
+        <dependency>
+            <groupId>org.apache.cassandra</groupId>
+            <artifactId>cassandra-all</artifactId>
+            <version>${version.cassandra}</version>
+            <scope>compile</scope>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4-rule-agent</artifactId>
+            <version>${version.powermock}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.cassandraunit</groupId>
+            <artifactId>cassandra-unit</artifactId>
+            <version>2.1.9.2</version>
+            <scope>test</scope>
+        </dependency>       
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${version.plugin.compiler}</version>
+                <inherited>true</inherited>
+                <configuration>
+                    <source>${source.level}</source>
+                    <target>${code.level}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${version.plugin.surfire}</version>
+                <configuration>
+                    <argLine>
+                        -javaagent:${settings.localRepository}/org/powermock/powermock-module-javaagent/${version.powermock}/powermock-module-javaagent-${version.powermock}.jar
+                    </argLine>
+                    <useSystemClassloader>true</useSystemClassloader>
+                </configuration>
+            </plugin>           
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${version.plugin.shade}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>all</shadedClassifierName>
+                            <artifactSet>
+                                <includes>
+                                    <include>io.smartcat:*</include>
+                                    <include>net.bytebuddy:*</include>
+                                </includes>
+                            </artifactSet>
+                            <transformers>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Premain-Class>io.smartcat.cassandra.diagnostics.DiagnosticsAgent
+                                        </Premain-Class>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>  
+</project>

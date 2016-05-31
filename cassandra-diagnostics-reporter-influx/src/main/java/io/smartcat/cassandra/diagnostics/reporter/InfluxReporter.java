@@ -107,11 +107,11 @@ public class InfluxReporter implements Reporter {
         try {
             influx.write(dbName, retentionPolicy,
                     Point.measurement(measurementName)
-                            .time(queryReport.getStartTimeInMilliseconds(), TimeUnit.MILLISECONDS)
+                            .time(queryReport.startTimeInMilliseconds(), TimeUnit.MILLISECONDS)
                             .tag("host", hostname).tag("id", UUID.randomUUID().toString())
-                            .addField("client", queryReport.getClientAddress())
-                            .addField("statement", queryReport.getStatement())
-                            .addField("value", queryReport.getExecutionTimeInMilliseconds()).build());
+                            .addField("client", queryReport.clientAddress())
+                            .addField("statement", queryReport.statement())
+                            .addField("value", queryReport.executionTimeInMilliseconds()).build());
         } catch (Exception e) {
             logger.warn("Failed to send report to influx", e);
         }

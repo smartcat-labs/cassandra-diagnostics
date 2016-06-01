@@ -5,7 +5,10 @@ import org.apache.cassandra.cql3.QueryOptions;
 import org.apache.cassandra.exceptions.RequestExecutionException;
 import org.apache.cassandra.exceptions.RequestValidationException;
 import org.apache.cassandra.service.QueryState;
+import org.apache.cassandra.transport.messages.ResultMessage;
+import org.slf4j.Logger;
 
+import net.bytebuddy.implementation.bind.annotation.FieldValue;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 
 /**
@@ -33,10 +36,10 @@ public class QueryProcessorInterceptor {
      * @throws RequestValidationException QueryProcessor#processStatement(CQLStatement, QueryState, QueryOptions)
      */
     @RuntimeType
-    public static void processStatement() {
-
-        //return ConnectorImpl.queryProcessorWrapper.processStatement();
-        return;
+    public static ResultMessage processStatement(CQLStatement statement, QueryState queryState, QueryOptions options,
+            @RuntimeType @FieldValue("logger") Logger logger)
+                    throws RequestExecutionException, RequestValidationException {
+        return ConnectorImpl.queryProcessorWrapper.processStatement(statement, queryState, options, logger);
     }
 
 }

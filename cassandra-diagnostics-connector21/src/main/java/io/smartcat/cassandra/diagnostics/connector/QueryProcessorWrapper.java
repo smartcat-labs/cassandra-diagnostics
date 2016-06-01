@@ -6,6 +6,8 @@ import java.util.concurrent.Executors;
 import org.apache.cassandra.cql3.CQLStatement;
 import org.apache.cassandra.cql3.QueryOptions;
 import org.apache.cassandra.cql3.QueryProcessor;
+import org.apache.cassandra.cql3.statements.ModificationStatement;
+import org.apache.cassandra.cql3.statements.SelectStatement;
 import org.apache.cassandra.exceptions.RequestExecutionException;
 import org.apache.cassandra.exceptions.RequestValidationException;
 import org.apache.cassandra.service.ClientState;
@@ -16,12 +18,14 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import io.smartcat.cassandra.diagnostics.Query;
+
 /**
- * This class is a Diagnostics wrapper for {@link org.apache.cassandra.cql3.QueryProcessor}.
+ * This class is a Diagnostics wrapper for {@link QueryProcessor}.
  */
 public class QueryProcessorWrapper {
 
-    private static final Logger logger = LoggerFactory.getLogger(QueryProcessorWrapper.class);
+    private static final Logger logger = LoggerFactory.getLogger(QueryProcessor.class);
 
     /**
      * The number of threads used for executing query reports.
@@ -29,8 +33,21 @@ public class QueryProcessorWrapper {
     private static final int EXECUTOR_NO_THREADS = 2;
 
     /**
+     * Executor service used for executing query reports.
+     */
+    private static ExecutorService executor = Executors.newFixedThreadPool(EXECUTOR_NO_THREADS,
+            new ThreadFactoryBuilder()
+                .setNameFormat("cassandra-diagnostics-connector%d")
+                .setPriority(Thread.MIN_PRIORITY)
+                .build());
+
     private QueryReporter queryReporter;
 
+    /**
+     * Constructor.
+     *
+     * @param queryReporter QueryReporter used to report queries
+     */
     public QueryProcessorWrapper(QueryReporter queryReporter) {
         this.queryReporter = queryReporter;
     }
@@ -51,8 +68,7 @@ public class QueryProcessorWrapper {
      */
     public ResultMessage processStatement(CQLStatement statement, QueryState queryState, QueryOptions options,
             Logger origLogger) throws RequestExecutionException, RequestValidationException {
-        originalProcessStatement(statement, queryState, options, origLogger);
-        /*
+
         ResultMessage result;
         final long startTime = System.currentTimeMillis();
         try {
@@ -70,8 +86,6 @@ public class QueryProcessorWrapper {
             report(startTime, execTime, statement, queryState, options, err.getMessage());
             throw err;
         }
-        */
-        return null;
 
     }
 
@@ -88,4 +102,88 @@ public class QueryProcessorWrapper {
         return result == null ? new ResultMessage.Void() : result;
     }
 
+    /**
+     * Submits a query reports asynchronously.
+     *
+     * @param startTime    execution start time, in milliseconds
+     * @param execTime     execution time, in milliseconds
+     * @param statement    CQL statement
+     * @param queryState   CQL query state
+     * @param options      CQL query options
+     * @param errorMessage error message in case there was a problem during query execution
+     */
+    private void report(final long startTime, final long execTime, final CQLStatement statement,
+            final QueryState queryState, final QueryOptions options, final String errorMessage) {
+        if (queryState.getClientState().isInternal) {
+            return;
+        }
+
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Query query = extractQuery(startTime, execTime, statement, queryState, options, errorMessage);
+
+                    logger.trace("Reporting query: {}.", query);
+                    queryReporter.report(query);
+                } catch (Exception e) {
+                    logger.warn("An error occured while reporting query", e);
+                }
+            }
+        });
+    }
+
+    private Query extractQuery(final long startTime, final long execTime, final CQLStatement statement,
+            final QueryState queryState, final QueryOptions options, final String errorMessage) {
+        Query query;
+        if (statement instanceof SelectStatement) {
+            query = extractQuery(startTime, execTime, (SelectStatement) statement, queryState,
+                    options, errorMessage);
+        } else if (statement instanceof ModificationStatement) {
+            query = extractQuery(startTime, execTime, (ModificationStatement) statement, queryState,
+                    options, errorMessage);
+        } else {
+            query = extractGenericQuery(startTime, execTime, statement, queryState, options, errorMessage);
+        }
+        return query;
+    }
+
+    private Query extractQuery(final long startTime, final long execTime, final SelectStatement statement,
+            final QueryState queryState, final QueryOptions options, final String errorMessage) {
+        return Query.create(
+                startTime,
+                execTime,
+                queryState.getClientState().getRemoteAddress().toString(),
+                statement.getClass().getSimpleName(),
+                statement.keyspace(),
+                statement.columnFamily(),
+                "",
+                errorMessage);
+    }
+
+    private Query extractQuery(final long startTime, final long execTime, final ModificationStatement statement,
+            final QueryState queryState, final QueryOptions options, final String errorMessage) {
+        return Query.create(
+                startTime,
+                execTime,
+                queryState.getClientState().getRemoteAddress().toString(),
+                statement.getClass().getSimpleName(),
+                statement.keyspace(),
+                statement.columnFamily(),
+                "",
+                errorMessage);
+    }
+
+    private Query extractGenericQuery(final long startTime, final long execTime, final CQLStatement statement,
+            final QueryState queryState, final QueryOptions options, final String errorMessage) {
+        return Query.create(
+                startTime,
+                execTime,
+                queryState.getClientState().getRemoteAddress().toString(),
+                statement.getClass().getSimpleName(),
+                "",
+                "",
+                "",
+                errorMessage);
+    }
 }

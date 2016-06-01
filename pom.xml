@@ -31,7 +31,6 @@
         <module>cassandra-diagnostics-core</module>
         <module>cassandra-diagnostics-reporter-influx</module>
         <module>cassandra-diagnostics-reporter-riemann</module>
-        <module>cassandra-diagnostics-connector-api</module>
     </modules>
 
     <licenses>
@@ -42,19 +41,6 @@
             <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
-
-    <developers>
-        <developer>
-            <name>Nikola Ivancevic</name>
-            <email>nikola.ivancevic@smartcat.io</email>
-            <organization>SmartCat</organization>
-            <organizationUrl>http://smartcat.io</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>+1</timezone>
-        </developer>
-    </developers>
 
     <issueManagement>
         <system>github.com</system>

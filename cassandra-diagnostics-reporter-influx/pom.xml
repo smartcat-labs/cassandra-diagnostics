@@ -8,6 +8,10 @@
     </parent>
     <artifactId>cassandra-diagnostics-reporter-influx</artifactId>
 
+    <properties>
+        <version.influxdb-java>2.2</version.influxdb-java>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.smartcat</groupId>

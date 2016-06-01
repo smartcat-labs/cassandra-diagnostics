@@ -71,7 +71,7 @@ public class LogStatementDecider {
 
         if (statement instanceof ModificationStatement) {
             table = ((ModificationStatement) statement).columnFamily();
-            keyspace = ((SelectStatement) statement).keyspace();
+            keyspace = ((ModificationStatement) statement).keyspace();
         }
 
         if (StringUtils.isBlank(keyspace) || StringUtils.isBlank(table)) {

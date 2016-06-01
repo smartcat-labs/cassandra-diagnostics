@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 
 import org.apache.cassandra.cql3.statements.SelectStatement;
+import org.apache.cassandra.cql3.statements.UpdateStatement;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -36,37 +37,49 @@ public class LogStatementDeciderTest {
 
     private LogStatementDecider logStatementDecider;
 
-    private SelectStatement statement;
+    private SelectStatement selectStatement;
+    private UpdateStatement updateStatement;
 
     @Before
     public void setup() {
         logStatementDecider = INJECTOR.getInstance(LogStatementDecider.class);
-        statement = Mockito.mock(SelectStatement.class);
+        selectStatement = Mockito.mock(SelectStatement.class);
+        updateStatement = Mockito.mock(UpdateStatement.class);
     }
 
     @Test
     public void do_not_log_query_when_execution_below_threshold() {
-        boolean logStatement = logStatementDecider.logStatement(EXECUTION_TIME_NOT_TO_LOG, statement);
+        boolean logStatement = logStatementDecider.logStatement(EXECUTION_TIME_NOT_TO_LOG, selectStatement);
 
         assertThat(logStatement).isFalse();
     }
 
     @Test
     public void do_not_log_query_when_statement_is_not_for_logged_table() {
-        when(statement.columnFamily()).thenReturn("not_supported_table");
-        when(statement.keyspace()).thenReturn("not_supported_keyspace");
+        when(selectStatement.columnFamily()).thenReturn("not_supported_table");
+        when(selectStatement.keyspace()).thenReturn("not_supported_keyspace");
 
-        boolean logStatement = logStatementDecider.logStatement(EXECUTION_TIME_TO_LOG, statement);
+        boolean logStatement = logStatementDecider.logStatement(EXECUTION_TIME_TO_LOG, selectStatement);
 
         assertThat(logStatement).isFalse();
     }
 
     @Test
-    public void log_query_when_statement_is_for_logged_table() {
-        when(statement.columnFamily()).thenReturn("some_table");
-        when(statement.keyspace()).thenReturn("some_keyspace");
+    public void log_select_statement_when_statement_is_for_logged_table() {
+        when(selectStatement.columnFamily()).thenReturn("some_table");
+        when(selectStatement.keyspace()).thenReturn("some_keyspace");
 
-        boolean logStatement = logStatementDecider.logStatement(EXECUTION_TIME_TO_LOG, statement);
+        boolean logStatement = logStatementDecider.logStatement(EXECUTION_TIME_TO_LOG, selectStatement);
+
+        assertThat(logStatement).isTrue();
+    }
+
+    @Test
+    public void log_update_statement_when_statement_is_for_logged_table() {
+        when(updateStatement.columnFamily()).thenReturn("some_table");
+        when(updateStatement.keyspace()).thenReturn("some_keyspace");
+
+        boolean logStatement = logStatementDecider.logStatement(EXECUTION_TIME_TO_LOG, updateStatement);
 
         assertThat(logStatement).isTrue();
     }

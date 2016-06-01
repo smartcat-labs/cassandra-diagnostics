@@ -18,7 +18,7 @@ public class Query {
      * Query's execution start time.
      * @return execution start timestamp
      */
-    public long getStartTimeInMilliseconds() {
+    public long startTimeInMilliseconds() {
         return startTimeInMilliseconds;
     }
 
@@ -26,7 +26,7 @@ public class Query {
      * Query's execution time.
      * @return execution time
      */
-    public long getExecutionTimeInMilliseconds() {
+    public long executionTimeInMilliseconds() {
         return executionTimeInMilliseconds;
     }
 
@@ -34,7 +34,7 @@ public class Query {
      * Query's execution error message (if any).
      * @return error message
      */
-    public String getExecutionErrorMessage() {
+    public String executionErrorMessage() {
         return executionErrorMessage;
     }
 
@@ -42,7 +42,7 @@ public class Query {
      * The originating client's socket address.
      * @return client's socket address
      */
-    public String getClientAddress() {
+    public String clientAddress() {
         return clientAddress;
     }
 
@@ -50,7 +50,7 @@ public class Query {
      * CQL statement type.
      * @return CQL statement type
      */
-    public String getStatementType() {
+    public String statementType() {
         return statementType;
     }
 
@@ -58,7 +58,7 @@ public class Query {
      * Query's key-space name.
      * @return key space name
      */
-    public String getKeyspace() {
+    public String keyspace() {
         return keyspace;
     }
 
@@ -66,7 +66,7 @@ public class Query {
      * Query's table name (if applicable).
      * @return table name
      */
-    public String getTableName() {
+    public String tableName() {
         return tableName;
     }
 
@@ -74,7 +74,7 @@ public class Query {
      * CQL statement.
      * @return CQL statement
      */
-    public String getStatement() {
+    public String statement() {
         return statement;
     }
 

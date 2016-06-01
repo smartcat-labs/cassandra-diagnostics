@@ -47,7 +47,7 @@ public class ReporterContext {
      * @param queryReport Query report
      */
     public void report(Query queryReport) {
-        logger.info("ReporterContext: execTime={}", queryReport.getExecutionTimeInMilliseconds());
+        logger.info("ReporterContext: execTime={}", queryReport.executionTimeInMilliseconds());
         for (Reporter reporter : reporters) {
             reporter.report(queryReport);
         }

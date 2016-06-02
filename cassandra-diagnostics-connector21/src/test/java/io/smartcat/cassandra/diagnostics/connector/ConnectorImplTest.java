@@ -50,12 +50,4 @@ public class ConnectorImplTest {
         Assert.assertTrue(queryIntercepted);
     }
 
-    private static void sleep(int duration) {
-        try {
-            Thread.sleep(duration);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
 }

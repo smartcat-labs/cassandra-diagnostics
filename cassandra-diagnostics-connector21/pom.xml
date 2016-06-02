@@ -13,11 +13,14 @@
         <version.junit>4.12</version.junit>
         <version.bytebuddy>1.3.12</version.bytebuddy>
         <version.aopalliance>1.0</version.aopalliance>
-        <version.cassandra>2.1.9</version.cassandra>
+        <version.cassandra>2.1.13</version.cassandra>
         <version.plugin.compiler>3.5.1</version.plugin.compiler>
         <version.plugin.shade>2.4.3</version.plugin.shade>
         <version.powermock>1.6.5</version.powermock>
+        <version.spring_instrument>4.2.6.RELEASE</version.spring_instrument>
         <version.plugin.surfire>2.19.1</version.plugin.surfire>
+        <version.hector.core>2.0-0</version.hector.core>
+        <version.cassandra.driver>3.0.0</version.cassandra.driver>
     </properties>
 
     <dependencies>
@@ -43,11 +46,23 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4-rule-agent</artifactId>
-            <version>${version.powermock}</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-instrument</artifactId>
+            <version>${version.spring_instrument}</version>
             <scope>test</scope>
-        </dependency>      
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+            <version>${version.cassandra.driver}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>19.0</version>
+            <scope>test</scope>
+        </dependency>              
     </dependencies>
 
     <build>
@@ -58,7 +73,7 @@
                 <version>${version.plugin.surfire}</version>
                 <configuration>
                     <argLine>
-                        -javaagent:${settings.localRepository}/org/powermock/powermock-module-javaagent/${version.powermock}/powermock-module-javaagent-${version.powermock}.jar
+                        -javaagent:${settings.localRepository}/org/springframework/spring-instrument/${version.spring_instrument}/spring-instrument-${version.spring_instrument}.jar
                     </argLine>
                     <useSystemClassloader>true</useSystemClassloader>
                 </configuration>

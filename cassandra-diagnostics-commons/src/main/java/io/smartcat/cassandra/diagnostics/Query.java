@@ -106,8 +106,8 @@ public class Query {
     public static Query create(final long startTimeInMilliseconds, final long executionTimeInMilliseconds,
             final String clientAddress, final String statementType, final String keyspace, final String tableName,
             final String statement, final String executionErrorMessage) {
-        return new Query(startTimeInMilliseconds, executionTimeInMilliseconds, executionErrorMessage,
-            clientAddress, statementType, keyspace, tableName, statement);
+        return new Query(startTimeInMilliseconds, executionTimeInMilliseconds,
+            clientAddress, statementType, keyspace, tableName, statement, executionErrorMessage);
     }
 
     @Override

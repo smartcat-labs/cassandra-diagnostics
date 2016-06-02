@@ -34,10 +34,10 @@ public class ConnectorImpl implements Connector {
      * Initialize connector instance using the provided instrumentation.
      *
      * @param inst an Instrumentation reference
-     * @param queryInterceptor QueryReporter implementation reference
+     * @param queryReporter QueryReporter implementation reference
      */
-    public void init(Instrumentation inst, QueryReporter queryInterceptor) {
-        queryProcessorWrapper = new QueryProcessorWrapper(queryInterceptor);
+    public void init(Instrumentation inst, QueryReporter queryReporter) {
+        queryProcessorWrapper = new QueryProcessorWrapper(queryReporter);
         setIntercepters(inst);
     }
 
@@ -48,6 +48,7 @@ public class ConnectorImpl implements Connector {
      * @param inst instrumentation handle
      */
     private static void setIntercepters(Instrumentation inst) {
+
         logger.info("Cassandra Diagnostics Agenet: injecting org.apache.cassandra.cql3.QueryProcessor interceptor");
 
         final ElementMatcher.Junction<NamedElement> type = ElementMatchers
@@ -67,6 +68,7 @@ public class ConnectorImpl implements Connector {
                     }
                 })
                 .installOn(inst);
+
     }
 
 }

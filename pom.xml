@@ -31,6 +31,7 @@
         <module>cassandra-diagnostics-core</module>
         <module>cassandra-diagnostics-reporter-influx</module>
         <module>cassandra-diagnostics-reporter-riemann</module>
+        <module>cassandra-diagnostics-connector21</module>
     </modules>
 
     <licenses>

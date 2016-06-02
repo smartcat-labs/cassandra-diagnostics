@@ -1,7 +1,5 @@
 package io.smartcat.cassandra.diagnostics.connector;
 
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 
@@ -21,17 +19,21 @@ import io.smartcat.cassandra.utils.EmbeddedCassandraServerHelper;
 public class ConnectorImplTest {
 
     private static Session session;
-    private static int queryCount;
+    private static boolean queryIntercepted;
 
     @BeforeClass
     public static void setUp() throws ConfigurationException, TTransportException, IOException, InterruptedException {
-        queryCount = 0;
+        queryIntercepted = false;
         Instrumentation inst = InstrumentationSavingAgent.getInstrumentation();
         Connector connector = new ConnectorImpl();
         connector.init(inst, new QueryReporter() {
             @Override
             public void report(Query query) {
-                queryCount++;
+                if (Query.StatementType.SELECT.equals(query.statementType()) &&
+                        "test_keyspace".equalsIgnoreCase(query.keyspace()) &&
+                        "test_table".equalsIgnoreCase(query.tableName())) {
+                    queryIntercepted = true;
+                }
             }
         });
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
@@ -44,10 +46,13 @@ public class ConnectorImplTest {
 
     @Test
     public void test() {
-        session.execute("SELECT * FROM system.local");
+        session.execute("CREATE KEYSPACE IF NOT EXISTS test_keyspace " +
+                "WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
+        session.execute("CREATE TABLE IF NOT EXISTS test_keyspace.test_table (uid uuid PRIMARY KEY);");
+        session.execute("SELECT * FROM test_keyspace.test_table");
         sleep(1000);
         session.close();
-        Assert.assertTrue(queryCount > 0);
+        Assert.assertTrue(queryIntercepted);
     }
 
     private static void sleep(int duration) {

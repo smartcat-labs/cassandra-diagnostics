@@ -5,11 +5,31 @@ package io.smartcat.cassandra.diagnostics;
  */
 public class Query {
 
+    /**
+     * Defines possible statement types.
+     */
+    public enum StatementType {
+        /**
+         * SELECT statement.
+         */
+        SELECT,
+
+        /**
+         * UPDATE/INSERT statement.
+         */
+        UPDATE,
+
+        /**
+         * Statement type unknown.
+         */
+        UNKNOWN
+    }
+
     private long startTimeInMilliseconds;
     private long executionTimeInMilliseconds;
     private String executionErrorMessage;
     private String clientAddress;
-    private String statementType;
+    private StatementType statementType;
     private String keyspace;
     private String tableName;
     private String statement;
@@ -50,7 +70,7 @@ public class Query {
      * CQL statement type.
      * @return CQL statement type
      */
-    public String statementType() {
+    public StatementType statementType() {
         return statementType;
     }
 
@@ -78,8 +98,9 @@ public class Query {
         return statement;
     }
 
-    private Query(long startTimeInMilliseconds, long executionTimeInMilliseconds, String clientAddress,
-            String statementType, String keyspace, String tableName, String statement, String executionErrorMessage) {
+    private Query(final long startTimeInMilliseconds, final long executionTimeInMilliseconds,
+            final String clientAddress, final StatementType statementType, final String keyspace,
+            final String tableName, final String statement, final String executionErrorMessage) {
         this.startTimeInMilliseconds = startTimeInMilliseconds;
         this.executionTimeInMilliseconds = executionTimeInMilliseconds;
         this.executionErrorMessage = executionErrorMessage;
@@ -104,8 +125,8 @@ public class Query {
      * @return a new Query instance
      */
     public static Query create(final long startTimeInMilliseconds, final long executionTimeInMilliseconds,
-            final String clientAddress, final String statementType, final String keyspace, final String tableName,
-            final String statement, final String executionErrorMessage) {
+            final String clientAddress, final StatementType statementType, final String keyspace,
+            final String tableName, final String statement, final String executionErrorMessage) {
         return new Query(startTimeInMilliseconds, executionTimeInMilliseconds,
             clientAddress, statementType, keyspace, tableName, statement, executionErrorMessage);
     }
@@ -116,7 +137,7 @@ public class Query {
                 "startTimeInMilliseconds=" + startTimeInMilliseconds +
                 ", executionTimeInMilliseconds=" + executionTimeInMilliseconds +
                 ", clientAddress=" + clientAddress +
-                ", statementType=" + statementType +
+                ", statementType=" + statementType.name() +
                 ", statement=" + statement +
                 ", keyspace=" + keyspace +
                 ", tableName=" + tableName +

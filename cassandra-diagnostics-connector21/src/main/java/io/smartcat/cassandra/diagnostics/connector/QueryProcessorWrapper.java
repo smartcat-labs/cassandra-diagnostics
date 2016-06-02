@@ -157,11 +157,12 @@ public class QueryProcessorWrapper {
 
     private Query extractQuery(final long startTime, final long execTime, final SelectStatement statement,
             final QueryState queryState, final QueryOptions options, final String errorMessage) {
+        //statement.getSelection().getColumnMapping().
         return Query.create(
                 startTime,
                 execTime,
                 queryState.getClientState().getRemoteAddress().toString(),
-                statement.getClass().getSimpleName(),
+                Query.StatementType.SELECT,
                 statement.keyspace(),
                 statement.columnFamily(),
                 "",
@@ -174,7 +175,7 @@ public class QueryProcessorWrapper {
                 startTime,
                 execTime,
                 queryState.getClientState().getRemoteAddress().toString(),
-                statement.getClass().getSimpleName(),
+                Query.StatementType.UPDATE,
                 statement.keyspace(),
                 statement.columnFamily(),
                 "",
@@ -187,7 +188,7 @@ public class QueryProcessorWrapper {
                 startTime,
                 execTime,
                 queryState.getClientState().getRemoteAddress().toString(),
-                statement.getClass().getSimpleName(),
+                Query.StatementType.UNKNOWN,
                 "",
                 "",
                 "",

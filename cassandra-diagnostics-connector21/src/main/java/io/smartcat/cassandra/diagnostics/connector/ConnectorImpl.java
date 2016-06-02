@@ -44,7 +44,6 @@ public class ConnectorImpl implements Connector {
     /**
      * Installs intercepter for the target classes.
      *
-     * @param args agent arguments
      * @param inst instrumentation handle
      */
     private static void setIntercepters(Instrumentation inst) {

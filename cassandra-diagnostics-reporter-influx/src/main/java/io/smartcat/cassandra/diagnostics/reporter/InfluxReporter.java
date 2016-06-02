@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * An InfluxDB based {@link Reporter} implementation. Query reports are sent to influxdb.
  */
-public class InfluxReporter implements Reporter {
+public class InfluxReporter extends Reporter {
 
     /**
      * Class logger.
@@ -42,8 +42,6 @@ public class InfluxReporter implements Reporter {
 
     private static final String DEFAULT_RETENTION_POLICY = "default";
 
-    private ReporterConfiguration config;
-
     private String dbAddress;
 
     private String username;
@@ -63,28 +61,28 @@ public class InfluxReporter implements Reporter {
     /**
      * Constructor.
      *
-     * @param config Reporter configuration
+     * @param configuration Reporter configuration
      */
-    public InfluxReporter(ReporterConfiguration config) {
-        this.config = config;
+    public InfluxReporter(ReporterConfiguration configuration) {
+        super(configuration);
 
-        if (!config.options.containsKey(ADDRESS_PROP)) {
+        if (!configuration.options.containsKey(ADDRESS_PROP)) {
             logger.warn("Not properly configured. Missing influx address. Aborting initialization.");
             return;
         }
 
-        if (!config.options.containsKey(USERNAME_PROP)) {
+        if (!configuration.options.containsKey(USERNAME_PROP)) {
             logger.warn("Not properly configured. Missing influx username. Aborting initialization.");
             return;
         }
 
-        dbAddress = config.options.get(ADDRESS_PROP);
-        username = config.options.getOrDefault(USERNAME_PROP, "");
-        password = config.options.getOrDefault(PASSWORD_PROP, "");
+        dbAddress = configuration.options.get(ADDRESS_PROP);
+        username = configuration.options.getOrDefault(USERNAME_PROP, "");
+        password = configuration.options.getOrDefault(PASSWORD_PROP, "");
 
-        dbName = config.options.getOrDefault(DB_NAME_PROP, DEFAULT_DB_NAME);
-        retentionPolicy = config.options.getOrDefault(RETENTION_POLICY_PROP, DEFAULT_RETENTION_POLICY);
-        measurementName = config.options.getOrDefault(MEASUREMENT_NAME_PROP, DEFAULT_MEASUREMENT_NAME);
+        dbName = configuration.options.getOrDefault(DB_NAME_PROP, DEFAULT_DB_NAME);
+        retentionPolicy = configuration.options.getOrDefault(RETENTION_POLICY_PROP, DEFAULT_RETENTION_POLICY);
+        measurementName = configuration.options.getOrDefault(MEASUREMENT_NAME_PROP, DEFAULT_MEASUREMENT_NAME);
         try {
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {

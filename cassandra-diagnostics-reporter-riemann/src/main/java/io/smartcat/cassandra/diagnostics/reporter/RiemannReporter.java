@@ -16,7 +16,7 @@ import java.util.UUID;
  * A Riemann based {@link Reporter} implementation. Query reports are sending towards the configured Riemann server as
  * Riemann events.
  */
-public class RiemannReporter implements Reporter {
+public class RiemannReporter extends Reporter {
 
     private static final String HOST_PROP = "riemannHost";
 
@@ -33,8 +33,6 @@ public class RiemannReporter implements Reporter {
      */
     private static final Logger logger = LoggerFactory.getLogger(RiemannReporter.class);
 
-    private ReporterConfiguration config;
-
     private String serviceName;
 
     private static IRiemannClient riemann;
@@ -42,10 +40,10 @@ public class RiemannReporter implements Reporter {
     /**
      * Constructor.
      *
-     * @param config configuration
+     * @param configuration configuration
      */
-    public RiemannReporter(ReporterConfiguration config) {
-        this.config = config;
+    public RiemannReporter(ReporterConfiguration configuration) {
+        super(configuration);
     }
 
     @Override
@@ -109,7 +107,7 @@ public class RiemannReporter implements Reporter {
 
     private IRiemannClient riemannClient() {
         if (riemann == null) {
-            initRiemannClient(config);
+            initRiemannClient(configuration);
         }
 
         return riemann;

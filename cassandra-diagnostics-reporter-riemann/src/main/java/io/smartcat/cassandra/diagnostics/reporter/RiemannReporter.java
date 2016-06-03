@@ -3,9 +3,9 @@ package io.smartcat.cassandra.diagnostics.reporter;
 import com.aphyr.riemann.Proto.Msg;
 import com.aphyr.riemann.client.IRiemannClient;
 import com.aphyr.riemann.client.RiemannClient;
-import io.smartcat.cassandra.diagnostics.Query;
-import io.smartcat.cassandra.diagnostics.Reporter;
-import io.smartcat.cassandra.diagnostics.ReporterConfiguration;
+
+import io.smartcat.cassandra.diagnostics.Measurement;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,14 +26,10 @@ public class RiemannReporter extends Reporter {
 
     private static final String SERVICE_NAME_PROP = "riemannServiceName";
 
-    private static final String DEFAULT_SERVICE_NAME = "queryReport";
-
     /**
      * Class logger.
      */
     private static final Logger logger = LoggerFactory.getLogger(RiemannReporter.class);
-
-    private String serviceName;
 
     private static IRiemannClient riemann;
 
@@ -47,29 +43,29 @@ public class RiemannReporter extends Reporter {
     }
 
     @Override
-    public void report(Query queryReport) {
+    public void report(Measurement measurement) {
         IRiemannClient client = riemannClient();
         if (client == null) {
             logger.warn("Cannot report riemann event without initialized client.");
             return;
         }
 
-        logger.debug("Sending Query: execTime={}", queryReport.executionTimeInMilliseconds());
+        logger.debug("Sending Query: execTime={}", measurement.query().executionTimeInMilliseconds());
         try {
-            sendEvent(queryReport);
+            sendEvent(measurement);
         } catch (Exception e) {
             logger.debug("Sending Query failed, trying one more time: execTime={}, exception: {}",
-                    queryReport.executionTimeInMilliseconds(), e.getMessage());
-            retry(queryReport);
+                    measurement.query().executionTimeInMilliseconds(), e.getMessage());
+            retry(measurement);
         }
     }
 
-    private void retry(Query queryReport) {
+    private void retry(Measurement measurement) {
         try {
-            sendEvent(queryReport);
+            sendEvent(measurement);
         } catch (IOException e) {
             logger.debug("Sending Query failed, ignoring message: execTime={}, exception: {}",
-                    queryReport.executionTimeInMilliseconds(), e.getMessage());
+                    measurement.query().executionTimeInMilliseconds(), e.getMessage());
         }
     }
 
@@ -77,18 +73,18 @@ public class RiemannReporter extends Reporter {
      * Method which is sending event. Must be thread safe since deref is blocking until timeout, so if multiple threads
      * attempt to send event last one will win.
      *
-     * @param queryReport Query to send
+     * @param measurement Measurement to send
      * @return message of outcome.
      * @throws IOException
      */
-    private synchronized Msg sendEvent(Query queryReport) throws IOException {
+    private synchronized Msg sendEvent(Measurement measurement) throws IOException {
         Msg message = riemann.event()
-                .service(serviceName)
+                .service(measurement.name())
                 .state("ok")
-                .metric(queryReport.executionTimeInMilliseconds())
+                .metric(measurement.query().executionTimeInMilliseconds())
                 .ttl(30)
-                .attribute("client", queryReport.clientAddress())
-                .attribute("statement", queryReport.statement())
+                .attribute("client", measurement.query().clientAddress())
+                .attribute("statement", measurement.query().statement())
                 .attribute("id", UUID.randomUUID().toString())
                 .tag("id")
                 .send()
@@ -126,7 +122,6 @@ public class RiemannReporter extends Reporter {
             return;
         }
 
-        serviceName = config.options.getOrDefault(SERVICE_NAME_PROP, DEFAULT_SERVICE_NAME);
         String host = config.options.get(HOST_PROP);
         int port = Integer.parseInt(config.options.getOrDefault(PORT_PROP, DEFAULT_PORT));
         try {

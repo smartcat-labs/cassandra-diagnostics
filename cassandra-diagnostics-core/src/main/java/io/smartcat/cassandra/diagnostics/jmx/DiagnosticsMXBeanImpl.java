@@ -21,14 +21,4 @@ public class DiagnosticsMXBeanImpl implements DiagnosticsMXBean {
         this.config = config;
     }
 
-    @Override
-    public long getSlowQueryThresholdInMilliseconds() {
-        return config.slowQueryThresholdInMilliseconds;
-    }
-
-    @Override
-    public void setSlowQueryThresholdInMilliseconds(long value) {
-        config.slowQueryThresholdInMilliseconds = value;
-    }
-
 }

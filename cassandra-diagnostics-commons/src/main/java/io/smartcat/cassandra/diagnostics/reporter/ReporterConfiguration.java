@@ -1,4 +1,4 @@
-package io.smartcat.cassandra.diagnostics;
+package io.smartcat.cassandra.diagnostics.reporter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,14 +9,14 @@ import java.util.Map;
 public class ReporterConfiguration {
 
     /**
-     * A fully qualified Java class name used for reporting slow queries.
+     * A fully qualified Java class name or reporter implementation.
      */
     public String reporter;
 
     /**
      * A map containing optional reporter specific options.
      */
-    public Map<String, String> options = new HashMap<String, String>();
+    public Map<String, String> options = new HashMap<>();
 
     @Override
     public String toString() {

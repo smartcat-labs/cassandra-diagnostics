@@ -24,4 +24,34 @@
             <version>${version.influxdb-java}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>all</shadedClassifierName>
+                            <artifactSet>
+                                <includes>
+                                    <include>org.influxdb:influxdb-java:*</include>
+                                    <include>com.squareup.retrofit:retrofit:*</include>
+                                    <include>com.google.code.gson:gson:*</include>
+                                    <include>com.squareup.okhttp:okhttp:*</include>
+                                    <include>com.squareup.okio:okio:*</include>
+                                </includes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>   
 </project>

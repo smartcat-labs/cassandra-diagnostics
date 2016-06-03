@@ -28,7 +28,7 @@ public class ConnectorImpl implements Connector {
     /**
      * {@link org.apache.cassandra.cql3.QueryProcessor} diagnostics wrapper.
      */
-    public static QueryProcessorWrapper queryProcessorWrapper;
+    protected static QueryProcessorWrapper queryProcessorWrapper;
 
     /**
      * Initialize connector instance using the provided instrumentation.

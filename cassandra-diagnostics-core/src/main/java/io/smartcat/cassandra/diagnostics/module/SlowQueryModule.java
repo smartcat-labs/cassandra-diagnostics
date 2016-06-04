@@ -14,6 +14,7 @@ public class SlowQueryModule extends Module {
      * Constructor.
      *
      * @param configuration Module configuration
+     * @param reporters     Reporter list
      */
     public SlowQueryModule(ModuleConfiguration configuration, List<Reporter> reporters) {
         super(configuration, reporters);

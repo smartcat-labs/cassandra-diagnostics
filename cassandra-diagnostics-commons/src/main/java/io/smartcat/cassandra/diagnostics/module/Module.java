@@ -24,6 +24,7 @@ public abstract class Module {
      * Constructor.
      *
      * @param configuration Module configuration
+     * @param reporters     Reporter list
      */
     public Module(ModuleConfiguration configuration, List<Reporter> reporters) {
         this.configuration = configuration;

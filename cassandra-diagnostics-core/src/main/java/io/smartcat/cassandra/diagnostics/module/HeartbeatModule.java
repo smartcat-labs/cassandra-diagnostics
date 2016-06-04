@@ -14,6 +14,7 @@ public class HeartbeatModule extends Module {
      * Constructor.
      *
      * @param configuration Module configuration
+     * @param reporters     Reporter list
      */
     public HeartbeatModule(ModuleConfiguration configuration, List<Reporter> reporters) {
         super(configuration, reporters);

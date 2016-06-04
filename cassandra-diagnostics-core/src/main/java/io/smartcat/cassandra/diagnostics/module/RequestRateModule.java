@@ -15,6 +15,7 @@ public class RequestRateModule extends Module {
      * Constructor.
      *
      * @param configuration Module configuration
+     * @param reporters     Reporter list
      */
     public RequestRateModule(ModuleConfiguration configuration, List<Reporter> reporters) {
         super(configuration, reporters);

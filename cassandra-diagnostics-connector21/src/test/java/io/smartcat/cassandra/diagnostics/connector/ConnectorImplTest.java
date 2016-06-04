@@ -1,60 +1,66 @@
 package io.smartcat.cassandra.diagnostics.connector;
 
-import java.io.IOException;
-import java.lang.instrument.Instrumentation;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
-import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.thrift.transport.TTransportException;
-import org.junit.Assert;
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Field;
+
+import org.apache.cassandra.cql3.CQLStatement;
+import org.apache.cassandra.cql3.QueryOptions;
+import org.apache.cassandra.cql3.QueryProcessor;
+import org.apache.cassandra.service.QueryState;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
 import org.springframework.instrument.InstrumentationSavingAgent;
-
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
-
-import io.smartcat.cassandra.diagnostics.Query;
-import io.smartcat.cassandra.utils.EmbeddedCassandraServerHelper;
 
 public class ConnectorImplTest {
 
-    private static Cluster cluster;
-    private static Session session;
-    private static CountDownLatch lock = new CountDownLatch(1);
-    private static boolean queryIntercepted;
+    private static Instrumentation instrumentation;
 
     @BeforeClass
-    public static void setUp() throws ConfigurationException, TTransportException, IOException, InterruptedException {
-        queryIntercepted = false;
-        Instrumentation inst = InstrumentationSavingAgent.getInstrumentation();
-        Connector connector = new ConnectorImpl();
-        connector.init(inst, new QueryReporter() {
-            @Override
-            public void report(Query query) {
-                if (Query.StatementType.SELECT.equals(query.statementType()) &&
-                        "test_keyspace".equalsIgnoreCase(query.keyspace()) &&
-                        "test_table".equalsIgnoreCase(query.tableName())) {
-                    queryIntercepted = true;
-                    lock.countDown();
-                }
-            }
-        });
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-        cluster = Cluster.builder().addContactPoint("127.0.0.1").withPort(9142).build();
-        session = cluster.connect();
+    public static void setUp() {
+        instrumentation = InstrumentationSavingAgent.getInstrumentation();
     }
 
     @Test
-    public void test() throws InterruptedException {
-        session.execute("CREATE KEYSPACE IF NOT EXISTS test_keyspace "
-                + "WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
-        session.execute("CREATE TABLE IF NOT EXISTS test_keyspace.test_table (uid uuid PRIMARY KEY);");
-        session.execute("SELECT * FROM test_keyspace.test_table");
-        cluster.close();
-        lock.await(2000, TimeUnit.MILLISECONDS);
-        Assert.assertTrue(queryIntercepted);
+    public void testInitialization() {
+        QueryReporter queryReporter = mock(QueryReporter.class);
+        Instrumentation inst = mock(Instrumentation.class);
+        ConnectorImpl connector = new ConnectorImpl();
+        connector.init(inst, queryReporter);
+
+        verify(inst).addTransformer(any(ClassFileTransformer.class), anyBoolean());
+    }
+
+    @Test
+    public void testInterception() throws Exception {
+        Connector connector = new ConnectorImpl();
+        connector.init(instrumentation, mock(QueryReporter.class));
+        QueryProcessorWrapper queryProcessorWrapper = mock(QueryProcessorWrapper.class);
+        setStatic(ConnectorImpl.class.getDeclaredField("queryProcessorWrapper"), queryProcessorWrapper);
+
+        QueryProcessor queryProcessor = QueryProcessor.instance;
+
+        CQLStatement statement = mock(CQLStatement.class);
+        QueryState queryState = mock(QueryState.class);
+        QueryOptions options = mock(QueryOptions.class);
+        queryProcessor.processStatement(statement, queryState, options);
+
+        verify(queryProcessorWrapper).processStatement(
+                same(statement), same(queryState), same(options), any(Logger.class));
+    }
+
+    private void setStatic(Field field, Object newValue) throws Exception {
+        field.setAccessible(true);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        field.set(null, newValue);
     }
 
 }

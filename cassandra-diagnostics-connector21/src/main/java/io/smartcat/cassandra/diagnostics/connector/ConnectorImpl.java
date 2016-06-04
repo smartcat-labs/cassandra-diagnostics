@@ -56,7 +56,7 @@ public class ConnectorImpl implements Connector {
      */
     private static void setIntercepters(Instrumentation inst) {
 
-        logger.info("Cassandra Diagnostics Agenet: injecting org.apache.cassandra.cql3.QueryProcessor interceptor");
+        logger.info("Cassandra Diagnostics Connector: injecting org.apache.cassandra.cql3.QueryProcessor interceptor");
 
         final ElementMatcher.Junction<NamedElement> type = ElementMatchers
                 .named("org.apache.cassandra.cql3.QueryProcessor");

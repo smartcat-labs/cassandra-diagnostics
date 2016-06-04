@@ -90,6 +90,9 @@ public class YamlConfigurationLoader implements ConfigurationLoader {
                 throw new AssertionError(e);
             }
 
+            if (result == null) {
+                throw new ConfigurationException("Invalid yaml");
+            }
             return result;
         } catch (YAMLException e) {
             throw new ConfigurationException("Invalid yaml", e);

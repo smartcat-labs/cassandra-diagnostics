@@ -39,7 +39,6 @@ public class Diagnostics implements QueryReporter {
     public Diagnostics() {
         this.config = getConfiguration();
         this.diagnosticsProcessor = new DiagnosticsProcessor(config);
-
         initMXBean();
     }
 
@@ -60,6 +59,7 @@ public class Diagnostics implements QueryReporter {
      * Initializes the Diagnostics MXBean.
      */
     private void initMXBean() {
+        logger.info("Intializing Diagnostics MXBean.");
         final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         try {
             ObjectName objectName = new ObjectName(

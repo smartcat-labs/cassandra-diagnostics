@@ -31,8 +31,21 @@ public class DiagnosticsProcessor {
      *
      * @param configuration Configuration object
      */
-    public DiagnosticsProcessor(Configuration configuration) {
-        for (ReporterConfiguration reporterConfig : configuration.reporters) {
+    public DiagnosticsProcessor(final Configuration configuration) {
+        if (configuration.reporters == null) {
+            throw new IllegalStateException("Configuration does not have any reporter defined.");
+        }
+
+        if (configuration.modules == null) {
+            throw new IllegalStateException("Configuration does not have any module defined.");
+        }
+
+        initReporters(configuration.reporters);
+        initModules(configuration.modules);
+    }
+
+    private void initReporters(final List<ReporterConfiguration> reportersConfiguration) {
+        for (ReporterConfiguration reporterConfig : reportersConfiguration) {
             try {
                 logger.info("Creating reporter for class name {}", reporterConfig.reporter);
                 Reporter reporter = (Reporter) Class.forName(reporterConfig.reporter)
@@ -42,20 +55,13 @@ public class DiagnosticsProcessor {
                 logger.warn("Failed to create reporter by class name", e);
             }
         }
+    }
 
-        for (ModuleConfiguration moduleConfig : configuration.modules) {
+    private void initModules(final List<ModuleConfiguration> modulesConfiguration) {
+        for (ModuleConfiguration moduleConfig : modulesConfiguration) {
             try {
                 logger.info("Creating module for class name {}", moduleConfig.module);
-                Module module = (Module) Class.forName(moduleConfig.module).getConstructor(ModuleConfiguration.class)
-                        .newInstance(moduleConfig);
-
-                if (moduleConfig.reporters.isEmpty()) {
-                    module.reporters.addAll(reporters.values());
-                } else {
-                    for (String reporterName : moduleConfig.reporters) {
-                        module.reporters.add(reporters.get(reporterName));
-                    }
-                }
+                final Module module = createModule(moduleConfig);
                 modules.add(module);
             } catch (Exception e) {
                 logger.warn("Failed to create module by class name", e);
@@ -63,12 +69,43 @@ public class DiagnosticsProcessor {
         }
     }
 
+    private Module createModule(final ModuleConfiguration moduleConfiguration) throws Exception {
+        final Module module = (Module) Class.forName(moduleConfiguration.module)
+                .getConstructor(ModuleConfiguration.class)
+                .newInstance(moduleConfiguration);
+
+        if (moduleConfiguration.reporters == null || moduleConfiguration.reporters.isEmpty()) {
+            logger.info("Assigning all available reporters to module {}", moduleConfiguration.module);
+            module.reporters.addAll(reporters.values());
+        } else {
+            List<Reporter> moduleReporters = getModuleReporters(moduleConfiguration.reporters);
+            if (moduleReporters.isEmpty()) {
+                throw new IllegalStateException("Module does not have any reporter assigned.");
+            }
+            module.reporters.addAll(moduleReporters);
+        }
+        return module;
+    }
+
+    private List<Reporter> getModuleReporters(final List<String> reporterNames) {
+        final ArrayList<Reporter> moduleReporters = new ArrayList<>();
+        for (String reporterName : reporterNames) {
+            if (reporters.containsKey(reporterName)) {
+                moduleReporters.add(reporters.get(reporterName));
+            } else {
+                logger.warn("Unknown reporter specified as module reporter: {}", reporterName);
+            }
+        }
+        return moduleReporters;
+    }
+
     /**
      * Process a query with all configured modules.
      *
      * @param query query to process
      */
-    public void process(Query query) {
+    public void process(final Query query) {
+        logger.trace("Processing query {}", query);
         for (Module module : modules) {
             module.process(query);
         }

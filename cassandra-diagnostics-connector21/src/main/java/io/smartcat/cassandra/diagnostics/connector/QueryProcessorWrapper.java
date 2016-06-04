@@ -121,7 +121,6 @@ public class QueryProcessorWrapper {
      */
     private void report(final long startTime, final long execTime, final CQLStatement statement,
             final QueryState queryState, final QueryOptions options, final String errorMessage) {
-        logger.trace("Reporting");
         if (queryState.getClientState().isInternal) {
             return;
         }

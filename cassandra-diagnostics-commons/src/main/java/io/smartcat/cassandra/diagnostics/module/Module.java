@@ -1,6 +1,5 @@
 package io.smartcat.cassandra.diagnostics.module;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import io.smartcat.cassandra.diagnostics.Query;
@@ -14,20 +13,22 @@ public abstract class Module {
     /**
      * Module configuration.
      */
-    protected ModuleConfiguration configuration;
+    protected final ModuleConfiguration configuration;
 
     /**
      * Reporter list defined in configuration.
      */
-    public List<Reporter> reporters = new ArrayList<>();
+    protected final List<Reporter> reporters;
 
     /**
      * Constructor.
      *
      * @param configuration Module configuration
+     * @param reporters     Reporter list
      */
-    public Module(ModuleConfiguration configuration) {
+    public Module(ModuleConfiguration configuration, List<Reporter> reporters) {
         this.configuration = configuration;
+        this.reporters = reporters;
     }
 
     /**

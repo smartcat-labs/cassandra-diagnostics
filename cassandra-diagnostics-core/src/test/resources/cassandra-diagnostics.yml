@@ -1,9 +1,3 @@
-# Slow query threshold
-slowQueryThresholdInMilliseconds: 25
-
-# Log all queries or just slow queries
-logAllQueries: false
-
 # Reporters
 reporters:
   - reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
@@ -17,6 +11,29 @@ reporters:
       influxUsername: username #Optional
       influxPassword: password #Optional
       influxDbName: cassandradb #Optional
-      influxMeasurement: queryReport #Optional
       influxRetentionPolicy: default #Optional
 
+# Modules
+modules:
+  - module: io.smartcat.cassandra.diagnostics.module.HeartbeatModule
+    options:
+      period: 15
+      timeunit: MINUTES
+    reporters:
+      - io.smartcat.cassandra.diagnostics.report.LogQueryReporter
+  - module: io.smartcat.cassandra.diagnostics.module.SlowQueryModule
+    measurement: queryReport
+    options:
+      # Slow query threshold
+      slowQueryThresholdInMilliseconds: 25
+      # Log all queries or just slow queries
+      logAllQueries: false
+  - module: io.smartcat.cassandra.diagnostics.module.RequestRateModule
+    measurement: requestRate
+    options:
+      period: 1
+      timeunit: SECONDS
+      separateByRequestType: true
+    reporters:
+      - io.smartcat.cassandra.diagnostics.report.LogQueryReporter
+      - io.smartcat.cassandra.diagnostics.report.InfluxQueryReporter

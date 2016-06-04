@@ -1,10 +1,12 @@
 package io.smartcat.cassandra.diagnostics.config;
 
-import io.smartcat.cassandra.diagnostics.ReporterConfiguration;
-import io.smartcat.cassandra.diagnostics.report.LogQueryReporter;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
+import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
+import io.smartcat.cassandra.diagnostics.module.HeartbeatModule;
+import io.smartcat.cassandra.diagnostics.report.LogQueryReporter;
 
 /**
  * This class represents the Cassandra Diagnostics configuration.
@@ -19,37 +21,40 @@ public class Configuration {
     public static Configuration getDefaultConfiguration() {
         return new Configuration() {
             {
-                final ReporterConfiguration configuration = new ReporterConfiguration();
-                configuration.reporter = LogQueryReporter.class.getName();
-                reporters.add(configuration);
+                final ReporterConfiguration reporter = new ReporterConfiguration();
+                reporter.reporter = LogQueryReporter.class.getName();
+                reporters.add(reporter);
+
+                final ModuleConfiguration module = new ModuleConfiguration();
+                module.module = HeartbeatModule.class.getName();
+                module.measurement = "heartbeat";
+                modules.add(module);
             }
         };
     }
-
-    /**
-     * Query execution time threshold. A query whose execution time is grater than this value is reported. The execution
-     * time is expressed in milliseconds.
-     */
-    public long slowQueryThresholdInMilliseconds = 50;
-
-    /**
-     * Configuration option to log all queries instead of just slow queries.
-     */
-    public boolean logAllQueries = false;
 
     /**
      * Reporters configuration list with reporter specific properties.
      */
     public List<ReporterConfiguration> reporters = new ArrayList<>();
 
+    /**
+     * Modules configuration list with module specific properties.
+     */
+    public List<ModuleConfiguration> modules = new ArrayList<>();
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("{ slowQueryThresholdInMilliseconds: ").append(slowQueryThresholdInMilliseconds)
-                .append(", logAllQueries: ").append(logAllQueries).append(", reporters: ");
+        sb.append("{  reporters: ");
         for (ReporterConfiguration reporter: reporters) {
             sb.append(reporter.toString());
         }
+        sb.append(", modules: ");
+        for (ModuleConfiguration module: modules) {
+            sb.append(module.toString());
+        }
+        sb.append(" }");
         return sb.toString();
     }
 

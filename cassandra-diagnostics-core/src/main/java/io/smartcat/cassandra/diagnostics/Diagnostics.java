@@ -1,5 +1,17 @@
 package io.smartcat.cassandra.diagnostics;
 
+import java.lang.management.ManagementFactory;
+
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationLoader;
@@ -7,12 +19,6 @@ import io.smartcat.cassandra.diagnostics.config.YamlConfigurationLoader;
 import io.smartcat.cassandra.diagnostics.connector.QueryReporter;
 import io.smartcat.cassandra.diagnostics.jmx.DiagnosticsMXBean;
 import io.smartcat.cassandra.diagnostics.jmx.DiagnosticsMXBeanImpl;
-import io.smartcat.cassandra.diagnostics.report.ReporterContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.management.*;
-import java.lang.management.ManagementFactory;
 
 /**
  * This class implements the Diagnostics module initialization.
@@ -25,14 +31,14 @@ public class Diagnostics implements QueryReporter {
 
     private final Configuration config;
 
-    private final ReporterContext reporterContext;
+    private final DiagnosticsProcessor diagnosticsProcessor;
 
     /**
      * Default constructor.
      */
     public Diagnostics() {
         this.config = getConfiguration();
-        this.reporterContext = new ReporterContext(config);
+        this.diagnosticsProcessor = new DiagnosticsProcessor(config);
 
         initMXBean();
     }
@@ -44,7 +50,7 @@ public class Diagnostics implements QueryReporter {
             config = loader.loadConfig();
         } catch (ConfigurationException e) {
             logger.warn("A problem occured while loading configuration. Using default configuration.", e);
-            config = new Configuration();
+            config = Configuration.getDefaultConfiguration();
         }
         logger.info("Effective configuration: {}", config);
         return config;
@@ -68,7 +74,7 @@ public class Diagnostics implements QueryReporter {
 
     @Override
     public void report(Query query) {
-        reporterContext.report(query);
+        diagnosticsProcessor.process(query);
     }
 
 }

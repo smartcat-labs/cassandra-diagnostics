@@ -70,20 +70,22 @@ public class DiagnosticsProcessor {
     }
 
     private Module createModule(final ModuleConfiguration moduleConfiguration) throws Exception {
-        final Module module = (Module) Class.forName(moduleConfiguration.module)
-                .getConstructor(ModuleConfiguration.class)
-                .newInstance(moduleConfiguration);
+        final List<Reporter> refs = new ArrayList<>();
 
         if (moduleConfiguration.reporters == null || moduleConfiguration.reporters.isEmpty()) {
             logger.info("Assigning all available reporters to module {}", moduleConfiguration.module);
-            module.reporters.addAll(reporters.values());
+            refs.addAll(reporters.values());
         } else {
             List<Reporter> moduleReporters = getModuleReporters(moduleConfiguration.reporters);
             if (moduleReporters.isEmpty()) {
                 throw new IllegalStateException("Module does not have any reporter assigned.");
             }
-            module.reporters.addAll(moduleReporters);
+            refs.addAll(moduleReporters);
         }
+
+        final Module module = (Module) Class.forName(moduleConfiguration.module)
+                .getConstructor(ModuleConfiguration.class, List.class).newInstance(moduleConfiguration, refs);
+
         return module;
     }
 

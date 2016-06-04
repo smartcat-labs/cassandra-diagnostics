@@ -1,6 +1,9 @@
 package io.smartcat.cassandra.diagnostics.module;
 
+import java.util.List;
+
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 
 /**
  * Heartbeat module providing logged heartbeats at defined intervals.
@@ -12,8 +15,8 @@ public class HeartbeatModule extends Module {
      *
      * @param configuration Module configuration
      */
-    public HeartbeatModule(ModuleConfiguration configuration) {
-        super(configuration);
+    public HeartbeatModule(ModuleConfiguration configuration, List<Reporter> reporters) {
+        super(configuration, reporters);
     }
 
     @Override

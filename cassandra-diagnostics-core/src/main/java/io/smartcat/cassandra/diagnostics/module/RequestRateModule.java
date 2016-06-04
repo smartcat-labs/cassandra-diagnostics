@@ -1,6 +1,9 @@
 package io.smartcat.cassandra.diagnostics.module;
 
+import java.util.List;
+
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 
 /**
  * Request rate module providing request rates at defined intervals. Request rates can be total or separate for read
@@ -13,8 +16,8 @@ public class RequestRateModule extends Module {
      *
      * @param configuration Module configuration
      */
-    public RequestRateModule(ModuleConfiguration configuration) {
-        super(configuration);
+    public RequestRateModule(ModuleConfiguration configuration, List<Reporter> reporters) {
+        super(configuration, reporters);
     }
 
     @Override

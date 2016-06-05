@@ -20,6 +20,7 @@
 		<module>cassandra-diagnostics-reporter-influx</module>
 		<module>cassandra-diagnostics-reporter-riemann</module>
 		<module>cassandra-diagnostics-connector21</module>
+		<module>cassandra-diagnostics-ft</module>
 	</modules>
 
 	<licenses>
@@ -268,6 +269,7 @@
 			</activation>
 			<properties>
 				<build.profile.id>dev</build.profile.id>
+                <skip.functional.tests>true</skip.functional.tests>
 				<skip.integration.tests>true</skip.integration.tests>
 				<skip.unit.tests>false</skip.unit.tests>
 			</properties>
@@ -276,8 +278,18 @@
 			<id>integration-test</id>
 			<properties>
 				<build.profile.id>integration-test</build.profile.id>
+                <skip.functional.tests>true</skip.functional.tests>
 				<skip.integration.tests>false</skip.integration.tests>
 				<skip.unit.tests>true</skip.unit.tests>
+			</properties>
+		</profile>
+		<profile>
+			<id>functional-test</id>
+			<properties>
+				<build.profile.id>functional-test</build.profile.id>
+                <skip.functional.tests>false</skip.functional.tests>
+				<skip.integration.tests>true</skip.integration.tests>
+				<skip.unit.tests>true</skip.unit.tests>				
 			</properties>
 		</profile>
 		<profile>

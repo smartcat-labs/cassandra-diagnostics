@@ -57,10 +57,13 @@ public class HeartbeatModule extends Module {
 
     }
 
+    /**
+     * Heartbeat task that's executed at configured periods.
+     */
     private class HeartbeatTask extends TimerTask {
         public void run() {
             logger.info("Heartbeat signal.");
-            for (Reporter reporter: reporters) {
+            for (Reporter reporter : reporters) {
 
             }
         }

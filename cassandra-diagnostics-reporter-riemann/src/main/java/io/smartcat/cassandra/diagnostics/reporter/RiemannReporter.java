@@ -1,19 +1,18 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.aphyr.riemann.Proto.Msg;
 import com.aphyr.riemann.client.EventDSL;
 import com.aphyr.riemann.client.IRiemannClient;
 import com.aphyr.riemann.client.RiemannClient;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A Riemann based {@link Reporter} implementation. Query reports are sending towards the configured Riemann server as
@@ -57,8 +56,8 @@ public class RiemannReporter extends Reporter {
         try {
             sendEvent(measurement);
         } catch (Exception e) {
-            logger.debug("Sending Query failed, trying one more time: execTime={}, exception: {}",
-                    measurement.time(), e.getMessage());
+            logger.debug("Sending Query failed, trying one more time: execTime={}, exception: {}", measurement.time(),
+                    e.getMessage());
             retry(measurement);
         }
     }
@@ -67,8 +66,8 @@ public class RiemannReporter extends Reporter {
         try {
             sendEvent(measurement);
         } catch (IOException e) {
-            logger.debug("Sending Query failed, ignoring message: execTime={}, exception: {}",
-                    measurement.time(), e.getMessage());
+            logger.debug("Sending Query failed, ignoring message: execTime={}, exception: {}", measurement.time(),
+                    e.getMessage());
         }
     }
 
@@ -86,26 +85,14 @@ public class RiemannReporter extends Reporter {
         event.state("ok");
         event.metric(measurement.value());
         event.ttl(30);
-        for (Map.Entry<String, String> tag: measurement.tags().entrySet()) {
+        for (Map.Entry<String, String> tag : measurement.tags().entrySet()) {
             event.tag(tag.getKey());
         }
-        for (Map.Entry<String, String> field: measurement.fields().entrySet()) {
+        for (Map.Entry<String, String> field : measurement.fields().entrySet()) {
             event.attribute(field.getKey(), field.getValue());
         }
 
         Msg message = event.send().deref(1, TimeUnit.SECONDS);
-
-//        Msg message = riemann.event()
-//                .service(measurement.name())
-//                .state("ok")
-//                .metric(measurement.time())
-//                .ttl(30)
-//                .attribute("client", measurement.query().clientAddress())
-//                .attribute("statement", measurement.query().statement())
-//                .attribute("id", UUID.randomUUID().toString())
-//                .tag("id")
-//                .send()
-//                .deref(1, java.util.concurrent.TimeUnit.SECONDS);
 
         if (message == null || message.hasError()) {
             throw new IOException("Message timed out.");

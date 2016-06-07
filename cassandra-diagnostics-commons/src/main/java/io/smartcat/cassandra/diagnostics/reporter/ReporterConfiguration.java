@@ -9,7 +9,7 @@ import java.util.Map;
 public class ReporterConfiguration {
 
     /**
-     * A fully qualified Java class name or reporter implementation.
+     * A reporter implementation's fully qualified Java class name
      */
     public String reporter;
 

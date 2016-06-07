@@ -34,7 +34,7 @@ public class LogQueryReporter extends Reporter {
 
     @Override
     public void report(Measurement measurement) {
-        logger.info(LOG_TEMPLATE, , measurement.name().toUpperCase(), measurement.time(), measurement.value(),
+        logger.info(LOG_TEMPLATE, measurement.name().toUpperCase(), measurement.time(), measurement.value(),
                 measurement.tags().toString(), measurement.fields().toString());
     }
 

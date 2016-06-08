@@ -34,7 +34,7 @@ public class HeartbeatModule extends Module {
      * Constructor.
      *
      * @param configuration Module configuration
-     * @param reporters Reporter list
+     * @param reporters     Reporter list
      * @throws ConfigurationException in case the provided module configuration is not valid
      */
     public HeartbeatModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
@@ -43,8 +43,8 @@ public class HeartbeatModule extends Module {
         options = HeartbeatConfiguration.create(configuration.options);
         service = configuration.measurement;
 
-        logger.debug("Heartbeat module initialized with {} period and {} timeunit.",
-                options.period(), options.timeunit().name());
+        logger.debug("Heartbeat module initialized with {} period and {} timeunit.", options.period(),
+                options.timeunit().name());
         timer = new Timer();
         timer.schedule(new HeartbeatTask(), options.periodInMillis());
     }
@@ -56,17 +56,13 @@ public class HeartbeatModule extends Module {
         @Override
         public void run() {
             logger.info("Heartbeat signal.");
-            Measurement signal = createMeasurement();
+            Measurement signal = Measurement
+                    .create(service, 1.0, new Date().getTime(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
+                            new HashMap<String, String>());
             for (Reporter reporter : reporters) {
                 reporter.report(signal);
             }
         }
-    }
-
-    private Measurement createMeasurement() {
-        Measurement m = Measurement.create(service, 1.0, new Date().getTime(), TimeUnit.MILLISECONDS,
-                new HashMap<String, String>(), new HashMap<String, String>());
-        return m;
     }
 
     @Override

@@ -65,11 +65,11 @@ public class InfluxReporter extends Reporter {
         }
 
         dbAddress = configuration.options.get(ADDRESS_PROP);
-        username = configuration.options.getOrDefault(USERNAME_PROP, "");
-        password = configuration.options.getOrDefault(PASSWORD_PROP, "");
+        username = configuration.getDefaultOption(USERNAME_PROP, "");
+        password = configuration.getDefaultOption(PASSWORD_PROP, "");
 
-        dbName = configuration.options.getOrDefault(DB_NAME_PROP, DEFAULT_DB_NAME);
-        retentionPolicy = configuration.options.getOrDefault(RETENTION_POLICY_PROP, DEFAULT_RETENTION_POLICY);
+        dbName = configuration.getDefaultOption(DB_NAME_PROP, DEFAULT_DB_NAME);
+        retentionPolicy = configuration.getDefaultOption(RETENTION_POLICY_PROP, DEFAULT_RETENTION_POLICY);
 
         influx = InfluxDBFactory.connect(dbAddress, username, password);
         influx.createDatabase(dbName);

@@ -38,13 +38,13 @@ public class HeartbeatModule extends Module {
      * Constructor.
      *
      * @param configuration Module configuration
-     * @param reporters     Reporter list
+     * @param reporters Reporter list
      */
     public HeartbeatModule(ModuleConfiguration configuration, List<Reporter> reporters) {
         super(configuration, reporters);
 
-        period = Integer.parseInt(configuration.options.getOrDefault(PERIOD_PROP, DEFAULT_PERIOD));
-        timeunit = TimeUnit.valueOf(configuration.options.getOrDefault(TIMEUNIT_PROP, DEFAULT_TIMEUNIT));
+        period = Integer.parseInt(configuration.getDefaultOption(PERIOD_PROP, DEFAULT_PERIOD));
+        timeunit = TimeUnit.valueOf(configuration.getDefaultOption(TIMEUNIT_PROP, DEFAULT_TIMEUNIT));
         service = configuration.measurement;
 
         logger.debug("Heartbeat module initialized with {} period and {} timeunit.", period, timeunit.name());
@@ -61,6 +61,7 @@ public class HeartbeatModule extends Module {
      * Heartbeat task that's executed at configured periods.
      */
     private class HeartbeatTask extends TimerTask {
+        @Override
         public void run() {
             logger.info("Heartbeat signal.");
             for (Reporter reporter : reporters) {

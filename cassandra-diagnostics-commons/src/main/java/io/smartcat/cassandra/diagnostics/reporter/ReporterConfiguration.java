@@ -18,6 +18,20 @@ public class ReporterConfiguration {
      */
     public Map<String, String> options = new HashMap<>();
 
+    /**
+     * Try to get option from list or return default value if option for key not provided.
+     *
+     * @param key Option key
+     * @param defaultValue Default value
+     *
+     * @return either option for key or default value.
+     */
+    public String getDefaultOption(String key, String defaultValue) {
+        String value = options.get(key);
+
+        return value == null ? defaultValue : value;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

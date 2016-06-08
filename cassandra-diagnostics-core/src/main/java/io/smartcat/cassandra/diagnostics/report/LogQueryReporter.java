@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
 
@@ -22,8 +21,7 @@ public class LogQueryReporter extends Reporter {
     /**
      * String template for logging query report.
      */
-    private static final String LOG_TEMPLATE =
-            "Query [startTimeInMilliseconds={}, executionTimeInMilliseconds={}, " + "clientAddress={}, statement={}]";
+    private static final String LOG_TEMPLATE = "Measurement {} [time={}, value={}, tags={}, fields={}]";
 
     /**
      * Constructor.
@@ -36,9 +34,8 @@ public class LogQueryReporter extends Reporter {
 
     @Override
     public void report(Measurement measurement) {
-        Query query = measurement.query();
-        logger.info(LOG_TEMPLATE, query.startTimeInMilliseconds(), query.executionTimeInMilliseconds(),
-                query.clientAddress(), query.statement());
+        logger.info(LOG_TEMPLATE, measurement.name().toUpperCase(), measurement.time(), measurement.value(),
+                measurement.tags().toString(), measurement.fields().toString());
     }
 
 }

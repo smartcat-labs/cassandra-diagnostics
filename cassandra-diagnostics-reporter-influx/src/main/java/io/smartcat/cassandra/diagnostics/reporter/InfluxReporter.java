@@ -1,9 +1,6 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
@@ -47,8 +44,6 @@ public class InfluxReporter extends Reporter {
 
     private String retentionPolicy;
 
-    private String hostname;
-
     private static InfluxDB influx;
 
     /**
@@ -75,12 +70,6 @@ public class InfluxReporter extends Reporter {
 
         dbName = configuration.options.getOrDefault(DB_NAME_PROP, DEFAULT_DB_NAME);
         retentionPolicy = configuration.options.getOrDefault(RETENTION_POLICY_PROP, DEFAULT_RETENTION_POLICY);
-        try {
-            hostname = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            logger.warn("Cannot resolve local host hostname");
-            return;
-        }
 
         influx = InfluxDBFactory.connect(dbAddress, username, password);
         influx.createDatabase(dbName);
@@ -95,11 +84,15 @@ public class InfluxReporter extends Reporter {
 
         logger.debug("Sending Query: {}", measurement.toString());
         try {
-            influx.write(dbName, retentionPolicy, Point.measurement(measurement.name())
-                    .time(measurement.query().startTimeInMilliseconds(), TimeUnit.MILLISECONDS).tag("host", hostname)
-                    .tag("id", UUID.randomUUID().toString()).addField("client", measurement.query().clientAddress())
-                    .addField("statement", measurement.query().statement())
-                    .addField("value", measurement.query().executionTimeInMilliseconds()).build());
+            final Point.Builder builder = Point.measurement(measurement.name());
+            builder.time(measurement.time(), measurement.timeUnit());
+            for (Map.Entry<String, String> tag : measurement.tags().entrySet()) {
+                builder.tag(tag.getKey(), tag.getValue());
+            }
+            for (Map.Entry<String, String> field : measurement.fields().entrySet()) {
+                builder.addField(field.getKey(), field.getValue());
+            }
+            influx.write(dbName, retentionPolicy, builder.build());
         } catch (Exception e) {
             logger.warn("Failed to send report to influx", e);
         }

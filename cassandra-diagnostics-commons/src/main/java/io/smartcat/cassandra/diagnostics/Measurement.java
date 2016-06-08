@@ -1,12 +1,19 @@
 package io.smartcat.cassandra.diagnostics;
 
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 /**
  * This class represents a module generated measurement.
  */
 public class Measurement {
 
-    private String name;
-    private Query query;
+    private final String name;
+    private final double value;
+    private final long time;
+    private final TimeUnit timeUnit;
+    private final Map<String, String> tags;
+    private final Map<String, String> fields;
 
     /**
      * Measurements name.
@@ -18,34 +25,85 @@ public class Measurement {
     }
 
     /**
-     * Query that triggered measurement.
+     * Measurement value.
      *
-     * @return query object
+     * @return measurement value
      */
-    public Query query() {
-        return query;
+    public double value() {
+        return value;
     }
 
-    private Measurement(final String name, final Query query) {
+    /**
+     * Measurement time.
+     *
+     * @return measurement time
+     */
+    public long time() {
+        return time;
+    }
+
+    /**
+     * Measurement time unit.
+     *
+     * @return measurement time unit
+     */
+    public TimeUnit timeUnit() {
+        return timeUnit;
+    }
+
+    /**
+     * Measurement tags.
+     *
+     * @return Tag name value pairs
+     */
+    public Map<String, String> tags() {
+        return tags;
+    }
+
+    /**
+     * Measurement fields.
+     *
+     * @return Field name value pairs
+     */
+    public Map<String, String> fields() {
+        return fields;
+    }
+
+    private Measurement(final String name, final double value, final long time, final TimeUnit timeUnit,
+            final Map<String, String> tags, final Map<String, String> fields) {
         this.name = name;
-        this.query = query;
+        this.value = value;
+        this.time = time;
+        this.timeUnit = timeUnit;
+        this.tags = tags;
+        this.fields = fields;
     }
 
     /**
      * Create a measurement object.
-     * @param name Measurement name
-     * @param query Query that this measurement represents
+     *
+     * @param name     Measurement name
+     * @param value    Measurement value
+     * @param time     Measurement time
+     * @param timeUnit Measurement time unit
+     * @param tags     Tag name value pairs
+     * @param fields   Field name value pairs
      * @return Measurement object
      */
-    public static Measurement create(final String name, final Query query) {
-        return new Measurement(name, query);
+    public static Measurement create(final String name, final double value, final long time, final TimeUnit timeUnit,
+            final Map<String, String> tags, final Map<String, String> fields) {
+        return new Measurement(name, value, time, timeUnit, tags, fields);
     }
 
     @Override
     public String toString() {
         return "Measurement [ " +
                 "name=" + name +
-                ", query=" + query.toString() +
+                ", value=" + value +
+                ", time=" + time +
+                ", timeUnit=" + timeUnit +
+                ", tags: " + tags +
+                ", fields: " + fields +
                 " ]";
     }
 

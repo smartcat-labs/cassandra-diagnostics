@@ -1,0 +1,11 @@
+reporters:
+  - reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
+
+modules:
+  - module: io.smartcat.cassandra.diagnostics.module.SlowQueryModule
+    measurement: queryReport
+    options:
+      slowQueryThresholdInMilliseconds: 1
+      logAllQueries: true
+    reporters:
+      - io.smartcat.cassandra.diagnostics.report.LogQueryReporter

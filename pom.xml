@@ -48,7 +48,7 @@
 		<source.level>1.7</source.level>
 		<code.level>1.7</code.level>
 		<version.junit>4.12</version.junit>
-		<version.assertj>3.4.1</version.assertj>
+		<version.assertj>2.4.1</version.assertj>
 		<version.mockito>1.10.19</version.mockito>
 		<version.slf4j>1.7.21</version.slf4j>
 		<version.plugin.bundle>2.5.4</version.plugin.bundle>

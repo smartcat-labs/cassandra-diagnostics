@@ -5,7 +5,6 @@ import io.smartcat.cassandra.diagnostics.Query;
 /**
  * Interface used by {@link Connector} implementation to report an intercepted query.
  */
-@FunctionalInterface
 public interface QueryReporter {
     /**
      * Reports an intercepted query.

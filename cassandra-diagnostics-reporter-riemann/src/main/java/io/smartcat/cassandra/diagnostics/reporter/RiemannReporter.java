@@ -127,7 +127,7 @@ public class RiemannReporter extends Reporter {
         }
 
         String host = config.options.get(HOST_PROP);
-        int port = Integer.parseInt(config.options.getOrDefault(PORT_PROP, DEFAULT_PORT));
+        int port = Integer.parseInt(config.getDefaultOption(PORT_PROP, DEFAULT_PORT));
         try {
             riemann = RiemannClient.tcp(host, port);
             riemann.connect();

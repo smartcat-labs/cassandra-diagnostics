@@ -91,6 +91,14 @@ public class Query {
     }
 
     /**
+     * Query's key-space and table name (if applicable).
+     * @return full table name (keyspace.tableName)
+     */
+    public String fullTableName() {
+        return keyspace + "." + tableName;
+    }
+
+    /**
      * CQL statement.
      * @return CQL statement
      */
@@ -128,7 +136,7 @@ public class Query {
             final String clientAddress, final StatementType statementType, final String keyspace,
             final String tableName, final String statement, final String executionErrorMessage) {
         return new Query(startTimeInMilliseconds, executionTimeInMilliseconds,
-            clientAddress, statementType, keyspace, tableName, statement, executionErrorMessage);
+                clientAddress, statementType, keyspace, tableName, statement, executionErrorMessage);
     }
 
     @Override

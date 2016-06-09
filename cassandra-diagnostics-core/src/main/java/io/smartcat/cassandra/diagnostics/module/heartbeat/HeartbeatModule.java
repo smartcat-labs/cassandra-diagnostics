@@ -1,4 +1,4 @@
-package io.smartcat.cassandra.diagnostics.module;
+package io.smartcat.cassandra.diagnostics.module.heartbeat;
 
 import java.util.List;
 import java.util.Timer;
@@ -8,7 +8,10 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.module.Module;
+import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 
 /**
@@ -52,11 +55,6 @@ public class HeartbeatModule extends Module {
         timer.schedule(new HeartbeatTask(), timeunit.toMillis(period));
     }
 
-    @Override
-    public void process(Query query) {
-
-    }
-
     /**
      * Heartbeat task that's executed at configured periods.
      */
@@ -68,5 +66,10 @@ public class HeartbeatModule extends Module {
 
             }
         }
+    }
+
+    @Override
+    public Measurement transform(Query query) {
+        return null;
     }
 }

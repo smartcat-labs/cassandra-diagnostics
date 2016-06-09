@@ -1,4 +1,4 @@
-package io.smartcat.cassandra.diagnostics.module;
+package io.smartcat.cassandra.diagnostics.module.slowquery;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.module.Module;
+import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 
 /**
@@ -26,6 +28,8 @@ public class SlowQueryModule extends Module {
 
     private final String service;
 
+    private final SlowQueryLogDecider slowQueryLogDecider;
+
     /**
      * Constructor.
      *
@@ -36,17 +40,28 @@ public class SlowQueryModule extends Module {
         super(configuration, reporters);
         hostname = getHostname();
         service = configuration.measurement;
+        slowQueryLogDecider = SlowQueryLogDecider.create(SlowQueryConfiguration.create(configuration));
+
     }
 
     @Override
-    public void process(Query query) {
+    protected boolean isForReporting(Query query) {
+        if (slowQueryLogDecider.isForReporting(query)) {
+            return true;
+        }
+
+        return true;
+    }
+
+    @Override
+    public Measurement transform(Query query) {
         if (query == null) {
             throw new IllegalArgumentException("query cannot be null");
         }
 
         if (hostname == null) {
             logger.error("Cannot log slow query because hostname is not resolved");
-            return;
+            throw new IllegalArgumentException("Cannot log slow query because hostname is not resolved.");
         }
 
         final Map<String, String> tags = new HashMap<>(2);
@@ -63,10 +78,8 @@ public class SlowQueryModule extends Module {
                 .create(service, query.executionTimeInMilliseconds(), query.executionTimeInMilliseconds(),
                         TimeUnit.MILLISECONDS, tags, fields);
 
-        logger.trace("Reporting measurement: {}", measurement);
-        for (Reporter reporter : reporters) {
-            reporter.report(measurement);
-        }
+        logger.trace("Measurement transformed: {}", measurement);
+        return measurement;
     }
 
     private String getHostname() {

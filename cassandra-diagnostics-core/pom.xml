@@ -57,9 +57,8 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<finalName>cassandra-diagnostics-${project.version}-all</finalName>
-							<shadedArtifactAttached>true</shadedArtifactAttached>
-							<shadedClassifierName>all</shadedClassifierName>
+							<shadedArtifactAttached>false</shadedArtifactAttached>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
 							<artifactSet>
 								<includes>
 									<include>io.smartcat:*</include>

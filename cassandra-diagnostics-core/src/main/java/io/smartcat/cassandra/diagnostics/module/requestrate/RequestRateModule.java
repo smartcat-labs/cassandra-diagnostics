@@ -1,8 +1,11 @@
-package io.smartcat.cassandra.diagnostics.module;
+package io.smartcat.cassandra.diagnostics.module.requestrate;
 
 import java.util.List;
 
+import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.module.Module;
+import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 
 /**
@@ -22,7 +25,7 @@ public class RequestRateModule extends Module {
     }
 
     @Override
-    public void process(Query query) {
-
+    public Measurement transform(Query query) {
+        return null;
     }
 }

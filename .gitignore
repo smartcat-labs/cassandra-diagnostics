@@ -6,6 +6,7 @@
 *.settings
 *.classpath
 *.project
+*.java-version
 
 ## Scala
 **/.idea

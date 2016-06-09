@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
+import io.smartcat.cassandra.diagnostics.module.heartbeat.HeartbeatModule;
 import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
-import io.smartcat.cassandra.diagnostics.module.HeartbeatModule;
 import io.smartcat.cassandra.diagnostics.report.LogQueryReporter;
 
 /**

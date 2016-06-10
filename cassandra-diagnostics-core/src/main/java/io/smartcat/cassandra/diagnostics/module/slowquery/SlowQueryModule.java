@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.Module;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
@@ -35,13 +36,13 @@ public class SlowQueryModule extends Module {
      *
      * @param configuration Module configuration
      * @param reporters     Reporter list
+     * @throws ConfigurationException in case the provided module configuration is not valid
      */
-    public SlowQueryModule(ModuleConfiguration configuration, List<Reporter> reporters) {
+    public SlowQueryModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
         super(configuration, reporters);
         hostname = getHostname();
         service = configuration.measurement;
-        slowQueryLogDecider = SlowQueryLogDecider.create(SlowQueryConfiguration.create(configuration));
-
+        slowQueryLogDecider = SlowQueryLogDecider.create(SlowQueryConfiguration.create(configuration.options));
     }
 
     @Override

@@ -1,12 +1,13 @@
 package io.smartcat.cassandra.diagnostics.module.slowquery;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
+import org.yaml.snakeyaml.Yaml;
 
-import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
+import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 
 /**
  * Typed configuration class with reasonable defaults for this module.
@@ -14,39 +15,48 @@ import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
  */
 public class SlowQueryConfiguration {
 
-    private static final String DEFAULT_SLOW_QUERY_THRESHOLD = "25";
-    private static final String DEFAULT_LOG_ALL_QUERIES = "true";
+    /**
+     * A helper class for constructing immutable outer class.
+     */
+    public static class Values {
+        private static final int DEFAULT_SLOW_QUERY_THRESHOLD = 25;
+        private static final boolean DEFAULT_LOG_ALL_QUERIES = true;
 
-    private final int slowQueryThreshold;
+        /**
+         * Query execution's threshold.
+         */
+        public int slowQueryThresholdInMilliseconds = DEFAULT_SLOW_QUERY_THRESHOLD;
+        /**
+         * Flat that controls if all queries should be logged unconditionally.
+         */
+        public boolean logAllQueries = DEFAULT_LOG_ALL_QUERIES;
+        /**
+         * Table names to filter queries.
+         */
+        public List<String> tablesForLogging = new ArrayList<String>();
+    }
 
-    private final boolean logAllQueries;
+    private Values values = new Values();
 
-    private final List<String> tablesForLogging;
-
-    private SlowQueryConfiguration(int slowQueryThreshold, boolean logAllQueries, List<String> tablesForLogging) {
-        super();
-        this.slowQueryThreshold = slowQueryThreshold;
-        this.logAllQueries = logAllQueries;
-        this.tablesForLogging = tablesForLogging;
+    private SlowQueryConfiguration() {
     }
 
     /**
-     * Create typed configuration for slow query module out of generic module configuration.
-     * @param configuration Module configuration.
-     * @return typed slow query module configuration from generic one.
+     * Creates typed configuration for slow query module out of generic module configuration.
+     * @param options Module configuration options.
+     * @return typed slow query module configuration from a generic one.
+     * @throws ConfigurationException in case the provided module configuration is not valid
      */
-    public static SlowQueryConfiguration create(ModuleConfiguration configuration) {
-        int slowQueryThreshold = Integer.parseInt(
-                configuration.getDefaultOption("slowQueryThresholdInMilliseconds", DEFAULT_SLOW_QUERY_THRESHOLD));
-        boolean logAllQueries = Boolean
-                .parseBoolean(configuration.getDefaultOption("logAllQueries", DEFAULT_LOG_ALL_QUERIES));
-        String tables = configuration.options.get("tablesForLogging");
-        if (StringUtils.isBlank(tables)) {
-            return new SlowQueryConfiguration(slowQueryThreshold, logAllQueries, new ArrayList<String>());
-        } else {
-            return new SlowQueryConfiguration(slowQueryThreshold, logAllQueries,
-                    Arrays.asList(StringUtils.split(tables, '|')));
+    public static SlowQueryConfiguration create(Map<String, Object> options) throws ConfigurationException {
+        SlowQueryConfiguration conf = new SlowQueryConfiguration();
+        Yaml yaml = new Yaml();
+        String str = yaml.dumpAsMap(options);
+        try {
+            conf.values = yaml.loadAs(str, Values.class);
+        } catch (Exception e) {
+            throw new ConfigurationException("Unable to load configuration.", e);
         }
+        return conf;
     }
 
     /**
@@ -54,7 +64,7 @@ public class SlowQueryConfiguration {
      * @return threshold for slow queries.
      */
     public int slowQueryThreshold() {
-        return slowQueryThreshold;
+        return values.slowQueryThresholdInMilliseconds;
     }
 
     /**
@@ -62,7 +72,7 @@ public class SlowQueryConfiguration {
      * @return boolean value for this switch
      */
     public boolean logAllQueries() {
-        return logAllQueries;
+        return values.logAllQueries;
     }
 
     /**
@@ -70,7 +80,6 @@ public class SlowQueryConfiguration {
      * @return list of full table names (keyspace.table) to use when logging slow queries.
      */
     public List<String> tablesForLogging() {
-        return tablesForLogging;
+        return Collections.unmodifiableList(values.tablesForLogging);
     }
-
 }

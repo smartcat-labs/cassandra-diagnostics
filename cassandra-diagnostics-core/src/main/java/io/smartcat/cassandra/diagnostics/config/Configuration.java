@@ -1,12 +1,15 @@
 package io.smartcat.cassandra.diagnostics.config;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.module.heartbeat.HeartbeatModule;
-import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
 import io.smartcat.cassandra.diagnostics.report.LogQueryReporter;
+import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
 
 /**
  * This class represents the Cassandra Diagnostics configuration.
@@ -25,9 +28,13 @@ public class Configuration {
                 reporter.reporter = LogQueryReporter.class.getName();
                 reporters.add(reporter);
 
+                Map<String, Object> options = new HashMap<>();
+                options.put("period", 15);
+                options.put("timeunit", TimeUnit.MINUTES.name());
                 final ModuleConfiguration module = new ModuleConfiguration();
-                module.module = HeartbeatModule.class.getName();
                 module.measurement = "heartbeat";
+                module.module = HeartbeatModule.class.getName();
+                module.options = options;
                 modules.add(module);
             }
         };

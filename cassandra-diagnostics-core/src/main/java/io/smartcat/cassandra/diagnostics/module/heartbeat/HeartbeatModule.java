@@ -1,5 +1,7 @@
 package io.smartcat.cassandra.diagnostics.module.heartbeat;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -10,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.Module;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
@@ -21,19 +24,9 @@ public class HeartbeatModule extends Module {
 
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatModule.class);
 
-    private static final String PERIOD_PROP = "period";
-
-    private static final String DEFAULT_PERIOD = "15";
-
-    private static final String TIMEUNIT_PROP = "timeunit";
-
-    private static final String DEFAULT_TIMEUNIT = "MINUTES";
+    private final HeartbeatConfiguration options;
 
     private final String service;
-
-    private final int period;
-
-    private final TimeUnit timeunit;
 
     private final Timer timer;
 
@@ -42,17 +35,18 @@ public class HeartbeatModule extends Module {
      *
      * @param configuration Module configuration
      * @param reporters Reporter list
+     * @throws ConfigurationException in case the provided module configuration is not valid
      */
-    public HeartbeatModule(ModuleConfiguration configuration, List<Reporter> reporters) {
+    public HeartbeatModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
         super(configuration, reporters);
 
-        period = Integer.parseInt(configuration.getDefaultOption(PERIOD_PROP, DEFAULT_PERIOD));
-        timeunit = TimeUnit.valueOf(configuration.getDefaultOption(TIMEUNIT_PROP, DEFAULT_TIMEUNIT));
+        options = HeartbeatConfiguration.create(configuration.options);
         service = configuration.measurement;
 
-        logger.debug("Heartbeat module initialized with {} period and {} timeunit.", period, timeunit.name());
+        logger.debug("Heartbeat module initialized with {} period and {} timeunit.",
+                options.period(), options.timeunit().name());
         timer = new Timer();
-        timer.schedule(new HeartbeatTask(), timeunit.toMillis(period));
+        timer.schedule(new HeartbeatTask(), options.timeunit().toMillis(options.period()));
     }
 
     /**
@@ -62,10 +56,22 @@ public class HeartbeatModule extends Module {
         @Override
         public void run() {
             logger.info("Heartbeat signal.");
+            Measurement signal = createMeasurement();
             for (Reporter reporter : reporters) {
-
+                reporter.report(signal);
             }
         }
+    }
+
+    private Measurement createMeasurement() {
+        Measurement m = Measurement.create(service, 1.0, new Date().getTime(), TimeUnit.MILLISECONDS,
+                new HashMap<String, String>(), new HashMap<String, String>());
+        return m;
+    }
+
+    @Override
+    protected boolean isForReporting(Query query) {
+        return false;
     }
 
     @Override

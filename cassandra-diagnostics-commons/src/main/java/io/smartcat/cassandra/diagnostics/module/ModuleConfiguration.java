@@ -23,26 +23,12 @@ public class ModuleConfiguration {
     /**
      * List of module specific options.
      */
-    public Map<String, String> options = new HashMap<>();
+    public Map<String, Object> options = new HashMap<>();
 
     /**
      * List of reporters for this module defined in the configuration.
      */
     public List<String> reporters = new ArrayList<>();
-
-    /**
-     * Try to get option from list or return default value if option for key not provided.
-     *
-     * @param key Option key
-     * @param defaultValue Default value
-     *
-     * @return either option for key or default value.
-     */
-    public String getDefaultOption(String key, String defaultValue) {
-        String value = options.get(key);
-
-        return value == null ? defaultValue : value;
-    }
 
     @Override
     public String toString() {

@@ -14,7 +14,7 @@ import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 public class SlowQueryConfigurationTest {
 
     @Test
-    public void testDefaultValues() throws Exception {
+    public void loads_default_configuration() throws Exception {
         Map<String, Object> options = new HashMap<>();
         SlowQueryConfiguration conf = SlowQueryConfiguration.create(options);
         assertThat(conf.logAllQueries()).isTrue();
@@ -23,7 +23,7 @@ public class SlowQueryConfigurationTest {
     }
 
     @Test
-    public void testProvidedValues() throws Exception {
+    public void loads_configuration_with_provided_values() throws Exception {
         Map<String, Object> options = new HashMap<>();
         options.put("slowQueryThresholdInMilliseconds", 10);
         options.put("logAllQueries", false);
@@ -38,7 +38,7 @@ public class SlowQueryConfigurationTest {
     }
 
     @Test
-    public void testProvidedValuesWithExtras() {
+    public void fails_when_incorrect_values_provided() {
         Map<String, Object> options = new HashMap<>();
         options.put("slowQueryThresholdInMilliseconds", 11);
         options.put("logAllQueries", false);

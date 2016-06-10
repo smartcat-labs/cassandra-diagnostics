@@ -68,11 +68,11 @@ public class SlowQueryModule extends Module {
         final Map<String, String> tags = new HashMap<>(2);
         tags.put("id", UUID.randomUUID().toString());
         tags.put("host", hostname);
+        tags.put("statementType", query.statementType().toString());
 
         final Map<String, String> fields = new HashMap<>(4);
         fields.put("client", query.clientAddress());
         fields.put("statement", query.statement());
-        fields.put("statementType", query.statementType().toString());
         fields.put("value", Long.toString(query.executionTimeInMilliseconds()));
 
         final Measurement measurement = Measurement

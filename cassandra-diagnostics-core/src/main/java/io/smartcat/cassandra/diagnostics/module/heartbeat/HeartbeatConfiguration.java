@@ -35,9 +35,10 @@ public class HeartbeatConfiguration {
     }
 
     /**
-     * Create typed configuration for slow query module out of generic module configuration.
+     * Create typed configuration for heartbeat module out of generic module configuration.
+     *
      * @param options Module configuration options.
-     * @return typed slow query module configuration from a generic one
+     * @return typed heartbeat module configuration from a generic one
      * @throws ConfigurationException in case the provided options are not valid
      */
     public static HeartbeatConfiguration create(Map<String, Object> options) throws ConfigurationException {
@@ -62,5 +63,13 @@ public class HeartbeatConfiguration {
      */
     public TimeUnit timeunit() {
         return values.timeunit;
+    }
+
+    /**
+     * Period in milliseconds.
+     * @return heartbeat period in milliseconds
+     */
+    public long periodInMillis() {
+        return timeunit().toMillis(period());
     }
 }

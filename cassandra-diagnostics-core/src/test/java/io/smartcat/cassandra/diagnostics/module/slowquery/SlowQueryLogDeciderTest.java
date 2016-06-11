@@ -37,10 +37,11 @@ public class SlowQueryLogDeciderTest {
     }
 
     @Test
-    public void log_query_when_log_all_queries_turned_on() throws Exception {
+    public void log_all_queries_when_threshold_is_zero() throws Exception {
         Map<String, Object> options = new HashMap<>();
+        options.put("slowQueryThresholdInMilliseconds", "0");
         SlowQueryLogDecider slowQueryLogDecider = buildSlowLogDecider(options);
-        Query query = buildQuery(50, StatementType.SELECT, "keyspace", "table");
+        Query query = buildQuery(0, StatementType.SELECT, "keyspace", "table");
 
         assertThat(slowQueryLogDecider.isForReporting(query)).isTrue();
     }

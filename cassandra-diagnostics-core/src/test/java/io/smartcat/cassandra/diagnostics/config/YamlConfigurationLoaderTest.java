@@ -1,6 +1,7 @@
 package io.smartcat.cassandra.diagnostics.config;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 
 /**
@@ -26,7 +27,7 @@ public class YamlConfigurationLoaderTest {
         } catch (ConfigurationException e) {
             exception = e;
         }
-        assertThat(exception).isNotNull();        
+        assertThat(exception).isNotNull();
     }
 
     @Test
@@ -39,7 +40,7 @@ public class YamlConfigurationLoaderTest {
         } catch (ConfigurationException e) {
             exception = e;
         }
-        assertThat(exception).isNotNull();        
+        assertThat(exception).isNotNull();
     }
 
     @Test
@@ -47,6 +48,6 @@ public class YamlConfigurationLoaderTest {
         System.setProperty("cassandra.diagnostics.config", "valid-cassandra-diagnostics.yml");
         YamlConfigurationLoader loader = new YamlConfigurationLoader();
         Configuration configuration = loader.loadConfig();
-        assertThat(configuration).isNotNull();        
+        assertThat(configuration).isNotNull();
     }
 }

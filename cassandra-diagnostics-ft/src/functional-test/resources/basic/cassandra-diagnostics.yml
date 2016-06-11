@@ -6,6 +6,5 @@ modules:
     measurement: queryReport
     options:
       slowQueryThresholdInMilliseconds: 1
-      logAllQueries: true
     reporters:
       - io.smartcat.cassandra.diagnostics.report.LogQueryReporter

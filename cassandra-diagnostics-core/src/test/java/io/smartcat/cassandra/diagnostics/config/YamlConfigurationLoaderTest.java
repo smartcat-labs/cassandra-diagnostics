@@ -11,7 +11,7 @@ import org.junit.Test;
 public class YamlConfigurationLoaderTest {
 
     @Test
-    public void defaultConfigurationLoadTest() throws ConfigurationException {
+    public void loads_default_configuration() throws ConfigurationException {
         YamlConfigurationLoader loader = new YamlConfigurationLoader();
         Configuration configuration = loader.loadConfig();
         assertNotNull(configuration);

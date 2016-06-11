@@ -26,8 +26,6 @@ public class RiemannReporter extends Reporter {
 
     private static final String DEFAULT_PORT = "5555";
 
-    private static final String SERVICE_NAME_PROP = "riemannServiceName";
-
     /**
      * Class logger.
      */

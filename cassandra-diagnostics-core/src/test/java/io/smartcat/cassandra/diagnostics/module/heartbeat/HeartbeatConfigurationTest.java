@@ -13,7 +13,7 @@ import org.yaml.snakeyaml.constructor.ConstructorException;
 public class HeartbeatConfigurationTest {
 
     @Test
-    public void testDefaultValues() throws Exception {
+    public void loads_default_configuration() throws Exception {
         Map<String, Object> options = new HashMap<>();
         HeartbeatConfiguration conf = HeartbeatConfiguration.create(options);
         assertThat(conf.period()).isEqualTo(15);
@@ -21,7 +21,7 @@ public class HeartbeatConfigurationTest {
     }
 
     @Test
-    public void testProvidedValues() throws Exception {
+    public void provides_all_values() throws Exception {
         Map<String, Object> options = new HashMap<>();
         options.put("period", 2);
         options.put("timeunit", "SECONDS");
@@ -31,7 +31,7 @@ public class HeartbeatConfigurationTest {
     }
 
     @Test
-    public void testProvidedValuesIncorrect() {
+    public void fails_when_incorrect_values_provided() {
         Map<String, Object> options = new HashMap<>();
         options.put("period", 2);
         options.put("timeunit", "ERR");

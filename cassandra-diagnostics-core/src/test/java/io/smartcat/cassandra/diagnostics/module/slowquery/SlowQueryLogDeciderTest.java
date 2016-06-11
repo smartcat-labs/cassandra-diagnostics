@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.Query.StatementType;
-import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 
 /**
  * Test for slow query log decider.

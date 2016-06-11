@@ -20,7 +20,6 @@ public class SlowQueryLogDeciderTest {
     @Test
     public void do_not_log_query_when_execution_below_default_threshold() throws Exception {
         Map<String, Object> options = new HashMap<>();
-        options.put("logAllQueries", "false");
         SlowQueryLogDecider slowQueryLogDecider = buildSlowLogDecider(options);
         Query query = buildQuery(24, StatementType.SELECT, "keyspace", "table");
 
@@ -30,7 +29,6 @@ public class SlowQueryLogDeciderTest {
     @Test
     public void do_not_log_query_when_execution_below_configured_threshold() throws Exception {
         Map<String, Object> options = new HashMap<>();
-        options.put("logAllQueries", "false");
         options.put("slowQueryThresholdInMilliseconds", "7");
         SlowQueryLogDecider slowQueryLogDecider = buildSlowLogDecider(options);
         Query query = buildQuery(6, StatementType.SELECT, "keyspace", "table");
@@ -39,11 +37,11 @@ public class SlowQueryLogDeciderTest {
     }
 
     @Test
-    public void log_query_when_log_all_queries_turned_on() throws Exception {
+    public void log_all_queries_when_threshold_is_zero() throws Exception {
         Map<String, Object> options = new HashMap<>();
-        options.put("logAllQueries", "true");
+        options.put("slowQueryThresholdInMilliseconds", "0");
         SlowQueryLogDecider slowQueryLogDecider = buildSlowLogDecider(options);
-        Query query = buildQuery(50, StatementType.SELECT, "keyspace", "table");
+        Query query = buildQuery(0, StatementType.SELECT, "keyspace", "table");
 
         assertThat(slowQueryLogDecider.isForReporting(query)).isTrue();
     }

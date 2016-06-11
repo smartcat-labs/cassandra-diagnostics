@@ -20,16 +20,11 @@ public class SlowQueryConfiguration {
      */
     public static class Values {
         private static final int DEFAULT_SLOW_QUERY_THRESHOLD = 25;
-        private static final boolean DEFAULT_LOG_ALL_QUERIES = true;
 
         /**
          * Query execution's threshold.
          */
         public int slowQueryThresholdInMilliseconds = DEFAULT_SLOW_QUERY_THRESHOLD;
-        /**
-         * Flat that controls if all queries should be logged unconditionally.
-         */
-        public boolean logAllQueries = DEFAULT_LOG_ALL_QUERIES;
         /**
          * Table names to filter queries.
          */
@@ -65,14 +60,6 @@ public class SlowQueryConfiguration {
      */
     public int slowQueryThreshold() {
         return values.slowQueryThresholdInMilliseconds;
-    }
-
-    /**
-     * Switch to log all queries or just slow queries.
-     * @return boolean value for this switch
-     */
-    public boolean logAllQueries() {
-        return values.logAllQueries;
     }
 
     /**

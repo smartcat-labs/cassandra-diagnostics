@@ -17,7 +17,6 @@ public class SlowQueryConfigurationTest {
     public void loads_default_configuration() throws Exception {
         Map<String, Object> options = new HashMap<>();
         SlowQueryConfiguration conf = SlowQueryConfiguration.create(options);
-        assertThat(conf.logAllQueries()).isTrue();
         assertThat(conf.slowQueryThreshold()).isEqualTo(25);
         assertThat(conf.tablesForLogging()).isEmpty();
     }
@@ -26,11 +25,9 @@ public class SlowQueryConfigurationTest {
     public void loads_configuration_with_provided_values() throws Exception {
         Map<String, Object> options = new HashMap<>();
         options.put("slowQueryThresholdInMilliseconds", 10);
-        options.put("logAllQueries", false);
         options.put("tablesForLogging", Arrays.asList("keyspace1.table1", "keyspace2.table2"));
 
         SlowQueryConfiguration conf = SlowQueryConfiguration.create(options);
-        assertThat(conf.logAllQueries()).isFalse();
         assertThat(conf.slowQueryThreshold()).isEqualTo(10);
         assertThat(conf.tablesForLogging().size()).isEqualTo(2);
         assertThat(conf.tablesForLogging()).contains("keyspace1.table1");
@@ -41,7 +38,6 @@ public class SlowQueryConfigurationTest {
     public void fails_when_incorrect_values_provided() {
         Map<String, Object> options = new HashMap<>();
         options.put("slowQueryThresholdInMilliseconds", 11);
-        options.put("logAllQueries", false);
         options.put("tablesForLogging", Arrays.asList("keyspace.table"));
         options.put("extra", "value");
 

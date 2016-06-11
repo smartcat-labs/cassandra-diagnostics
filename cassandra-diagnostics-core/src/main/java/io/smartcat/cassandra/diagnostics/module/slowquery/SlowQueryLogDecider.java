@@ -48,10 +48,14 @@ public class SlowQueryLogDecider {
     }
 
     private boolean executionTimeForLogging(long executionTimeInMilliseconds) {
+        if (slowQueryConfiguration.slowQueryThreshold() == 0) {
+            logger.trace("Slow query threshold turned off, logging all queries.");
+            return true;
+        }
+
         logger.trace("Checking if execution time:{} is above threshold: {}", executionTimeInMilliseconds,
                 slowQueryConfiguration.slowQueryThreshold());
-        if (slowQueryConfiguration.logAllQueries()
-                || executionTimeInMilliseconds >= slowQueryConfiguration.slowQueryThreshold()) {
+        if (executionTimeInMilliseconds > slowQueryConfiguration.slowQueryThreshold()) {
             return true;
         }
 

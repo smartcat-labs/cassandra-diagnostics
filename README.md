@@ -40,9 +40,6 @@ The following is an example of the configuration file:
 # Slow query threshold
 slowQueryThresholdInMilliseconds: 25
 
-# Log all queries or just slow queries
-logAllQueries: false
-
 # Reporters
 reporters:
   - reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
@@ -53,9 +50,6 @@ Specific query reporter may require additional configuration options. Those opti
 ```
 # Slow query threshold
 slowQueryThresholdInMilliseconds: 25
-
-# Log all queries or just slow queries
-logAllQueries: false
 
 # Reporters
 reporters:
@@ -72,9 +66,6 @@ Following example shows a configuration options in case of `InfluxQueryReporter`
 ```
 # Slow query threshold
 slowQueryThresholdInMilliseconds: 25
-
-# Log all queries or just slow queries
-logAllQueries: false
 
 # Reporters
 reporters:

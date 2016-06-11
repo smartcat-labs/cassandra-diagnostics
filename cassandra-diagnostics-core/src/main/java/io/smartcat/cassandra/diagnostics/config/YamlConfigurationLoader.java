@@ -21,10 +21,12 @@ public class YamlConfigurationLoader implements ConfigurationLoader {
      */
     private static final Logger logger = LoggerFactory.getLogger(YamlConfigurationLoader.class);
 
+    private static final String CONFIGURATION_PROPERTY_NAME = "cassandra.diagnostics.config";
+
     /**
      * Default external configuration file name.
      */
-    private static final String DEFAULT_CONFIGURATION_URL = "cassandra-diagnostics.yml";
+    private static final String DEFAULT_CONFIGURATION_URL = "cassandra-diagnostics-default.yml";
 
     /**
      * Determines and returns the external configuration URL.
@@ -33,9 +35,10 @@ public class YamlConfigurationLoader implements ConfigurationLoader {
      * @throws ConfigurationException in case of a bogus URL
      */
     private URL getStorageConfigUrl() throws ConfigurationException {
-        String configUrl = System.getProperty("cassandra.diagnostics.config");
+        String configUrl = System.getProperty(CONFIGURATION_PROPERTY_NAME);
         if (configUrl == null) {
             configUrl = DEFAULT_CONFIGURATION_URL;
+            logger.info("Using default configuration " + DEFAULT_CONFIGURATION_URL);
         }
 
         URL url;
@@ -48,9 +51,10 @@ public class YamlConfigurationLoader implements ConfigurationLoader {
             if (url == null) {
                 String required = "file:" + File.separator + File.separator;
                 if (!configUrl.startsWith(required)) {
-                    throw new ConfigurationException("Expecting URI in variable [cassandra.diagnostics.config]. "
-                            + "Please prefix the file with " + required + File.separator + " for local files or "
-                            + required + "<server>" + File.separator + " for remote files. Aborting.");
+                    throw new ConfigurationException("Expecting URI in variable [" + CONFIGURATION_PROPERTY_NAME
+                            + "]. " + "Please prefix the file with " + required + File.separator
+                            + " for local files or " + required + "<server>" + File.separator
+                            + " for remote files. Aborting.");
                 }
                 throw new ConfigurationException(
                         "Cannot locate " + configUrl + ".  If this is a local file, please confirm you've provided "

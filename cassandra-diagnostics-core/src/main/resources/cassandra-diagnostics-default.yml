@@ -1,0 +1,12 @@
+# Reporters
+reporters:
+  - reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
+
+# Modules
+modules:
+  - module: io.smartcat.cassandra.diagnostics.module.heartbeat.HeartbeatModule
+    options:
+      period: 1
+      timeunit: MINUTES
+    reporters:
+      - io.smartcat.cassandra.diagnostics.report.LogQueryReporter

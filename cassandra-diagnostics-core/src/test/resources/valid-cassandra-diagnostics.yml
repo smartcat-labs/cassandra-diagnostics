@@ -15,20 +15,20 @@ reporters:
 
 # Modules
 modules:
-  - module: io.smartcat.cassandra.diagnostics.module.HeartbeatModule
+  - module: io.smartcat.cassandra.diagnostics.module.heartbeat.HeartbeatModule
     options:
       period: 15
       timeunit: MINUTES
     reporters:
       - io.smartcat.cassandra.diagnostics.report.LogQueryReporter
-  - module: io.smartcat.cassandra.diagnostics.module.SlowQueryModule
+  - module: io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule
     measurement: queryReport
     options:
       # Slow query threshold
       slowQueryThresholdInMilliseconds: 25
       # Log all queries or just slow queries
       logAllQueries: false
-  - module: io.smartcat.cassandra.diagnostics.module.RequestRateModule
+  - module: io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateModule
     measurement: requestRate
     options:
       period: 1

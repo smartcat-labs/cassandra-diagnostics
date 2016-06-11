@@ -48,8 +48,8 @@ public class Diagnostics implements QueryReporter {
         try {
             config = loader.loadConfig();
         } catch (ConfigurationException e) {
-            logger.warn("A problem occured while loading configuration. Using default configuration.", e);
-            config = Configuration.getDefaultConfiguration();
+            logger.error("A problem occured while loading configuration.", e);
+            throw new IllegalStateException(e);
         }
         logger.info("Effective configuration: {}", config);
         return config;

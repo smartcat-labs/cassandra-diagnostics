@@ -375,6 +375,7 @@
 									<includeTestSourceDirectory>true</includeTestSourceDirectory>
 									<consoleOutput>true</consoleOutput>
 									<failsOnError>true</failsOnError>
+									<propertyExpansion>config_loc=./</propertyExpansion>
 									<excludes>**/generated/**/*</excludes>
 								</configuration>
 							</execution>

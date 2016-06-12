@@ -47,7 +47,7 @@ public class ITConnector {
     }
 
     @Test
-    public void test() throws InterruptedException {
+    public void query_is_intercepted_when_connector_is_active() throws InterruptedException {
         session.execute("CREATE KEYSPACE IF NOT EXISTS test_keyspace "
                 + "WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
         session.execute("CREATE TABLE IF NOT EXISTS test_keyspace.test_table (uid uuid PRIMARY KEY);");

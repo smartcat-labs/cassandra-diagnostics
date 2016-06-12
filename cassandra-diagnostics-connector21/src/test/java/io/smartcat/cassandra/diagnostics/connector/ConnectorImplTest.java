@@ -29,7 +29,7 @@ public class ConnectorImplTest {
     }
 
     @Test
-    public void testInitialization() {
+    public void instrumentation_initializes_transformer() {
         QueryReporter queryReporter = mock(QueryReporter.class);
         Instrumentation inst = mock(Instrumentation.class);
         ConnectorImpl connector = new ConnectorImpl();
@@ -39,7 +39,7 @@ public class ConnectorImplTest {
     }
 
     @Test
-    public void testInterception() throws Exception {
+    public void invokes_wrapper_when_query_processor_activates() throws Exception {
         Connector connector = new ConnectorImpl();
         connector.init(instrumentation, mock(QueryReporter.class));
         QueryProcessorWrapper queryProcessorWrapper = mock(QueryProcessorWrapper.class);

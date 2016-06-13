@@ -4,6 +4,10 @@
         "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 <module name="Checker">
 
+    <module name="SuppressionFilter">
+        <property name="file" value="${suppression_file}"/>
+    </module>
+
     <module name="NewlineAtEndOfFile">
         <property name="lineSeparator" value="lf"/>
     </module>
@@ -43,7 +47,7 @@
         </module>
         <module name="MethodName">
             <property name="id" value="MethodNameTest"/>
-            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9_]*$"/>
         </module>
         <module name="PackageName"/>
         <module name="ParameterName"/>

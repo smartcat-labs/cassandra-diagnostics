@@ -34,7 +34,7 @@ public class QueryProcessorWrapperTest {
     private CountDownLatch lock = new CountDownLatch(1);
 
     @Test
-    public void test() throws NoSuchFieldException, SecurityException, Exception {
+    public void wrapper_intercepts_query_with_all_data() throws NoSuchFieldException, SecurityException, Exception {
         QueryReporter queryReporter = new QueryReporter() {
             @Override
             public void report(Query query) {

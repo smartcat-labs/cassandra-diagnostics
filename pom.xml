@@ -371,11 +371,10 @@
 								</goals>
 								<configuration>
 									<configLocation>checkstyle.xml</configLocation>
-									<suppressionsFileExpression>checkstyle.suppression.file</suppressionsFileExpression>
 									<includeTestSourceDirectory>true</includeTestSourceDirectory>
 									<consoleOutput>true</consoleOutput>
 									<failsOnError>true</failsOnError>
-									<propertyExpansion>config_loc=./</propertyExpansion>
+									<propertiesLocation>checkstyle.properties</propertiesLocation>
 									<excludes>**/generated/**/*</excludes>
 								</configuration>
 							</execution>

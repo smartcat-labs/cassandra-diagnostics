@@ -1,6 +1,6 @@
 # Reporters
 reporters:
-  - reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
+  - reporter: io.smartcat.cassandra.diagnostics.reporter.LogReporter
 
 # Modules
 modules:
@@ -9,4 +9,4 @@ modules:
       period: 1
       timeunit: MINUTES
     reporters:
-      - io.smartcat.cassandra.diagnostics.report.LogQueryReporter
+      - io.smartcat.cassandra.diagnostics.reporter.LogReporter

@@ -68,7 +68,7 @@ public class FTBasic {
         String line;
         boolean logFound = false;
         while ((line = reader.readLine()) != null) {
-            if (line.matches(".* LogQueryReporter\\.java.*")) {
+            if (line.matches(".* LogReporter\\.java.*")) {
                 logFound = true;
             }
         }

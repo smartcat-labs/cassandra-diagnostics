@@ -30,7 +30,7 @@ Query Reporter implementations:
 
 #### Log Query Reporter
 
-[LogQueryReporter}(https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-core/src/main/java/io/smartcat/cassandra/diagnostics/report/LogQueryReporter.java) uses the Cassandra logger system to report measurement (this is default reporter and part of core). Reports are logged at the `INFO` log level in the following pattern:
+[LogReporter}(https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-core/src/main/java/io/smartcat/cassandra/diagnostics/reporter/LogReporter.java) uses the Cassandra logger system to report measurement (this is default reporter and part of core). Reports are logged at the `INFO` log level in the following pattern:
 
 ```
 Measurement {} [time={}, value={}, tags={}, fields={}]
@@ -38,9 +38,9 @@ Measurement {} [time={}, value={}, tags={}, fields={}]
 
 Values for `time` is given in milliseconds. `tags` are used to better specify measurement and provide additional searchable labels and fields is placeholder for additional fields connected to this measurement. Example can be Slow Query measurement, where `value` is execution time of query, `tags` can be type of statement (UPDATE or SELECT) so you can differentiate and search easy and `fields` can hold actual statement, which is not something you want to search against but it is valuable metadata for measurement.
 
-#### Riemann Query Reporter
+#### Riemann Reporter
 
-[RiemannQueryReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-riemann/src/main/java/io/smartcat/cassandra/diagnostics/reporter/RiemannReporter.java) sends measurements as Riemann events towards the configured Riemann server using TCP transport.
+[RiemannReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-riemann/src/main/java/io/smartcat/cassandra/diagnostics/reporter/RiemannReporter.java) sends measurements as Riemann events towards the configured Riemann server using TCP transport.
 
 Generated Riemann Events looks like the following:
 
@@ -58,14 +58,14 @@ fields:
   statement: <statement which was executed>
 ```
 
-`RiemannQueryReporter` has the following configuration parameters (that can be specified using `options`):
+`RiemannReporter` has the following configuration parameters (that can be specified using `options`):
 
 - _riemannHost_ - Riemann server's host name (IP address). This parameter is required.
 - _riemannPort_ - Riemann server's TCP port number (5555 by default). This parameter is optional.
 
-#### Influx Query Reporter
+#### Influx Reporter
 
-[InfluxQueryReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-influx/src/main/java/io/smartcat/cassandra/diagnostics/reporter/InfluxReporter.java) sendss measurements to influx database.
+[InfluxReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-influx/src/main/java/io/smartcat/cassandra/diagnostics/reporter/InfluxReporter.java) sendss measurements to influx database.
 
 Influx DB statement holds sname of measurement, tags connected to this measurement, fields and timestamp of measurement in following format:
 
@@ -90,7 +90,7 @@ The following is an example of the configuration file:
 
 ```
 reporters:
-  - reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
+  - reporter: io.smartcat.cassandra.diagnostics.reporter.LogReporter
 
 modules:
   - module: io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule
@@ -98,20 +98,20 @@ modules:
     options:
       slowQueryThresholdInMilliseconds: 1
     reporters:
-      - io.smartcat.cassandra.diagnostics.report.LogQueryReporter
+      - io.smartcat.cassandra.diagnostics.reporter.LogReporter
 ```
 
-Specific query reporter may require additional configuration options. Those options could be specified using `options` property. The following example shows a configuration options in case of `RiemannQueryReporter` and `InfluxQueryReporter`. Also it shows how you can configure specific modules:
+Specific query reporter may require additional configuration options. Those options could be specified using `options` property. The following example shows a configuration options in case of `RiemannReporter` and `InfluxReporter`. Also it shows how you can configure specific modules:
 
 ```
 # Reporters
 reporters:
-  - reporter: io.smartcat.cassandra.diagnostics.report.LogQueryReporter
-  - reporter: io.smartcat.cassandra.diagnostics.reporter.RiemannQueryReporter
+  - reporter: io.smartcat.cassandra.diagnostics.reporter.LogReporter
+  - reporter: io.smartcat.cassandra.diagnostics.reporter.RiemannReporter
     options:
       riemannHost: 127.0.0.1
       riemannPort: 5555 #Optional
-  - reporter: io.smartcat.cassandra.diagnostics.reporter.InfluxQueryReporter
+  - reporter: io.smartcat.cassandra.diagnostics.reporter.InfluxReporter
     options:
       influxDbAddress: http://127.0.0.1:8086
       influxUsername: username #Optional
@@ -126,7 +126,7 @@ modules:
       period: 15
       timeunit: MINUTES
     reporters:
-      - io.smartcat.cassandra.diagnostics.report.LogQueryReporter
+      - io.smartcat.cassandra.diagnostics.reporter.LogReporter
   - module: io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule
     measurement: queryReport
     options:
@@ -139,8 +139,8 @@ modules:
       timeunit: SECONDS
       separateByRequestType: true
     reporters:
-      - io.smartcat.cassandra.diagnostics.report.LogQueryReporter
-      - io.smartcat.cassandra.diagnostics.reporter.InfluxQueryReporter
+      - io.smartcat.cassandra.diagnostics.reporter.LogReporter
+      - io.smartcat.cassandra.diagnostics.reporter.InfluxReporter
 ```
 
 ### Dynamic Configuration
@@ -165,7 +165,7 @@ JVM_OPTS="$JVM_OPTS -javaagent:$CASSANDRA_HOME/lib/cassandra-diagnostics-VERSION
 ## Usage
 
 Upon Cassandra node start, the Diagnostics agent kicks in and instrument necessary target classes to inject diagnostics additions.
-`LogQueryReporter` repors slow queries in `logs/system.log` at `INFO` level.
+`LogReporter` repors slow queries in `logs/system.log` at `INFO` level.
 The dynamic configuration could be inspected/changed using `jconsole` and connecting to `org.apache.cassandra.service.CassandraDaemon`.
 
 ## License and development

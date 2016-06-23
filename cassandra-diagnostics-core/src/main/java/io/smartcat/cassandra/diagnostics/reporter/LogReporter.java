@@ -1,22 +1,20 @@
-package io.smartcat.cassandra.diagnostics.report;
+package io.smartcat.cassandra.diagnostics.reporter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.reporter.Reporter;
-import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
 
 /**
  * A SLF4J based {@link Reporter} implementation. This reporter is using {@link Logger} to print query reports to a log
  * at {@code INFO} level.
  */
-public class LogQueryReporter extends Reporter {
+public class LogReporter extends Reporter {
 
     /**
      * Class logger.
      */
-    private static final Logger logger = LoggerFactory.getLogger(LogQueryReporter.class);
+    private static final Logger logger = LoggerFactory.getLogger(LogReporter.class);
 
     /**
      * String template for logging query report.
@@ -28,7 +26,7 @@ public class LogQueryReporter extends Reporter {
      *
      * @param configuration configuration
      */
-    public LogQueryReporter(ReporterConfiguration configuration) {
+    public LogReporter(ReporterConfiguration configuration) {
         super(configuration);
     }
 

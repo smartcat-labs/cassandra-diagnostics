@@ -1,5 +1,7 @@
 package io.smartcat.cassandra.diagnostics.module.requestrate;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -13,6 +15,7 @@ import com.codahale.metrics.MetricRegistry;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.Module;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
@@ -43,7 +46,7 @@ public class RequestRateModule extends Module {
 
     private final TimeUnit timeunit;
 
-    private final double rateFactor;
+    private final long rateFactor;
 
     private final Timer timer;
 
@@ -52,24 +55,34 @@ public class RequestRateModule extends Module {
      *
      * @param configuration Module configuration
      * @param reporters     Reporter list
+     * @throws ConfigurationException in case the provided module configuration is not valid
      */
-    public RequestRateModule(ModuleConfiguration configuration, List<Reporter> reporters) {
+    public RequestRateModule(ModuleConfiguration configuration, List<Reporter> reporters)
+            throws ConfigurationException {
         super(configuration, reporters);
 
-        period = Integer.parseInt(configuration.options.getOrDefault(PERIOD_PROP, DEFAULT_PERIOD));
-        timeunit = TimeUnit.valueOf(configuration.options.getOrDefault(TIMEUNIT_PROP, DEFAULT_TIMEUNIT));
+        RequestRateConfiguration config = RequestRateConfiguration.create(configuration.options);
         service = configuration.measurement;
+        period = config.period();
+        timeunit = config.timeunit();
         rateFactor = timeunit.toSeconds(1);
 
-        logger.debug("RequestRate module initialized with {} period and {} timeunit.", period, timeunit.name());
+        logger.info("RequestRate module initialized with {} period and {} timeunit.", period, timeunit.name());
         requests = metricsRegistry.meter(service);
         timer = new Timer();
         timer.schedule(new RequestRateTask(), timeunit.toMillis(period));
     }
 
     @Override
+    protected boolean isForReporting(Query query) {
+        return false;
+    }
+
+    @Override
     public Measurement transform(Query query) {
+        // Future work: Separate marks for request types
         requests.mark();
+        return null;
     }
 
     private double convertRate(double rate) {
@@ -80,10 +93,16 @@ public class RequestRateModule extends Module {
      * Request rate reporter task that's executed at configured period.
      */
     private class RequestRateTask extends TimerTask {
+        @Override
         public void run() {
             double rate = convertRate(requests.getMeanRate());
-            logger.info("Request rate: {}/{}", rate, timeunit.name());
-            // Add reporting
+            logger.debug("Request rate: {}/{}", rate, timeunit.name());
+            Measurement signal = Measurement
+                    .create(service, rate, new Date().getTime(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
+                            new HashMap<String, String>());
+            for (Reporter reporter : reporters) {
+                reporter.report(signal);
+            }
         }
     }
 }

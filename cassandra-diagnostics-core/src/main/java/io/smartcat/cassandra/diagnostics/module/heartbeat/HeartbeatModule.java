@@ -24,8 +24,6 @@ public class HeartbeatModule extends Module {
 
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatModule.class);
 
-    private final HeartbeatConfiguration options;
-
     private final String service;
 
     private final Timer timer;
@@ -40,13 +38,13 @@ public class HeartbeatModule extends Module {
     public HeartbeatModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
         super(configuration, reporters);
 
-        options = HeartbeatConfiguration.create(configuration.options);
+        HeartbeatConfiguration config = HeartbeatConfiguration.create(configuration.options);
         service = configuration.measurement;
 
-        logger.debug("Heartbeat module initialized with {} period and {} timeunit.", options.period(),
-                options.timeunit().name());
+        logger.debug("Heartbeat module initialized with {} period and {} timeunit.", config.period(),
+                config.timeunit().name());
         timer = new Timer();
-        timer.schedule(new HeartbeatTask(), options.periodInMillis());
+        timer.schedule(new HeartbeatTask(), config.periodInMillis());
     }
 
     /**

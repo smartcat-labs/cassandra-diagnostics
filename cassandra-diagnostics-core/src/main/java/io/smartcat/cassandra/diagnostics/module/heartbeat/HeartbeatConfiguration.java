@@ -51,6 +51,7 @@ public class HeartbeatConfiguration {
 
     /**
      * Heartbeat period getter.
+     *
      * @return heartbeat period
      */
     public int period() {
@@ -59,6 +60,7 @@ public class HeartbeatConfiguration {
 
     /**
      * Heartbeat period time unit getter.
+     *
      * @return heartbeat time unit
      */
     public TimeUnit timeunit() {
@@ -67,6 +69,7 @@ public class HeartbeatConfiguration {
 
     /**
      * Period in milliseconds.
+     *
      * @return heartbeat period in milliseconds
      */
     public long periodInMillis() {

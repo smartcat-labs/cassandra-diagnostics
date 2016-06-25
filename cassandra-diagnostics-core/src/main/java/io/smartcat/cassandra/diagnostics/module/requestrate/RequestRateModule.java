@@ -36,9 +36,15 @@ public class RequestRateModule extends Module {
 
     private static final String DEFAULT_TIMEUNIT = "SECONDS";
 
+    private static final String UPDATE_SUFFIX = "_update";
+
+    private static final String SELECT_SUFFIX = "_select";
+
     private final MetricRegistry metricsRegistry = new MetricRegistry();
 
-    private final Meter requests;
+    private final Meter updateRequests;
+
+    private final Meter selectRequests;
 
     private final String service;
 
@@ -68,7 +74,8 @@ public class RequestRateModule extends Module {
         rateFactor = timeunit.toSeconds(1);
 
         logger.info("RequestRate module initialized with {} period and {} timeunit.", period, timeunit.name());
-        requests = metricsRegistry.meter(service);
+        updateRequests = metricsRegistry.meter(service + UPDATE_SUFFIX);
+        selectRequests = metricsRegistry.meter(service + SELECT_SUFFIX);
         timer = new Timer();
         timer.schedule(new RequestRateTask(), timeunit.toMillis(period));
     }
@@ -81,7 +88,12 @@ public class RequestRateModule extends Module {
     @Override
     public Measurement transform(Query query) {
         // Future work: Separate marks for request types
-        requests.mark();
+        if (query.statementType() == Query.StatementType.SELECT) {
+            selectRequests.mark();
+        } else if (query.statementType() == Query.StatementType.UPDATE) {
+            updateRequests.mark();
+        }
+
         return null;
     }
 
@@ -95,13 +107,17 @@ public class RequestRateModule extends Module {
     private class RequestRateTask extends TimerTask {
         @Override
         public void run() {
-            double rate = convertRate(requests.getMeanRate());
-            logger.debug("Request rate: {}/{}", rate, timeunit.name());
-            Measurement signal = Measurement
-                    .create(service, rate, new Date().getTime(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
-                            new HashMap<String, String>());
+            double updateRate = convertRate(updateRequests.getMeanRate());
+            double selectRate = convertRate(selectRequests.getMeanRate());
+
+            logger.debug("Update request rate: {}/{}", updateRate, timeunit.name());
+            logger.debug("Select request rate: {}/{}", selectRate, timeunit.name());
+
             for (Reporter reporter : reporters) {
-                reporter.report(signal);
+                reporter.report(Measurement.create(service, updateRate, new Date().getTime(), TimeUnit.MILLISECONDS,
+                        new HashMap<String, String>(), new HashMap<String, String>()));
+                reporter.report(Measurement.create(service, selectRate, new Date().getTime(), TimeUnit.MILLISECONDS,
+                        new HashMap<String, String>(), new HashMap<String, String>()));
             }
         }
     }

@@ -17,7 +17,6 @@ public class RequestRateConfigurationTest {
         RequestRateConfiguration conf = RequestRateConfiguration.create(options);
         assertThat(conf.period()).isEqualTo(1);
         assertThat(conf.timeunit()).isEqualTo(TimeUnit.SECONDS);
-        assertThat(conf.separateByRequestType()).isEqualTo(true);
     }
 
     @Test
@@ -25,11 +24,9 @@ public class RequestRateConfigurationTest {
         Map<String, Object> options = new HashMap<>();
         options.put("period", 2);
         options.put("timeunit", "SECONDS");
-        options.put("separateByRequestType", "true");
         RequestRateConfiguration conf = RequestRateConfiguration.create(options);
         assertThat(conf.period()).isEqualTo(2);
         assertThat(conf.timeunit()).isEqualTo(TimeUnit.SECONDS);
-        assertThat(conf.separateByRequestType()).isEqualTo(true);
     }
 
     @Test
@@ -37,7 +34,6 @@ public class RequestRateConfigurationTest {
         Map<String, Object> options = new HashMap<>();
         options.put("period", 2);
         options.put("timeunit", "ERR");
-        options.put("separateByRequestType", "tru");
         try {
             RequestRateConfiguration.create(options);
         } catch (Exception e) {

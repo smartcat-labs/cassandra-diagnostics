@@ -18,7 +18,6 @@ public class RequestRateConfiguration {
     public static class Values {
         private static final int DEFAULT_PERIOD = 1;
         private static final String DEFAULT_TIMEUNIT = "SECONDS";
-        private static final boolean DEFAULT_SEPARATE_BY_REQUEST_TYPE = true;
 
         /**
          * Request rate reporting period.
@@ -29,11 +28,6 @@ public class RequestRateConfiguration {
          * Request rate reporting time unit.
          */
         public TimeUnit timeunit = TimeUnit.valueOf(DEFAULT_TIMEUNIT);
-
-        /**
-         * Indicates if rates are reported for request types or combined.
-         */
-        public boolean separateByRequestType = DEFAULT_SEPARATE_BY_REQUEST_TYPE;
     }
 
     private Values values = new Values();
@@ -73,15 +67,6 @@ public class RequestRateConfiguration {
      */
     public TimeUnit timeunit() {
         return values.timeunit;
-    }
-
-    /**
-     * Indicates if rates are reported for request types or combined.
-     *
-     * @return Combined or separate request type report
-     */
-    public boolean separateByRequestType() {
-        return values.separateByRequestType;
     }
 
 }

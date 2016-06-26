@@ -48,6 +48,10 @@ public class RequestRateModule extends Module {
 
     private final String service;
 
+    private final String updateService;
+
+    private final String selectService;
+
     private final int period;
 
     private final TimeUnit timeunit;
@@ -74,8 +78,10 @@ public class RequestRateModule extends Module {
         rateFactor = timeunit.toSeconds(1);
 
         logger.info("RequestRate module initialized with {} period and {} timeunit.", period, timeunit.name());
-        updateRequests = metricsRegistry.meter(service + UPDATE_SUFFIX);
-        selectRequests = metricsRegistry.meter(service + SELECT_SUFFIX);
+        updateService = service + UPDATE_SUFFIX;
+        selectService = service + SELECT_SUFFIX;
+        updateRequests = metricsRegistry.meter(updateService);
+        selectRequests = metricsRegistry.meter(selectService);
         timer = new Timer();
         timer.schedule(new RequestRateTask(), timeunit.toMillis(period));
     }
@@ -113,11 +119,16 @@ public class RequestRateModule extends Module {
             logger.debug("Update request rate: {}/{}", updateRate, timeunit.name());
             logger.debug("Select request rate: {}/{}", selectRate, timeunit.name());
 
+            Measurement updates = Measurement
+                    .create(updateService, updateRate, new Date().getTime(), TimeUnit.MILLISECONDS,
+                            new HashMap<String, String>(), new HashMap<String, String>());
+            Measurement selects = Measurement
+                    .create(selectService, selectRate, new Date().getTime(), TimeUnit.MILLISECONDS,
+                            new HashMap<String, String>(), new HashMap<String, String>());
+
             for (Reporter reporter : reporters) {
-                reporter.report(Measurement.create(service, updateRate, new Date().getTime(), TimeUnit.MILLISECONDS,
-                        new HashMap<String, String>(), new HashMap<String, String>()));
-                reporter.report(Measurement.create(service, selectRate, new Date().getTime(), TimeUnit.MILLISECONDS,
-                        new HashMap<String, String>(), new HashMap<String, String>()));
+                reporter.report(updates);
+                reporter.report(selects);
             }
         }
     }

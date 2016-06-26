@@ -54,13 +54,18 @@ public class HeartbeatModule extends Module {
         @Override
         public void run() {
             logger.info("Heartbeat signal.");
-            Measurement signal = Measurement
-                    .create(service, 1.0, new Date().getTime(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
-                            new HashMap<String, String>());
+            Measurement signal = createMeasurement();
             for (Reporter reporter : reporters) {
                 reporter.report(signal);
             }
         }
+    }
+
+    private Measurement createMeasurement() {
+        Measurement m = Measurement
+                .create(service, 1.0, new Date().getTime(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
+                        new HashMap<String, String>());
+        return m;
     }
 
     @Override

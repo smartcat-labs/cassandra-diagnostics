@@ -67,8 +67,8 @@ public class RequestRateModuleTest {
         module.stop();
 
         assertThat(testReporter.reported).hasSize(4);
-        assertThat(testReporter.reported.get(2).value()).isBetween(96.0, 100.0);
-        assertThat(testReporter.reported.get(3).value()).isBetween(96.0, 100.0);
+        assertThat(testReporter.reported.get(2).value()).isBetween(80.0, 100.0);
+        assertThat(testReporter.reported.get(3).value()).isBetween(80.0, 100.0);
     }
 
     private ModuleConfiguration testConfiguration() {

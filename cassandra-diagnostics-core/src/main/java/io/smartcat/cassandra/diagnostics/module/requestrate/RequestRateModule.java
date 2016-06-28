@@ -83,17 +83,16 @@ public class RequestRateModule extends Module {
         updateRequests = metricsRegistry.meter(updateService);
         selectRequests = metricsRegistry.meter(selectService);
         timer = new Timer();
-        timer.schedule(new RequestRateTask(), timeunit.toMillis(period));
+        timer.schedule(new RequestRateTask(), 0, config.reportingRateInMillis());
     }
 
     @Override
     protected boolean isForReporting(Query query) {
-        return false;
+        return true;
     }
 
     @Override
     public Measurement transform(Query query) {
-        // Future work: Separate marks for request types
         if (query.statementType() == Query.StatementType.SELECT) {
             selectRequests.mark();
         } else if (query.statementType() == Query.StatementType.UPDATE) {
@@ -101,6 +100,16 @@ public class RequestRateModule extends Module {
         }
 
         return null;
+    }
+
+    @Override
+    protected void report(Measurement measurement) {
+
+    }
+
+    @Override
+    protected void stop() {
+        timer.cancel();
     }
 
     private double convertRate(double rate) {
@@ -119,17 +128,19 @@ public class RequestRateModule extends Module {
             logger.debug("Update request rate: {}/{}", updateRate, timeunit.name());
             logger.debug("Select request rate: {}/{}", selectRate, timeunit.name());
 
-            Measurement updates = Measurement
-                    .create(updateService, updateRate, new Date().getTime(), TimeUnit.MILLISECONDS,
-                            new HashMap<String, String>(), new HashMap<String, String>());
-            Measurement selects = Measurement
-                    .create(selectService, selectRate, new Date().getTime(), TimeUnit.MILLISECONDS,
-                            new HashMap<String, String>(), new HashMap<String, String>());
+            Measurement updates = createMeasurement(updateService, updateRate);
+            Measurement selects = createMeasurement(selectService, selectRate);
 
             for (Reporter reporter : reporters) {
                 reporter.report(updates);
                 reporter.report(selects);
             }
         }
+    }
+
+    private Measurement createMeasurement(String service, double rate) {
+        return Measurement
+                .create(service, rate, new Date().getTime(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
+                        new HashMap<String, String>());
     }
 }

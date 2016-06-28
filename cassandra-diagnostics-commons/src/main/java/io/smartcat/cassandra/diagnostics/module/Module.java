@@ -64,6 +64,7 @@ public abstract class Module {
 
     /**
      * Report measurement on all configured reporters.
+     *
      * @param measurement Measurement for reporting
      */
     protected void report(Measurement measurement) {
@@ -72,5 +73,11 @@ public abstract class Module {
         }
     }
 
+    /**
+     * Used to stop module with long running tasks.
+     */
+    protected void stop() {
+
+    }
 
 }

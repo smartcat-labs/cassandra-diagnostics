@@ -8,7 +8,7 @@ import org.yaml.snakeyaml.Yaml;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 
 /**
- * Reqiest rate module's ocnfiguration.
+ * Request rate module's configuration.
  */
 public class RequestRateConfiguration {
 
@@ -67,6 +67,15 @@ public class RequestRateConfiguration {
      */
     public TimeUnit timeunit() {
         return values.timeunit;
+    }
+
+    /**
+     * Reporting rate in milliseconds.
+     *
+     * @return reporting rate in milliseconds
+     */
+    public long reportingRateInMillis() {
+        return timeunit().toMillis(period());
     }
 
 }

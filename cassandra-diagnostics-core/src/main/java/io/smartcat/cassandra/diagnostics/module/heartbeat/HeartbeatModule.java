@@ -44,7 +44,12 @@ public class HeartbeatModule extends Module {
         logger.debug("Heartbeat module initialized with {} period and {} timeunit.", config.period(),
                 config.timeunit().name());
         timer = new Timer();
-        timer.schedule(new HeartbeatTask(), config.periodInMillis());
+        timer.schedule(new HeartbeatTask(), 0, config.reportingRateInMillis());
+    }
+
+    @Override
+    protected void stop() {
+        timer.cancel();
     }
 
     /**

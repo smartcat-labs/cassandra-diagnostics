@@ -68,11 +68,11 @@ public class HeartbeatConfiguration {
     }
 
     /**
-     * Period in milliseconds.
+     * Reporting rate in milliseconds.
      *
-     * @return heartbeat period in milliseconds
+     * @return Reporting rate in milliseconds
      */
-    public long periodInMillis() {
+    public long reportingRateInMillis() {
         return timeunit().toMillis(period());
     }
 }

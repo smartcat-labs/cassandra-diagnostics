@@ -24,8 +24,6 @@ public class HeartbeatModule extends Module {
 
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatModule.class);
 
-    private final HeartbeatConfiguration options;
-
     private final String service;
 
     private final Timer timer;
@@ -34,19 +32,24 @@ public class HeartbeatModule extends Module {
      * Constructor.
      *
      * @param configuration Module configuration
-     * @param reporters Reporter list
+     * @param reporters     Reporter list
      * @throws ConfigurationException in case the provided module configuration is not valid
      */
     public HeartbeatModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
         super(configuration, reporters);
 
-        options = HeartbeatConfiguration.create(configuration.options);
+        HeartbeatConfiguration config = HeartbeatConfiguration.create(configuration.options);
         service = configuration.measurement;
 
-        logger.debug("Heartbeat module initialized with {} period and {} timeunit.",
-                options.period(), options.timeunit().name());
+        logger.debug("Heartbeat module initialized with {} period and {} timeunit.", config.period(),
+                config.timeunit().name());
         timer = new Timer();
-        timer.schedule(new HeartbeatTask(), options.periodInMillis());
+        timer.schedule(new HeartbeatTask(), 0, config.reportingRateInMillis());
+    }
+
+    @Override
+    protected void stop() {
+        timer.cancel();
     }
 
     /**
@@ -64,8 +67,9 @@ public class HeartbeatModule extends Module {
     }
 
     private Measurement createMeasurement() {
-        Measurement m = Measurement.create(service, 1.0, new Date().getTime(), TimeUnit.MILLISECONDS,
-                new HashMap<String, String>(), new HashMap<String, String>());
+        Measurement m = Measurement
+                .create(service, 1.0, new Date().getTime(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
+                        new HashMap<String, String>());
         return m;
     }
 

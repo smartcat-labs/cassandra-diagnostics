@@ -22,13 +22,34 @@ Cassandra Diagnostics is an extension for Apache Cassandra server node implement
 
 [Cassandra Diagnostics Commons](https://github.com/smartcat-labs/cassandra-diagnostics/tree/dev/cassandra-diagnostics-commons) holds interface for core, connector and reports and it provides signature all the modules need to confront to be able to work together.
 
-### Query Reporters
+### Modules
 
-Query Reporters take measurement from core and wrap them up in implementation specific format so it can be sent to reporters target (i.e. Influx reporter transforms measurement to influx query and stores it to InfluxDB).
+There are default module implementations which serve as core features. Modules use configured reporters to report their activity.
 
-Query Reporter implementations:
+Module implementations:
 
-#### Log Query Reporter
+#### Heartbeat Module
+
+Heartbeat module produces messages to provide feedback that the diagnostics agent is loaded and working. Typical usage is with Log Reporter where it produces INFO message in configured intervals.
+Default interval is 15 minutes.
+
+#### Slow Query Module
+
+Slow Query module is monitoring execution time of each query and if it is above configured threshold it reports the value and query type using configured reporters.
+Default is 25 milliseconds.
+
+#### Request Rate Module
+
+Request Rate Module uses codahale metrics library to create rate measurement of executed queries. Rates are reported for select and upsert statements using configured reporters in configured periods.
+Default is 1 second.
+
+### Reporters
+
+Reporters take measurement from core and wrap them up in implementation specific format so it can be sent to reporters target (i.e. Influx reporter transforms measurement to influx query and stores it to InfluxDB).
+
+Reporter implementations:
+
+#### Log Reporter
 
 [LogReporter}(https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-core/src/main/java/io/smartcat/cassandra/diagnostics/reporter/LogReporter.java) uses the Cassandra logger system to report measurement (this is default reporter and part of core). Reports are logged at the `INFO` log level in the following pattern:
 

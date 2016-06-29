@@ -173,14 +173,53 @@ The Diagnostics JMX MXBean could be found under the following object name:
 package io.smartcat.cassandra.diagnostics.jmx:type=DiagnosticsMXBean
 ```
 
+## Building
+
+Cassandra Diagnostics is a maven project and the project could be built using a single maven command like the following:
+
+```
+$ mvn clean package
+```
+
+As the result of this, all project's sub-modules would be compiled, unit test run and output artifacts (JARs) generated. In every sub-module directory, there is a `target` directory that contains generated JAR files. For example, in `cassandra-diagnostics-core` there is a `target` directory that contains `cassandra-diagnostics-core-<VERSION>.jar`.
+
+## Running Integration and Functional Tests
+
+In Cassandra Diagnostics projects, integration and functional tests kept separately. They are not activated for the default maven profile (`dev`) and, therefore, not executed in the maven test phase by default.
+
+The `integration-test` profile has to be activated in order to execute integration tests (how unexpected, right?). This profile is executed by `maven-failsafe-plugin` in maven `verify` phase. The maven command to execute integration tests:
+
+```
+$ mvn verify -P integration-test
+```
+
+The `functional-test` profile has to be activated in order to execute functional tests in the `verify` maven phase. The maven command line for this:
+
+```
+$ mvn verify -P functional-test
+```
+
 ## Installation
 
-Place the Diagnostics JAR `cassandra-diagnostics-VERSION-dist.jar` into Cassandra's `lib` directory.
+Cassandra Diagnostics consists of the following three components:
+
+- Cassandra Diagnostics Core
+- Cassandra Diagnostics Connector
+- Cassandra Diagnostics Reporter
+
+Every of these components is packaged into its own JAR file (accompanied with necessary dependencies). These JAR files need to be present on the classpath. 
+
+Pay attention to the fact that Cassandra Diagnostics Connector has to be aligned with the used Cassandra version. For example, `cassandra-diagnostics-connector21` should be used with Cassandra 2.1.
+
+Also note that more than one Cassandra Diagnostics Reporter can be used at the same time. That means that all respective JAR files have to be put on the classpath. The only exception to this rule is in case of `LogReporter` that is built in Cassandra Diagnostics Core and no Reporter JAR has to be added explicitly. 
+
+Place `cassandra-diagnostics-core-VERSION.jar`, `cassandra-diagnostics-connector21-VERSION.jar` and required Reporter JARs (e.g. `cassandra-diagnostics-reporter-influx-VERSION-all.jar`) into Cassandra `lib` directory.
+
 Create and place the configuration file `cassandra-diagnostics.yml` into Cassandra's `conf` directory.
 Add the following line at the end of `conf/cassandra-env.sh`:
 
 ```
-JVM_OPTS="$JVM_OPTS -javaagent:$CASSANDRA_HOME/lib/cassandra-diagnostics-VERSION-dist.jar -Dcassandra.diagnostics.config=cassandra-diagnostics.yml"
+JVM_OPTS="$JVM_OPTS -javaagent:$CASSANDRA_HOME/lib/cassandra-diagnostics-core-VERSION.jar -Dcassandra.diagnostics.config=cassandra-diagnostics.yml"
 ```
 
 ## Usage

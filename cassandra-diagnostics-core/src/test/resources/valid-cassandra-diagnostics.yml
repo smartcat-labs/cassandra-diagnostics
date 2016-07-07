@@ -12,6 +12,8 @@ reporters:
       influxPassword: password #Optional
       influxDbName: cassandradb #Optional
       influxRetentionPolicy: default #Optional
+      influxPointsInBatch: 1000 #optional
+      influxFlushPeriodInSeconds: 5 #optional
 
 # Modules
 modules:

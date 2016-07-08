@@ -155,6 +155,8 @@ modules:
     options:
       # Slow query threshold
       slowQueryThresholdInMilliseconds: 25
+    reporters:
+      - io.smartcat.cassandra.diagnostics.reporter.LogReporter
   - module: io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateModule
     measurement: requestRate
     options:

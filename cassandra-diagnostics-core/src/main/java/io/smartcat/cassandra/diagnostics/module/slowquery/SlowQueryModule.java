@@ -47,11 +47,7 @@ public class SlowQueryModule extends Module {
 
     @Override
     protected boolean isForReporting(Query query) {
-        if (slowQueryLogDecider.isForReporting(query)) {
-            return true;
-        }
-
-        return true;
+        return slowQueryLogDecider.isForReporting(query);
     }
 
     @Override

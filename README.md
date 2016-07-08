@@ -139,6 +139,8 @@ reporters:
       influxPassword: password #Optional
       influxDbName: cassandradb #Optional
       influxRetentionPolicy: default #Optional
+      influxPointsInBatch: 1000 #optional
+      influxFlushPeriodInSeconds: 5 #optional
 
 # Modules
 modules:
@@ -207,11 +209,11 @@ Cassandra Diagnostics consists of the following three components:
 - Cassandra Diagnostics Connector
 - Cassandra Diagnostics Reporter
 
-Every of these components is packaged into its own JAR file (accompanied with necessary dependencies). These JAR files need to be present on the classpath. 
+Every of these components is packaged into its own JAR file (accompanied with necessary dependencies). These JAR files need to be present on the classpath.
 
 Pay attention to the fact that Cassandra Diagnostics Connector has to be aligned with the used Cassandra version. For example, `cassandra-diagnostics-connector21` should be used with Cassandra 2.1.
 
-Also note that more than one Cassandra Diagnostics Reporter can be used at the same time. That means that all respective JAR files have to be put on the classpath. The only exception to this rule is in case of `LogReporter` that is built in Cassandra Diagnostics Core and no Reporter JAR has to be added explicitly. 
+Also note that more than one Cassandra Diagnostics Reporter can be used at the same time. That means that all respective JAR files have to be put on the classpath. The only exception to this rule is in case of `LogReporter` that is built in Cassandra Diagnostics Core and no Reporter JAR has to be added explicitly.
 
 Place `cassandra-diagnostics-core-VERSION.jar`, `cassandra-diagnostics-connector21-VERSION.jar` and required Reporter JARs (e.g. `cassandra-diagnostics-reporter-influx-VERSION-all.jar`) into Cassandra `lib` directory.
 

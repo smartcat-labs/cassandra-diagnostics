@@ -1,6 +1,7 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
@@ -27,6 +28,10 @@ public class InfluxReporter extends Reporter {
     private static final String PASSWORD_PROP = "influxPassword";
 
     private static final String DB_NAME_PROP = "influxDbName";
+
+    private static final String POINTS_IN_BATCH_PROP = "influxPointsInBatch";
+
+    private static final String FLUSH_PERIOD_IN_SECONDS_PROP = "influxFlushPeriodInSeconds";
 
     private static final String DEFAULT_DB_NAME = "slowQueries";
 
@@ -73,6 +78,12 @@ public class InfluxReporter extends Reporter {
 
         influx = InfluxDBFactory.connect(dbAddress, username, password);
         influx.createDatabase(dbName);
+
+        final int pointsInBatch = Integer.parseInt(configuration.getDefaultOption(POINTS_IN_BATCH_PROP, "1000"));
+        final int flushPeriodInSeconds = Integer
+                .parseInt(configuration.getDefaultOption(FLUSH_PERIOD_IN_SECONDS_PROP, "5"));
+
+        influx.enableBatch(pointsInBatch, flushPeriodInSeconds, TimeUnit.SECONDS);
     }
 
     @Override

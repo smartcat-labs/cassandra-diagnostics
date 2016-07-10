@@ -25,11 +25,6 @@
 			<artifactId>snakeyaml</artifactId>
 			<version>${version.snakeyaml}</version>
 		</dependency>
-        <dependency>
-            <groupId>com.codahale.metrics</groupId>
-            <artifactId>metrics-core</artifactId>
-            <version>3.0.2</version>
-        </dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

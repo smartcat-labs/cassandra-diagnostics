@@ -33,7 +33,7 @@ public class Meter {
      */
     public Meter(Clock clock) {
         this.clock = clock;
-        this.startTime = this.clock.getTick();
+        this.startTime = this.clock.getTickInNanos();
         this.lastTick = new AtomicLong(startTime);
     }
 
@@ -59,7 +59,7 @@ public class Meter {
 
     private void tickIfNecessary() {
         final long oldTick = lastTick.get();
-        final long newTick = clock.getTick();
+        final long newTick = clock.getTickInNanos();
         final long age = newTick - oldTick;
         if (age > TICK_INTERVAL) {
             final long newIntervalStartTick = newTick - age % TICK_INTERVAL;
@@ -122,7 +122,7 @@ public class Meter {
         if (getCount() == 0) {
             return 0.0;
         } else {
-            final double elapsed = (clock.getTick() - startTime);
+            final double elapsed = (clock.getTickInNanos() - startTime);
             return getCount() / elapsed * TimeUnit.SECONDS.toNanos(1);
         }
     }

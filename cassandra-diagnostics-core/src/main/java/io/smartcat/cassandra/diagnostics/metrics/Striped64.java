@@ -10,8 +10,6 @@ package io.smartcat.cassandra.diagnostics.metrics;
 
 import java.util.Random;
 
-// CHECKSTYLE:OFF
-
 /**
  * A package-local class holding common representation and mechanics for classes supporting dynamic
  * striping on 64bit values. The class extends Number so that concrete subclasses must publicly do
@@ -347,4 +345,3 @@ abstract class Striped64 extends Number {
         }
     }
 }
-// CHECKSTYLE:ON

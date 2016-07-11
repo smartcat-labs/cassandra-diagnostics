@@ -162,7 +162,6 @@ modules:
     options:
       period: 1
       timeunit: SECONDS
-      separateByRequestType: true
     reporters:
       - io.smartcat.cassandra.diagnostics.reporter.LogReporter
       - io.smartcat.cassandra.diagnostics.reporter.InfluxReporter

@@ -27,6 +27,7 @@
 =======
 >>>>>>> Fixing identation in POM xml files.
         <module>cassandra-diagnostics-ft</module>
+        <module>cassandra-diagnostics-driver-connector</module>
     </modules>
 
     <licenses>

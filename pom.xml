@@ -22,10 +22,6 @@
         <module>cassandra-diagnostics-reporter-riemann</module>
         <module>cassandra-diagnostics-connector21</module>
         <module>cassandra-diagnostics-connector30</module>
-<<<<<<< bf1c8c9cc15d46174817f612d72f6bd777a7ceec
-        <module>cassandra-diagnostics-driver-connector</module>
-=======
->>>>>>> Fixing identation in POM xml files.
         <module>cassandra-diagnostics-ft</module>
         <module>cassandra-diagnostics-driver-connector</module>
     </modules>

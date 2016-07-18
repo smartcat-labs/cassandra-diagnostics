@@ -12,7 +12,15 @@ Cassandra Diagnostics is an extension for Apache Cassandra server node implement
 
 ### Cassandra Connector
 
-[Cassandra Connector](https://github.com/smartcat-labs/cassandra-diagnostics/tree/dev/cassandra-diagnostics-connector21) is module which hooks into query lifecycle and extract information for measurement. It uses bytecode instrumentation to augment Cassandra node with addition functionality and it uses low priority thread to measure query performance not to hurt overall performance of Cassandra cluster.
+Connector is a module which hooks into the query path and extract information for diagnostics. Bytecode instrumentation is used to augment existing Cassandra code with addition functionality. It uses low priority threads to execute the diagnostics information extraction with minimal performance impact to the target code (Cassandra node or application/driver).
+
+Currently Cassandra Diagnostics implements the following connector implementation:
+
+- [Cassandra Connector 2.1](https://github.com/smartcat-labs/cassandra-diagnostics/tree/dev/cassandra-diagnostics-connector21) is a connector implementation for Cassandra node for Cassandra version 2.1.x.
+
+- [Cassandra Connector 3.0](https://github.com/smartcat-labs/cassandra-diagnostics/tree/dev/cassandra-diagnostics-connector30) is a connector implementation for Cassandra node for Cassandra version 3.0.x.
+
+- [Cassandra Driver Connector](https://github.com/smartcat-labs/cassandra-diagnostics/tree/dev/cassandra-diagnostics-driver-connector) is a connector implementation for Datastax's Cassandra driver for diagnostics on the application side.
 
 ### Cassandra Core
 

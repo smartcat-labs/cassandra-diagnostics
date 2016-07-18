@@ -23,6 +23,7 @@
         <module>cassandra-diagnostics-connector21</module>
         <module>cassandra-diagnostics-connector30</module>
         <module>cassandra-diagnostics-ft</module>
+        <module>cassandra-diagnostics-driver-connector</module>
     </modules>
 
     <licenses>

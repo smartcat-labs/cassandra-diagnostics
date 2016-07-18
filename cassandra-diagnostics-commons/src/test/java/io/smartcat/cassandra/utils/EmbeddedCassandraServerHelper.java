@@ -270,7 +270,7 @@ public class EmbeddedCassandraServerHelper {
         mkdirs();
         CommitLog commitLog = CommitLog.instance;
         commitLog.getContext(); // wait for commit log allocator instantiation to avoid hanging on a race condition
-        commitLog.resetUnsafe(true); // cleanup screws w/ CommitLog, this brings it back to safe state
+        //commitLog.resetUnsafe(); // cleanup screws w/ CommitLog, this brings it back to safe state
     }
 
     private static void cleanup() throws IOException {

@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.slf4j.Logger;
 
 import io.smartcat.cassandra.diagnostics.Query;
 
@@ -57,9 +56,8 @@ public class QueryProcessorWrapperTest {
         when(queryState.getClientState()).thenReturn(clientState);
 
         QueryOptions options = mock(QueryOptions.class);
-        Logger origLogger = mock(Logger.class);
 
-        wrapper.processStatement(statement, queryState, options, origLogger);
+        wrapper.processStatement(statement, queryState, options, System.currentTimeMillis(), null, null);
 
         lock.await(1000, TimeUnit.MILLISECONDS);
 

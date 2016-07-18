@@ -1,12 +1,10 @@
 package io.smartcat.cassandra.diagnostics.connector;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
 
@@ -14,9 +12,9 @@ import org.apache.cassandra.cql3.CQLStatement;
 import org.apache.cassandra.cql3.QueryOptions;
 import org.apache.cassandra.cql3.QueryProcessor;
 import org.apache.cassandra.service.QueryState;
+import org.apache.cassandra.transport.messages.ResultMessage;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
 import org.springframework.instrument.InstrumentationSavingAgent;
 
 public class ConnectorImplTest {
@@ -26,16 +24,6 @@ public class ConnectorImplTest {
     @BeforeClass
     public static void setUp() {
         instrumentation = InstrumentationSavingAgent.getInstrumentation();
-    }
-
-    @Test
-    public void instrumentation_initializes_transformer() {
-        QueryReporter queryReporter = mock(QueryReporter.class);
-        Instrumentation inst = mock(Instrumentation.class);
-        ConnectorImpl connector = new ConnectorImpl();
-        connector.init(inst, queryReporter);
-
-        verify(inst).addTransformer(any(ClassFileTransformer.class), anyBoolean());
     }
 
     @Test
@@ -53,7 +41,8 @@ public class ConnectorImplTest {
         queryProcessor.processStatement(statement, queryState, options);
 
         verify(queryProcessorWrapper).processStatement(
-                same(statement), same(queryState), same(options), any(Logger.class));
+                same(statement), same(queryState), same(options),
+                any(Long.class), any(ResultMessage.class), any(Throwable.class));
     }
 
     private void setStatic(Field field, Object newValue) throws Exception {

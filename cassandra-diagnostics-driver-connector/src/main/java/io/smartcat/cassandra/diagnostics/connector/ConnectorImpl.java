@@ -56,6 +56,14 @@ public class ConnectorImpl implements Connector {
     }
 
     /**
+     * {@see io.smartcat.cassandra.diagnostics.connector.Connector#waitForSetupCompleted()}.
+     */
+    public void waitForSetupCompleted() {
+        logger.info("Waiting for the driver setup process to complete.");
+        logger.info("The driver setup process completed.");
+    }
+
+    /**
      * Installs intercepter for the target classes.
      *
      * @param inst instrumentation handle

@@ -6,6 +6,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.cassandra.cql3.CQLStatement;
 import org.apache.cassandra.cql3.QueryOptions;
@@ -40,12 +41,36 @@ public class ConnectorImpl implements Connector {
      */
     private static QueryProcessorWrapper queryProcessorWrapper;
 
+    private static CountDownLatch lock = new CountDownLatch(1);
+
     /**
      * {@link org.apache.cassandra.cql3.QueryProcessor} diagnostics wrapper getter.
      * @return QueryProcessorWrapper instance
      */
     public static QueryProcessorWrapper queryProcessorWrapper() {
         return queryProcessorWrapper;
+    }
+
+    /**
+     * This method is supposed to be called from within the CassandraDaemon advice to
+     * signal that Cassandra setup process is completed.
+     */
+    public static void cassandraSetupComplete() {
+        lock.countDown();
+    }
+
+    /**
+     * {@see io.smartcat.cassandra.diagnostics.connector.Connector#waitForSetupCompleted()}.
+     */
+    public void waitForSetupCompleted() {
+        logger.info("Waiting for Cassandra setup process to complete.");
+        try {
+            lock.await();
+            logger.info("Cassandra setup process completed.");
+        } catch (InterruptedException e) {
+            // This should never happen
+            throw new IllegalStateException();
+        }
     }
 
     /**
@@ -56,15 +81,16 @@ public class ConnectorImpl implements Connector {
      */
     public void init(Instrumentation inst, QueryReporter queryReporter) {
         queryProcessorWrapper = new QueryProcessorWrapper(queryReporter);
-        setIntercepters(inst);
+        setQueryProcessorIntercepter(inst);
+        setCassandraDaemonIntercepter(inst);
     }
 
     /**
-     * Installs intercepter for the target classes.
+     * Installs intercepter for the QueryProcessor classes.
      *
      * @param inst instrumentation handle
      */
-    private static void setIntercepters(Instrumentation inst) {
+    private static void setQueryProcessorIntercepter(Instrumentation inst) {
 
         logger.info("Cassandra Diagnostics Connector: injecting org.apache.cassandra.cql3.QueryProcessor interceptor");
 
@@ -91,11 +117,41 @@ public class ConnectorImpl implements Connector {
                     }
                 })
                 .installOn(inst);
-
     }
 
     /**
-     * ByteBuddy Advice.
+     * Installs intercepter for the CassandraDeamon classes.
+     *
+     * @param inst instrumentation handle
+     */
+    private static void setCassandraDaemonIntercepter(Instrumentation inst) {
+
+        logger.info("Cassandra Diagnostics Connector: " +
+                "injecting org.apache.cassandra.service.CassandraDaemon interceptor");
+
+        final ElementMatcher.Junction<NamedElement> type = ElementMatchers
+                .named("org.apache.cassandra.service.CassandraDaemon");
+
+        // Transformer for QueryProcessor
+        final ByteBuddy byteBuddy = new ByteBuddy().with(Implementation.Context.Disabled.Factory.INSTANCE);
+        new AgentBuilder.Default().with(byteBuddy)
+                .with(RedefinitionStrategy.RETRANSFORMATION)
+                .with(InitializationStrategy.NoOp.INSTANCE)
+                .with(TypeStrategy.Default.REDEFINE)
+                .type(type)
+                .transform(new Transformer() {
+                    @Override
+                    public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription,
+                            ClassLoader classLoader) {
+                        return builder.visit(Advice.to(CassandraDaemonAdvice.class)
+                                        .on(named("completeSetup")));
+                    }
+                })
+                .installOn(inst);
+    }
+
+    /**
+     * QueryProcessor Advice.
      */
     public static class ProcessStatementAdvice {
 
@@ -154,4 +210,16 @@ public class ConnectorImpl implements Connector {
                 Modifier.PUBLIC, null, null);
     }
 
+    /**
+     * CassandraDaemon advice.
+     */
+    public static class CassandraDaemonAdvice {
+        /**
+         * Code executed after the CassandraDaemon#completeSetup method.
+         */
+        @Advice.OnMethodExit
+        public static void exit() {
+            ConnectorImpl.cassandraSetupComplete();
+        }
+    }
 }

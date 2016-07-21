@@ -50,18 +50,19 @@ public class FTInflux {
         session.execute("CREATE KEYSPACE IF NOT EXISTS test_keyspace "
                 + "WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
         session.execute("CREATE TABLE IF NOT EXISTS test_keyspace.test_table (uid uuid PRIMARY KEY);");
-        
-        //for (int i=0; i<100; i++) {
-            session.execute("SELECT * FROM test_keyspace.test_table");
-        //}
-        
-        cluster.close();
-        System.out.println("Test query executed...");
-        
-        Thread.sleep(2000);
-        QueryResult result = influxdb.query(new Query("SHOW SERIES FROM \"queryReport\"", SystemPropertyUtil.get("influxdb.dbname")));
-        
+
+        session.execute("SELECT * FROM test_keyspace.test_table");
+
+        QueryResult result = null;
+        for (int i = 0; i < 10; i++) {
+            result = influxdb.query(new Query("SHOW SERIES FROM \"queryReport\"", SystemPropertyUtil.get("influxdb.dbname")));
+            if (!result.hasError()) {
+                break;
+            }
+            Thread.sleep(500);
+        }
+
         Assertions.assertThat(result.getResults().size()).isEqualTo(1);
-        System.out.println(result.getResults());
+        cluster.close();
     }
 }

@@ -29,14 +29,14 @@ public class Diagnostics implements QueryReporter {
      */
     private static final Logger logger = LoggerFactory.getLogger(Diagnostics.class);
 
-    private final Configuration config;
+    private Configuration config;
 
-    private final DiagnosticsProcessor diagnosticsProcessor;
+    private DiagnosticsProcessor diagnosticsProcessor = null;
 
     /**
-     * Default constructor.
+     * Completes the initialization and activates the query processing.
      */
-    public Diagnostics() {
+    public void activate() {
         this.config = getConfiguration();
         this.diagnosticsProcessor = new DiagnosticsProcessor(config);
         initMXBean();
@@ -74,7 +74,9 @@ public class Diagnostics implements QueryReporter {
 
     @Override
     public void report(Query query) {
-        diagnosticsProcessor.process(query);
+        if (diagnosticsProcessor != null) {
+            diagnosticsProcessor.process(query);
+        }
     }
 
 }

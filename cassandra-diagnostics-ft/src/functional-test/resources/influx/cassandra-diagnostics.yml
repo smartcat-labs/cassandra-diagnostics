@@ -1,0 +1,18 @@
+reporters:
+  - reporter: io.smartcat.cassandra.diagnostics.reporter.InfluxReporter
+    options:
+      influxDbAddress: http://influxdb:8086
+      influxUsername: admin
+      influxPassword: secret
+      influxDbName: diagnostics
+      influxRetentionPolicy: default
+      influxPointsInBatch: 1
+      influxFlushPeriodInSeconds: 1
+
+modules:
+  - module: io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule
+    measurement: queryReport
+    options:
+      slowQueryThresholdInMilliseconds: 0
+    reporters:
+      - io.smartcat.cassandra.diagnostics.reporter.InfluxReporter

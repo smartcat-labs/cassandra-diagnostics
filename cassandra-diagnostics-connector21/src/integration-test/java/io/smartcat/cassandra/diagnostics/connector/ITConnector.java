@@ -28,8 +28,8 @@ public class ITConnector {
     @BeforeClass
     public static void setUp() throws ConfigurationException, TTransportException, IOException, InterruptedException {
         queryIntercepted = false;
-        Instrumentation inst = InstrumentationSavingAgent.getInstrumentation();
-        Connector connector = new ConnectorImpl();
+        final Instrumentation inst = InstrumentationSavingAgent.getInstrumentation();
+        final Connector connector = new ConnectorImpl();
         connector.init(inst, new QueryReporter() {
             @Override
             public void report(Query query) {
@@ -42,6 +42,7 @@ public class ITConnector {
             }
         });
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+        connector.waitForSetupCompleted();
         cluster = Cluster.builder().addContactPoint("127.0.0.1").withPort(9142).build();
         session = cluster.connect();
     }

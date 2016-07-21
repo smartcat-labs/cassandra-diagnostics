@@ -198,7 +198,7 @@ As the result of this, all project's sub-modules would be compiled, unit test ru
 
 In Cassandra Diagnostics projects, integration and functional tests kept separately. They are not activated for the default maven profile (`dev`) and, therefore, not executed in the maven test phase by default.
 
-The `integration-test` profile has to be activated in order to execute integration tests (how unexpected, right?). This profile is executed by `maven-failsafe-plugin` in maven `verify` phase. The maven command to execute integration tests:
+The `integration-test` profile has to be activated in order to execute integration tests (quite unexpected, right?). This profile is executed by `maven-failsafe-plugin` in maven `verify` phase. The maven command to execute integration tests:
 
 ```
 $ mvn verify -P integration-test
@@ -209,6 +209,12 @@ The `functional-test` profile has to be activated in order to execute functional
 ```
 $ mvn verify -P functional-test
 ```
+
+`functional-test` activates by default the basic functional test (`basic` profile). Another available functional tests could be activated by specifying the respective maven profile (from `cassandra-diagnostics-ft.pom`) explicitly. For example:
+
+```
+$ mvn verify -P functional-test,influx
+```  
 
 ## Installation
 

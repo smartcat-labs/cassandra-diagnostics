@@ -122,7 +122,7 @@ public class DiagnosticsProcessor {
      * @param query query to process
      */
     public void process(final Query query) {
-        logger.info("Accepting query {}", query);
+        logger.trace("Accepting query {}", query);
         if (!queryBufferQueue.offer(query)) {
             // the queue is full
             logger.warn("The query buffer queueu is full. The reported query is ignored.");
@@ -133,7 +133,7 @@ public class DiagnosticsProcessor {
         while (true) {
             try {
                 Query query = queryBufferQueue.take();
-                logger.info("Processing query {}", query);
+                logger.trace("Processing query {}", query);
                 for (Module module : modules) {
                     module.process(query);
                 }

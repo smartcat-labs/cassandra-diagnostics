@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +21,15 @@ import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
  */
 public class DiagnosticsProcessor {
 
+    private static final String PROCESSING_THREAD_NAME = "cassandra-diagnostics-processor";
+
     private static final Logger logger = LoggerFactory.getLogger(DiagnosticsProcessor.class);
 
     private List<Module> modules = new ArrayList<>();
 
     private Map<String, Reporter> reporters = new HashMap<>();
+
+    private final LinkedBlockingQueue<Query> queryBufferQueue;
 
     /**
      * DiagnosticsProcessor constructor.
@@ -39,6 +44,16 @@ public class DiagnosticsProcessor {
         if (configuration.modules == null) {
             throw new IllegalStateException("Configuration does not have any module defined.");
         }
+
+        queryBufferQueue = new LinkedBlockingQueue<>(configuration.queryQueueCapacity);
+        Thread th = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                process();
+            }
+        });
+        th.setName(PROCESSING_THREAD_NAME);
+        th.start();
 
         initReporters(configuration.reporters);
         initModules(configuration.modules);
@@ -102,14 +117,30 @@ public class DiagnosticsProcessor {
     }
 
     /**
-     * Process a query with all configured modules.
+     * Accepts a query sent by the connector. with all configured modules.
      *
      * @param query query to process
      */
     public void process(final Query query) {
-        logger.trace("Processing query {}", query);
-        for (Module module : modules) {
-            module.process(query);
+        logger.info("Accepting query {}", query);
+        if (!queryBufferQueue.offer(query)) {
+            // the queue is full
+            logger.warn("The query buffer queueu is full. The reported query is ignored.");
+        }
+    }
+
+    private void process() {
+        while (true) {
+            try {
+                Query query = queryBufferQueue.take();
+                logger.info("Processing query {}", query);
+                for (Module module : modules) {
+                    module.process(query);
+                }
+            } catch (InterruptedException e) {
+                logger.info(PROCESSING_THREAD_NAME + " thread interrupted.");
+                break;
+            }
         }
     }
 

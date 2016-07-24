@@ -36,6 +36,8 @@ public class Configuration {
                 module.module = HeartbeatModule.class.getName();
                 module.options = options;
                 modules.add(module);
+
+                queryQueueCapacity = 1000;
             }
         };
     }
@@ -49,6 +51,11 @@ public class Configuration {
      * Modules configuration list with module specific properties.
      */
     public List<ModuleConfiguration> modules = new ArrayList<>();
+
+    /**
+     * The capacity of the query buffer queue. The default value is 1000.
+     */
+    public int queryQueueCapacity = 1000;
 
     @Override
     public String toString() {

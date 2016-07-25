@@ -163,6 +163,9 @@ modules:
     options:
       # Slow query threshold
       slowQueryThresholdInMilliseconds: 25
+      # Slow query tables for logging
+      tablesForLogging:
+        - keyspace.table_name
     reporters:
       - io.smartcat.cassandra.diagnostics.reporter.LogReporter
   - module: io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateModule

@@ -61,7 +61,7 @@ public class SlowQueryModule extends Module {
             throw new IllegalArgumentException("Cannot log slow query because hostname is not resolved.");
         }
 
-        final Map<String, String> tags = new HashMap<>(2);
+        final Map<String, String> tags = new HashMap<>(4);
         tags.put("id", UUID.randomUUID().toString());
         tags.put("host", hostname);
         tags.put("statementType", query.statementType().toString());
@@ -72,7 +72,7 @@ public class SlowQueryModule extends Module {
         fields.put("value", Long.toString(query.executionTimeInMilliseconds()));
 
         final Measurement measurement = Measurement
-                .create(service, query.executionTimeInMilliseconds(), query.executionTimeInMilliseconds(),
+                .create(service, query.executionTimeInMilliseconds(), query.startTimeInMilliseconds(),
                         TimeUnit.MILLISECONDS, tags, fields);
 
         logger.trace("Measurement transformed: {}", measurement);

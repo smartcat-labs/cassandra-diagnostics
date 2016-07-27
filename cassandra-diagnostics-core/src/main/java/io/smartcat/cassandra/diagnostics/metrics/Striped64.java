@@ -278,8 +278,7 @@ abstract class Striped64 extends Number {
                 if (init) {
                     break;
                 }
-            } else if (casBase(v = base, fn(v, x)))
-             {
+            } else if (casBase(v = base, fn(v, x))) {
                 break;                          // Fall back on using base
             }
         }

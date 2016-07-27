@@ -47,6 +47,27 @@
         <tag>HEAD</tag>
     </scm>
 
+    <developers>
+        <developer>
+            <name>Nenad Bozic</name>
+            <email>nenad.bozic@smartcat.io</email>
+            <organization>SmartCat</organization>
+            <organizationUrl>http://www.smartcat.io</organizationUrl>
+        </developer>
+        <developer>
+            <name>Matija Gobec</name>
+            <email>matija.gobec@smartcat.io</email>
+            <organization>SmartCat</organization>
+            <organizationUrl>http://www.smartcat.io</organizationUrl>
+        </developer>
+        <developer>
+            <name>Nikola Invancevic</name>
+            <email>nikola.ivancevic@smartcat.io</email>
+            <organization>SmartCat</organization>
+            <organizationUrl>http://www.smartcat.io</organizationUrl>
+        </developer>
+    </developers>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <source.level>1.7</source.level>

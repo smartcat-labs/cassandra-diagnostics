@@ -81,11 +81,10 @@ abstract class Striped64 extends Number {
      */
 
     /**
-     * Padded variant of AtomicLong supporting only raw accesses plus CAS. The value field is placed
-     * between pads, hoping that the JVM doesn't reorder them.
-     * <p/>
-     * JVM intrinsics note: It would be possible to use a release-only form of CAS here, if it were
-     * provided.
+     * Padded variant of AtomicLong supporting only raw accesses plus CAS. The value field is placed between pads,
+     * hoping that the JVM doesn't reorder them.
+     *
+     * JVM intrinsics note: It would be possible to use a release-only form of CAS here, if it were provided.
      */
     static final class Cell {
         volatile long p0, p1, p2, p3, p4, p5, p6;
@@ -231,26 +230,28 @@ abstract class Striped64 extends Number {
                             } finally {
                                 busy = 0;
                             }
-                            if (created)
+                            if (created) {
                                 break;
+                            }
                             continue;           // Slot is now non-empty
                         }
                     }
                     collide = false;
-                } else if (!wasUncontended)       // CAS already known to fail
+                } else if (!wasUncontended) {
                     wasUncontended = true;      // Continue after rehash
-                else if (a.cas(v = a.value, fn(v, x)))
+                } else if (a.cas(v = a.value, fn(v, x))) {
                     break;
-                else if (n >= NCPU || cells != as)
+                } else if (n >= NCPU || cells != as) {
                     collide = false;            // At max size or stale
-                else if (!collide)
+                } else if (!collide) {
                     collide = true;
-                else if (busy == 0 && casBusy()) {
+                } else if (busy == 0 && casBusy()) {
                     try {
                         if (cells == as) {      // Expand table unless stale
                             Cell[] rs = new Cell[n << 1];
-                            for (int i = 0; i < n; ++i)
+                            for (int i = 0; i < n; ++i) {
                                 rs[i] = as[i];
+                            }
                             cells = rs;
                         }
                     } finally {
@@ -274,10 +275,13 @@ abstract class Striped64 extends Number {
                 } finally {
                     busy = 0;
                 }
-                if (init)
+                if (init) {
                     break;
+                }
             } else if (casBase(v = base, fn(v, x)))
+             {
                 break;                          // Fall back on using base
+            }
         }
         hc.code = h;                            // Record index for next time
     }
@@ -292,8 +296,9 @@ abstract class Striped64 extends Number {
             int n = as.length;
             for (int i = 0; i < n; ++i) {
                 Cell a = as[i];
-                if (a != null)
+                if (a != null) {
                     a.value = initialValue;
+                }
             }
         }
     }
@@ -334,8 +339,9 @@ abstract class Striped64 extends Number {
                             for (java.lang.reflect.Field f : k.getDeclaredFields()) {
                                 f.setAccessible(true);
                                 Object x = f.get(null);
-                                if (k.isInstance(x))
+                                if (k.isInstance(x)) {
                                     return k.cast(x);
+                                }
                             }
                             throw new NoSuchFieldError("the Unsafe");
                         }

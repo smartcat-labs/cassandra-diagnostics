@@ -60,7 +60,7 @@ public class ConnectorImpl implements Connector {
     }
 
     /**
-     * {@see io.smartcat.cassandra.diagnostics.connector.Connector#waitForSetupCompleted()}.
+     * {@link io.smartcat.cassandra.diagnostics.connector.Connector#waitForSetupCompleted()}.
      */
     public void waitForSetupCompleted() {
         logger.info("Waiting for Cassandra setup process to complete.");

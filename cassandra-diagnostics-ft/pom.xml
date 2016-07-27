@@ -13,7 +13,7 @@
 	<properties>
 		<version.cassandra.driver>2.1.10.2</version.cassandra.driver>
 		<version.plugin.docker-maven-plugin>0.15.4</version.plugin.docker-maven-plugin>
-        <version.influxdb-java>2.2</version.influxdb-java>
+    <version.influxdb-java>2.2</version.influxdb-java>
 	</properties>
 
 	<dependencies>
@@ -107,7 +107,7 @@
 		<profile>
 			<id>basic-ft</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<activeByDefault>false</activeByDefault>
 			</activation>
 			<properties>
 				<functional.test>basic</functional.test>

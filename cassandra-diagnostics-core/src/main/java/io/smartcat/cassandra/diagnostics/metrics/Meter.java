@@ -84,14 +84,14 @@ public class Meter {
     }
 
     /**
-     * Returns the fifteen-minute exponentially-weighted moving average rate at which events have
-     * occurred since the meter was created.
-     * <p/>
-     * This rate has the same exponential decay factor as the fifteen-minute load average in the
-     * {@code top} Unix command.
+     * Returns the fifteen-minute exponentially-weighted moving average rate at which events have occurred since the
+     * meter was created.
      *
-     * @return the fifteen-minute exponentially-weighted moving average rate at which events have
-     * occurred since the meter was created
+     * This rate has the same exponential decay factor as the fifteen-minute load average in the {@code top} Unix
+     * command.
+     *
+     * @return the fifteen-minute exponentially-weighted moving average rate at which events have occurred since the
+     *         meter was created
      */
     public double getFifteenMinuteRate() {
         tickIfNecessary();
@@ -99,14 +99,14 @@ public class Meter {
     }
 
     /**
-     * Returns the five-minute exponentially-weighted moving average rate at which events have
-     * occurred since the meter was created.
-     * <p/>
+     * Returns the five-minute exponentially-weighted moving average rate at which events have occurred since the meter
+     * was created.
+     *
      * This rate has the same exponential decay factor as the five-minute load average in the {@code
      * top} Unix command.
      *
-     * @return the five-minute exponentially-weighted moving average rate at which events have
-     * occurred since the meter was created
+     * @return the five-minute exponentially-weighted moving average rate at which events have occurred since the meter
+     *         was created
      */
     public double getFiveMinuteRate() {
         tickIfNecessary();
@@ -128,14 +128,14 @@ public class Meter {
     }
 
     /**
-     * Returns the one-minute exponentially-weighted moving average rate at which events have
-     * occurred since the meter was created.
-     * <p/>
+     * Returns the one-minute exponentially-weighted moving average rate at which events have occurred since the meter
+     * was created.
+     *
      * This rate has the same exponential decay factor as the one-minute load average in the {@code
      * top} Unix command.
      *
-     * @return the one-minute exponentially-weighted moving average rate at which events have
-     * occurred since the meter was created
+     * @return the one-minute exponentially-weighted moving average rate at which events have occurred since the meter
+     *         was created
      */
     public double getOneMinuteRate() {
         tickIfNecessary();

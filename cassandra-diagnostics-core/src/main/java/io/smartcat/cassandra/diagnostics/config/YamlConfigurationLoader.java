@@ -68,7 +68,7 @@ public class YamlConfigurationLoader implements ConfigurationLoader {
     /*
      * (non-Javadoc)
      *
-     * @see io.smartcat.cassandra.diagnostics.config.ConfigurationLoader#loadConfig()
+     * @link io.smartcat.cassandra.diagnostics.config.ConfigurationLoader#loadConfig()
      */
     @Override
     public Configuration loadConfig() throws ConfigurationException {
@@ -78,7 +78,7 @@ public class YamlConfigurationLoader implements ConfigurationLoader {
     /*
      * (non-Javadoc)
      *
-     * @see io.smartcat.cassandra.diagnostics.config.ConfigurationLoader#loadConfig( java.net.URL)
+     * @link io.smartcat.cassandra.diagnostics.config.ConfigurationLoader#loadConfig( java.net.URL)
      */
     @Override
     public Configuration loadConfig(URL url) throws ConfigurationException {

@@ -11,22 +11,20 @@ package io.smartcat.cassandra.diagnostics.metrics;
 import java.io.Serializable;
 
 /**
- * One or more variables that together maintain an initially zero {@code long} sum.  When updates
- * (method {@link #add}) are contended across threads, the set of variables may grow dynamically to
- * reduce contention. Method {@link #sum} (or, equivalently, {@link #longValue}) returns the current
- * total combined across the variables maintaining the sum.
- * <p/>
- * <p>This class is usually preferable to {@link AtomicLong} when multiple threads update a common
- * sum that is used for purposes such as collecting statistics, not for fine-grained synchronization
- * control.  Under low update contention, the two classes have similar characteristics. But under
- * high contention, expected throughput of this class is significantly higher, at the expense of
- * higher space consumption.
- * <p/>
- * <p>This class extends {@link Number}, but does <em>not</em> define methods such as {@code
- * equals}, {@code hashCode} and {@code compareTo} because instances are expected to be mutated, and
- * so are not useful as collection keys.
- * <p/>
- * <p><em>jsr166e note: This class is targeted to be placed in java.util.concurrent.atomic.</em>
+ * One or more variables that together maintain an initially zero {@code long} sum. When updates (method {@link #add})
+ * are contended across threads, the set of variables may grow dynamically to reduce contention. Method {@link #sum}
+ * (or, equivalently, {@link #longValue}) returns the current total combined across the variables maintaining the sum.
+ *
+ * This class is usually preferable to AtomicLong when multiple threads update a common sum that is used for purposes
+ * such as collecting statistics, not for fine-grained synchronization control. Under low update contention, the two
+ * classes have similar characteristics. But under high contention, expected throughput of this class is significantly
+ * higher, at the expense of higher space consumption.
+ *
+ * This class extends {@link Number}, but does <em>not</em> define methods such as {@code
+ * equals}, {@code hashCode} and {@code compareTo} because instances are expected to be mutated, and so are not useful
+ * as collection keys.
+ *
+ * <em>jsr166e note: This class is targeted to be placed in java.util.concurrent.atomic.</em>
  *
  * @author Doug Lea
  * @since 1.8
@@ -64,8 +62,9 @@ class LongAdder extends Striped64 implements Serializable {
             int h = (hc = THREAD_HASH_CODE.get()).code;
             if (as == null || (n = as.length) < 1 ||
                     (a = as[(n - 1) & h]) == null ||
-                    !(uncontended = a.cas(v = a.value, v + x)))
+                    !(uncontended = a.cas(v = a.value, v + x))) {
                 retryUpdate(x, hc, uncontended);
+            }
         }
     }
 
@@ -97,8 +96,9 @@ class LongAdder extends Striped64 implements Serializable {
             int n = as.length;
             for (int i = 0; i < n; ++i) {
                 Cell a = as[i];
-                if (a != null)
+                if (a != null) {
                     sum += a.value;
+                }
             }
         }
         return sum;

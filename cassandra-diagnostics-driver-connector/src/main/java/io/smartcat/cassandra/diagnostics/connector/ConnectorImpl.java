@@ -37,7 +37,8 @@ public class ConnectorImpl implements Connector {
     private static ExecuteStatementWrapper executeStatementWrapper;
 
     /**
-     * {@link com.datastax.driver.core.SessionManager#executeAsync} diagnostics wrapper.
+     * Driver session manager diagnostics wrapper.
+     *
      * @return ExecuteStatementWrapper instance
      */
     public static ExecuteStatementWrapper executeStatementWrapper() {
@@ -56,7 +57,7 @@ public class ConnectorImpl implements Connector {
     }
 
     /**
-     * {@see io.smartcat.cassandra.diagnostics.connector.Connector#waitForSetupCompleted()}.
+     * {@link io.smartcat.cassandra.diagnostics.connector.Connector#waitForSetupCompleted()}.
      */
     public void waitForSetupCompleted() {
         logger.info("Waiting for the driver setup process to complete.");

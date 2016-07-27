@@ -5,7 +5,7 @@
 
     <groupId>io.smartcat</groupId>
     <artifactId>cassandra-diagnostics</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <name>Cassandra Diagnostics</name>
@@ -46,6 +46,27 @@
         <developerConnection>scm:git:git@github.com:smartcat-labs/cassandra-diagnostics.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
+
+    <developers>
+        <developer>
+            <name>Nenad Bozic</name>
+            <email>nenad.bozic@smartcat.io</email>
+            <organization>SmartCat</organization>
+            <organizationUrl>http://www.smartcat.io</organizationUrl>
+        </developer>
+        <developer>
+            <name>Matija Gobec</name>
+            <email>matija.gobec@smartcat.io</email>
+            <organization>SmartCat</organization>
+            <organizationUrl>http://www.smartcat.io</organizationUrl>
+        </developer>
+        <developer>
+            <name>Nikola Invancevic</name>
+            <email>nikola.ivancevic@smartcat.io</email>
+            <organization>SmartCat</organization>
+            <organizationUrl>http://www.smartcat.io</organizationUrl>
+        </developer>
+    </developers>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

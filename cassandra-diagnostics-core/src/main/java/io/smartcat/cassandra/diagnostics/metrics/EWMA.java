@@ -7,11 +7,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * An exponentially-weighted moving average.
  *
- * @see <a href="http://www.teamquest.com/pdfs/whitepaper/ldavg1.pdf">UNIX Load Average Part 1: How
+ * <a href="http://www.teamquest.com/pdfs/whitepaper/ldavg1.pdf">UNIX Load Average Part 1: How
  * It Works</a>
- * @see <a href="http://www.teamquest.com/pdfs/whitepaper/ldavg2.pdf">UNIX Load Average Part 2: Not
+ * <a href="http://www.teamquest.com/pdfs/whitepaper/ldavg2.pdf">UNIX Load Average Part 2: Not
  * Your Average Average</a>
- * @see <a href="http://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average">EMA</a>
+ * <a href="http://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average">EMA</a>
  */
 public class EWMA {
     private static final int INTERVAL = 5;

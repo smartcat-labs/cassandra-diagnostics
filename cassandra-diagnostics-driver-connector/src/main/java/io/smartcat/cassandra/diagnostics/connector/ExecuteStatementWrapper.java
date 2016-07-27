@@ -19,8 +19,7 @@ import com.datastax.driver.core.Statement;
 import io.smartcat.cassandra.diagnostics.Query;
 
 /**
- * This class is a Diagnostics wrapper for
- * {@link com.datastax.driver.core.SessionManager#executeAsync(com.datastax.driver.core.Statement)}.
+ * This class is a Diagnostics wrapper for driver session manager execute async method.
  */
 public class ExecuteStatementWrapper {
 
@@ -70,8 +69,7 @@ public class ExecuteStatementWrapper {
     }
 
     /**
-     * Wrapper for
-     * {@link com.datastax.driver.core.SessionManager#executeAsync(Statement)} method.
+     * Wrapper for session manager execute async method.
      * This method wraps the original method and, in addition, measures the statement
      * execution time and reports the query towards the diagnostics core.
      *

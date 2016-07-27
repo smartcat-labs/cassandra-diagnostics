@@ -69,7 +69,6 @@ public class SlowQueryModule extends Module {
         final Map<String, String> fields = new HashMap<>(4);
         fields.put("client", query.clientAddress());
         fields.put("statement", query.statement());
-        fields.put("value", Long.toString(query.executionTimeInMilliseconds()));
 
         final Measurement measurement = Measurement
                 .create(service, query.executionTimeInMilliseconds(), query.startTimeInMilliseconds(),

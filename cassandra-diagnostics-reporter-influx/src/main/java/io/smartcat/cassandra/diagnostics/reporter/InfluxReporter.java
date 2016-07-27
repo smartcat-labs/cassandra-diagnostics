@@ -103,6 +103,8 @@ public class InfluxReporter extends Reporter {
             for (Map.Entry<String, String> field : measurement.fields().entrySet()) {
                 builder.addField(field.getKey(), field.getValue());
             }
+            builder.addField("value", measurement.value());
+
             influx.write(dbName, retentionPolicy, builder.build());
         } catch (Exception e) {
             logger.warn("Failed to send report to influx", e);

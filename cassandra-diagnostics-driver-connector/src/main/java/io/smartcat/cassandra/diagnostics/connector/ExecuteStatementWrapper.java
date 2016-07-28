@@ -2,9 +2,10 @@ package io.smartcat.cassandra.diagnostics.connector;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
@@ -25,27 +26,16 @@ public class ExecuteStatementWrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(ExecuteStatementWrapper.class);
 
-    /**
-     * The number of threads used for executing query reports.
-     */
-    private static final int EXECUTOR_NO_THREADS = 2;
-
     private static final AtomicLong THREAD_COUNT = new AtomicLong(0);
+
+    private Configuration configuration;
+
+    private static boolean queueOverflowReporterd = false;
 
     /**
      * Executor service used for executing query reports.
      */
-    private static ExecutorService executor = Executors.newFixedThreadPool(EXECUTOR_NO_THREADS,
-            new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable runnable) {
-                    Thread thread = new Thread(runnable);
-                    thread.setName("cassandra-diagnostics-connector-" + THREAD_COUNT.getAndIncrement());
-                    thread.setDaemon(true);
-                    thread.setPriority(Thread.MIN_PRIORITY);
-                    return thread;
-                }
-            });
+    private ThreadPoolExecutor executor;
 
     private QueryReporter queryReporter;
     private final String host;
@@ -54,10 +44,11 @@ public class ExecuteStatementWrapper {
      * Constructor.
      *
      * @param queryReporter QueryReporter used to report queries
+     * @param configuration Connector configuration
      */
-    public ExecuteStatementWrapper(QueryReporter queryReporter) {
+    public ExecuteStatementWrapper(QueryReporter queryReporter, Configuration configuration) {
         this.queryReporter = queryReporter;
-
+        this.configuration = configuration;
         // obtain host address
         String hostAddress;
         try {
@@ -66,6 +57,21 @@ public class ExecuteStatementWrapper {
             hostAddress = "UNKNOWN";
         }
         host = hostAddress;
+        executor = new ThreadPoolExecutor(configuration.numWorkerThreads,
+                configuration.numWorkerThreads,
+                100L,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                new ThreadFactory() {
+                    @Override
+                    public Thread newThread(Runnable runnable) {
+                        Thread thread = new Thread(runnable);
+                        thread.setName("cassandra-diagnostics-connector-" + THREAD_COUNT.getAndIncrement());
+                        thread.setDaemon(true);
+                        thread.setPriority(Thread.MIN_PRIORITY);
+                        return thread;
+                    }
+                });
     }
 
     /**
@@ -89,21 +95,33 @@ public class ExecuteStatementWrapper {
      * @param result   ResultSetFuture
      */
     private void report(final long startTime, final Statement statement, final ResultSetFuture result) {
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    // wait for the statement to be executed
-                    result.getUninterruptibly();
-                    final long execTime = System.currentTimeMillis() - startTime;
-                    Query query = extractQuery(startTime, execTime, statement);
-                    logger.trace("Reporting query: {}.", query);
-                    queryReporter.report(query);
-                } catch (Exception e) {
-                    logger.warn("An error occured while reporting query", e);
-                }
+        int numQueuedEvents = executor.getQueue().size();
+        if (numQueuedEvents > configuration.maxQueuedEvents) {
+            if (!queueOverflowReporterd) {
+                queueOverflowReporterd = true;
+                logger.warn("Event queue full. Further events will be dropped.");
             }
-        });
+        } else {
+            executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        // wait for the statement to be executed
+                        result.getUninterruptibly();
+                        final long execTime = System.currentTimeMillis() - startTime;
+                        Query query = extractQuery(startTime, execTime, statement);
+                        logger.trace("Reporting query: {}.", query);
+                        queryReporter.report(query);
+                    } catch (Exception e) {
+                        logger.warn("An error occured while reporting query", e);
+                    }
+                }
+            });
+            if (numQueuedEvents < (configuration.maxQueuedEvents * 0.9)) {
+                queueOverflowReporterd = false;
+                logger.info("Event queue relaxed.");
+            }
+        }
     }
 
     private Query extractQuery(final long startTime, final long execTime, final Statement statement) {

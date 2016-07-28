@@ -41,7 +41,8 @@ public class QueryProcessorWrapperTest {
                 lock.countDown();
             }
         };
-        QueryProcessorWrapper wrapper = new QueryProcessorWrapper(queryReporter);
+        Configuration configuration = new Configuration();
+        QueryProcessorWrapper wrapper = new QueryProcessorWrapper(queryReporter, configuration);
 
         SelectStatement statement = mock(SelectStatement.class);
         when(statement.keyspace()).thenReturn("test_keyspace");

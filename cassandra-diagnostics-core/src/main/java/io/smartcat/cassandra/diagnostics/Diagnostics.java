@@ -34,15 +34,29 @@ public class Diagnostics implements QueryReporter {
     private DiagnosticsProcessor diagnosticsProcessor = null;
 
     /**
+     * Constructor.
+     */
+    public Diagnostics() {
+        config = loadConfiguration();
+    }
+
+    /**
+     * Returns the diagnostics configuration.
+     * @return the diagnostics configuration
+     */
+    public Configuration getConfiguration() {
+        return config;
+    }
+
+    /**
      * Completes the initialization and activates the query processing.
      */
     public void activate() {
-        this.config = getConfiguration();
         this.diagnosticsProcessor = new DiagnosticsProcessor(config);
         initMXBean();
     }
 
-    private Configuration getConfiguration() {
+    private Configuration loadConfiguration() {
         ConfigurationLoader loader = new YamlConfigurationLoader();
         Configuration config;
         try {

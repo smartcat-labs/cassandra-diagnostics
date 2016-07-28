@@ -34,8 +34,8 @@ public class ExecuteStatementWrapperTest {
     @Test
     public void process_regular_select_statement() throws Exception {
         TestQueryReporter reporter = new TestQueryReporter();
-
-        ExecuteStatementWrapper wrapper = new ExecuteStatementWrapper(reporter);
+        Configuration configuration = new Configuration();
+        ExecuteStatementWrapper wrapper = new ExecuteStatementWrapper(reporter, configuration);
 
         RegularStatement statement = mock(RegularStatement.class);
         Session session = mock(Session.class);
@@ -57,8 +57,8 @@ public class ExecuteStatementWrapperTest {
     @Test
     public void process_regular_update_statement() throws Exception {
         TestQueryReporter reporter = new TestQueryReporter();
-
-        ExecuteStatementWrapper wrapper = new ExecuteStatementWrapper(reporter);
+        Configuration configuration = new Configuration();
+        ExecuteStatementWrapper wrapper = new ExecuteStatementWrapper(reporter, configuration);
 
         RegularStatement statement = mock(RegularStatement.class);
         Session session = mock(Session.class);
@@ -80,8 +80,8 @@ public class ExecuteStatementWrapperTest {
     @Test
     public void process_bound_select_statement() throws Exception {
         TestQueryReporter reporter = new TestQueryReporter();
-
-        ExecuteStatementWrapper wrapper = new ExecuteStatementWrapper(reporter);
+        Configuration configuration = new Configuration();
+        ExecuteStatementWrapper wrapper = new ExecuteStatementWrapper(reporter, configuration);
 
         BoundStatement statement = mock(BoundStatement.class);
         Session session = mock(Session.class);

@@ -29,6 +29,7 @@ public class ITConnector {
     public static void setUp() throws ConfigurationException, TTransportException, IOException, InterruptedException {
         queryIntercepted = false;
         Instrumentation inst = InstrumentationSavingAgent.getInstrumentation();
+        Configuration configuration = new Configuration();
         Connector connector = new ConnectorImpl();
         connector.init(inst, new QueryReporter() {
             @Override
@@ -39,7 +40,7 @@ public class ITConnector {
                     lock.countDown();
                 }
             }
-        });
+        }, configuration);
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
         cluster = Cluster.builder().addContactPoint("127.0.0.1").withPort(9142).build();
         session = cluster.connect();

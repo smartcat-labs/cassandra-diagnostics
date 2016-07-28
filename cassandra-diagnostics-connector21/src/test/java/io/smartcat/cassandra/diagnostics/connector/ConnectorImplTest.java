@@ -28,8 +28,9 @@ public class ConnectorImplTest {
 
     @Test
     public void invokes_wrapper_when_query_processor_activates() throws Exception {
+        Configuration configuration = new Configuration();
         Connector connector = new ConnectorImpl();
-        connector.init(instrumentation, mock(QueryReporter.class));
+        connector.init(instrumentation, mock(QueryReporter.class), configuration);
         QueryProcessorWrapper queryProcessorWrapper = mock(QueryProcessorWrapper.class);
         setStatic(ConnectorImpl.class.getDeclaredField("queryProcessorWrapper"), queryProcessorWrapper);
 

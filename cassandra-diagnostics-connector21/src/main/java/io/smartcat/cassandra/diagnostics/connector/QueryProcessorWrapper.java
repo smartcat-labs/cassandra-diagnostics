@@ -1,8 +1,9 @@
 package io.smartcat.cassandra.diagnostics.connector;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.cassandra.cql3.CQLStatement;
@@ -23,37 +24,43 @@ public class QueryProcessorWrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(QueryProcessorWrapper.class);
 
-    /**
-     * The number of threads used for executing query reports.
-     */
-    private static final int EXECUTOR_NO_THREADS = 2;
-
     private static final AtomicLong THREAD_COUNT = new AtomicLong(0);
 
     /**
      * Executor service used for executing query reports.
      */
-    private static ExecutorService executor = Executors.newFixedThreadPool(EXECUTOR_NO_THREADS,
-            new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable runnable) {
-                    Thread thread = new Thread(runnable);
-                    thread.setName("cassandra-diagnostics-connector-" + THREAD_COUNT.getAndIncrement());
-                    thread.setDaemon(true);
-                    thread.setPriority(Thread.MIN_PRIORITY);
-                    return thread;
-                }
-            });
+    private ThreadPoolExecutor executor;
 
     private QueryReporter queryReporter;
+
+    private Configuration configuration;
+
+    private static boolean queueOverflowReporterd = false;
 
     /**
      * Constructor.
      *
      * @param queryReporter QueryReporter used to report queries
+     * @param configuration Connector configuration
      */
-    public QueryProcessorWrapper(QueryReporter queryReporter) {
+    public QueryProcessorWrapper(QueryReporter queryReporter, Configuration configuration) {
         this.queryReporter = queryReporter;
+        this.configuration = configuration;
+        executor = new ThreadPoolExecutor(configuration.numWorkerThreads,
+                configuration.numWorkerThreads,
+                100L,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                new ThreadFactory() {
+                    @Override
+                    public Thread newThread(Runnable runnable) {
+                        Thread thread = new Thread(runnable);
+                        thread.setName("cassandra-diagnostics-connector-" + THREAD_COUNT.getAndIncrement());
+                        thread.setDaemon(true);
+                        thread.setPriority(Thread.MIN_PRIORITY);
+                        return thread;
+                    }
+                });
     }
 
     /**
@@ -92,18 +99,30 @@ public class QueryProcessorWrapper {
             return;
         }
 
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Query query = extractQuery(startTime, execTime, statement, queryState, options, errorMessage);
-                    logger.trace("Reporting query: {}.", query);
-                    queryReporter.report(query);
-                } catch (Exception e) {
-                    logger.warn("An error occured while reporting query", e);
-                }
+        int numQueuedEvents = executor.getQueue().size();
+        if (numQueuedEvents > configuration.maxQueuedEvents) {
+            if (!queueOverflowReporterd) {
+                queueOverflowReporterd = true;
+                logger.warn("Event queue full. Further events will be dropped.");
             }
-        });
+        } else {
+            executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Query query = extractQuery(startTime, execTime, statement, queryState, options, errorMessage);
+                        logger.trace("Reporting query: {}.", query);
+                        queryReporter.report(query);
+                    } catch (Exception e) {
+                        logger.warn("An error occured while reporting query", e);
+                    }
+                }
+            });
+            if (numQueuedEvents < (configuration.maxQueuedEvents * 0.9)) {
+                queueOverflowReporterd = false;
+                logger.info("Event queue relaxed.");
+            }
+        }
     }
 
     private Query extractQuery(final long startTime, final long execTime, final CQLStatement statement,

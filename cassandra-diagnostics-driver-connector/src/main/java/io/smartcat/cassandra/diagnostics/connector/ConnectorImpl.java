@@ -50,9 +50,10 @@ public class ConnectorImpl implements Connector {
      *
      * @param inst an Instrumentation reference
      * @param queryReporter QueryReporter implementation reference
+     * @param configuration Connector configuration
      */
-    public void init(Instrumentation inst, QueryReporter queryReporter) {
-        executeStatementWrapper = new ExecuteStatementWrapper(queryReporter);
+    public void init(Instrumentation inst, QueryReporter queryReporter, Configuration configuration) {
+        executeStatementWrapper = new ExecuteStatementWrapper(queryReporter, configuration);
         setIntercepters(inst);
     }
 

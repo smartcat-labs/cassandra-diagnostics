@@ -43,6 +43,11 @@ public class Configuration {
     }
 
     /**
+     * Connector-related configuration.
+     */
+    public io.smartcat.cassandra.diagnostics.connector.Configuration connector;
+
+    /**
      * Reporters configuration list with reporter specific properties.
      */
     public List<ReporterConfiguration> reporters = new ArrayList<>();

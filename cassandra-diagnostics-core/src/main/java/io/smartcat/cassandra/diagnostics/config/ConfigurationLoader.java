@@ -3,7 +3,7 @@ package io.smartcat.cassandra.diagnostics.config;
 import java.net.URL;
 
 /**
- * ConnectorConfiguration loader.
+ * Configuration loader.
  */
 public interface ConfigurationLoader {
     /**

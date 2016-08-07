@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import io.smartcat.cassandra.diagnostics.connector.ConnectorConfiguration;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.module.heartbeat.HeartbeatModule;
 import io.smartcat.cassandra.diagnostics.reporter.LogReporter;
@@ -19,7 +20,7 @@ public class Configuration {
     /**
      * Get default configuration for fallback when no configuration is provided.
      *
-     * @return ConnectorConfiguration object with default {@code LogReporter} reporter
+     * @return Configuration object with default {@code LogReporter} reporter
      */
     public static Configuration getDefaultConfiguration() {
         return new Configuration() {
@@ -37,7 +38,7 @@ public class Configuration {
                 module.options = options;
                 modules.add(module);
 
-                connector = io.smartcat.cassandra.diagnostics.connector.ConnectorConfiguration.getDefault();
+                connector = ConnectorConfiguration.getDefault();
             }
         };
     }
@@ -45,8 +46,7 @@ public class Configuration {
     /**
      * Connector-related configuration.
      */
-    public io.smartcat.cassandra.diagnostics.connector.ConnectorConfiguration connector =
-            io.smartcat.cassandra.diagnostics.connector.ConnectorConfiguration.getDefault();
+    public ConnectorConfiguration connector = ConnectorConfiguration.getDefault();
 
     /**
      * Reporters configuration list with reporter specific properties.

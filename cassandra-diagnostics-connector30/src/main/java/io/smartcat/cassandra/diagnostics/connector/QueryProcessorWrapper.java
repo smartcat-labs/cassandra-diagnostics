@@ -1,10 +1,5 @@
 package io.smartcat.cassandra.diagnostics.connector;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.cassandra.cql3.CQLStatement;
 import org.apache.cassandra.cql3.QueryOptions;
 import org.apache.cassandra.cql3.statements.ModificationStatement;
@@ -19,41 +14,18 @@ import io.smartcat.cassandra.diagnostics.Query;
 /**
  * This class is a Diagnostics wrapper for {@link org.apache.cassandra.cql3.QueryProcessor}.
  */
-public class QueryProcessorWrapper {
+public class QueryProcessorWrapper extends AbstractEventProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(QueryProcessorWrapper.class);
-
-    /**
-     * The number of threads used for executing query reports.
-     */
-    private static final int EXECUTOR_NO_THREADS = 2;
-
-    private static final AtomicLong THREAD_COUNT = new AtomicLong(0);
-
-    /**
-     * Executor service used for executing query reports.
-     */
-    private static ExecutorService executor = Executors.newFixedThreadPool(EXECUTOR_NO_THREADS,
-            new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable runnable) {
-                    Thread thread = new Thread(runnable);
-                    thread.setName("cassandra-diagnostics-connector-" + THREAD_COUNT.getAndIncrement());
-                    thread.setDaemon(true);
-                    thread.setPriority(Thread.MIN_PRIORITY);
-                    return thread;
-                }
-            });
-
-    private QueryReporter queryReporter;
 
     /**
      * Constructor.
      *
      * @param queryReporter QueryReporter used to report queries
+     * @param configuration Connector configuration
      */
-    public QueryProcessorWrapper(QueryReporter queryReporter) {
-        this.queryReporter = queryReporter;
+    public QueryProcessorWrapper(QueryReporter queryReporter, ConnectorConfiguration configuration) {
+        super(queryReporter, configuration);
     }
 
     /**
@@ -91,8 +63,7 @@ public class QueryProcessorWrapper {
         if (queryState.getClientState().isInternal) {
             return;
         }
-
-        executor.submit(new Runnable() {
+        report(new Runnable() {
             @Override
             public void run() {
                 try {

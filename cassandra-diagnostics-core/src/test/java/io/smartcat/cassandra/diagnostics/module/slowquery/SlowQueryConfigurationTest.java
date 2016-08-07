@@ -43,7 +43,7 @@ public class SlowQueryConfigurationTest {
 
         try {
             SlowQueryConfiguration.create(options);
-            fail("Configuration loading should fail beacuse of incorrect input values.");
+            fail("ConnectorConfiguration loading should fail beacuse of incorrect input values.");
         } catch (ConfigurationException e) {
         }
     }

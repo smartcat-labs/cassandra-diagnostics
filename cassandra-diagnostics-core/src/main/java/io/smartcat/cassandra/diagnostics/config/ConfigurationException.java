@@ -1,7 +1,7 @@
 package io.smartcat.cassandra.diagnostics.config;
 
 /**
- * Configuration exception.
+ * ConnectorConfiguration exception.
  */
 @SuppressWarnings("serial")
 public class ConfigurationException extends Exception {

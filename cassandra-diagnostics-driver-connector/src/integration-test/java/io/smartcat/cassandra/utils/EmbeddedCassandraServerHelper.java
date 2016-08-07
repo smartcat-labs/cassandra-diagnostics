@@ -34,7 +34,7 @@ public class EmbeddedCassandraServerHelper {
     public static final String DEFAULT_TMP_DIR = "target/embeddedCassandra";
     /** Default configuration file. Starts embedded cassandra under the well known ports */
     public static final String DEFAULT_CASSANDRA_YML_FILE = "cu-cassandra.yaml";
-    /** Configuration file which starts the embedded cassandra on a random free port. */
+    /** ConnectorConfiguration file which starts the embedded cassandra on a random free port. */
     public static final String CASSANDRA_RNDPORT_YML_FILE = "cu-cassandra-rndport.yaml";
     public static final String DEFAULT_LOG4J_CONFIG_FILE = "/log4j-embedded-cassandra.properties";
     private static final String INTERNAL_CASSANDRA_KEYSPACE = "system";

@@ -29,15 +29,15 @@ public class DiagnosticsProcessor {
     /**
      * DiagnosticsProcessor constructor.
      *
-     * @param configuration Configuration object
+     * @param configuration ConnectorConfiguration object
      */
     public DiagnosticsProcessor(final Configuration configuration) {
         if (configuration.reporters == null) {
-            throw new IllegalStateException("Configuration does not have any reporter defined.");
+            throw new IllegalStateException("ConnectorConfiguration does not have any reporter defined.");
         }
 
         if (configuration.modules == null) {
-            throw new IllegalStateException("Configuration does not have any module defined.");
+            throw new IllegalStateException("ConnectorConfiguration does not have any module defined.");
         }
 
         initReporters(configuration.reporters);

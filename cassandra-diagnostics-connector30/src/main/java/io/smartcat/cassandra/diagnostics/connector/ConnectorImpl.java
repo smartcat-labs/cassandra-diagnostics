@@ -80,7 +80,7 @@ public class ConnectorImpl implements Connector {
      * @param queryReporter QueryReporter implementation reference
      * @param configuration connector specific configuration
      */
-    public void init(Instrumentation inst, QueryReporter queryReporter, Configuration configuration) {
+    public void init(Instrumentation inst, QueryReporter queryReporter, ConnectorConfiguration configuration) {
         queryProcessorWrapper = new QueryProcessorWrapper(queryReporter, configuration);
         setQueryProcessorIntercepter(inst);
         setCassandraDaemonIntercepter(inst);

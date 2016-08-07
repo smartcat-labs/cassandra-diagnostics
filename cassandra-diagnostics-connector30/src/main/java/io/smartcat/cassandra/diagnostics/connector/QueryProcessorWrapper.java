@@ -1,11 +1,5 @@
 package io.smartcat.cassandra.diagnostics.connector;
 
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.cassandra.cql3.CQLStatement;
 import org.apache.cassandra.cql3.QueryOptions;
 import org.apache.cassandra.cql3.statements.ModificationStatement;
@@ -20,22 +14,9 @@ import io.smartcat.cassandra.diagnostics.Query;
 /**
  * This class is a Diagnostics wrapper for {@link org.apache.cassandra.cql3.QueryProcessor}.
  */
-public class QueryProcessorWrapper {
+public class QueryProcessorWrapper extends AbstractEventProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(QueryProcessorWrapper.class);
-
-    private static final AtomicLong THREAD_COUNT = new AtomicLong(0);
-
-    /**
-     * Executor service used for executing query reports.
-     */
-    private ThreadPoolExecutor executor;
-
-    private QueryReporter queryReporter;
-
-    private Configuration configuration;
-
-    private static boolean queueOverflowReporterd = false;
 
     /**
      * Constructor.
@@ -43,24 +24,8 @@ public class QueryProcessorWrapper {
      * @param queryReporter QueryReporter used to report queries
      * @param configuration Connector configuration
      */
-    public QueryProcessorWrapper(QueryReporter queryReporter, Configuration configuration) {
-        this.queryReporter = queryReporter;
-        this.configuration = configuration;
-        executor = new ThreadPoolExecutor(configuration.numWorkerThreads,
-                configuration.numWorkerThreads,
-                100L,
-                TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(),
-                new ThreadFactory() {
-                    @Override
-                    public Thread newThread(Runnable runnable) {
-                        Thread thread = new Thread(runnable);
-                        thread.setName("cassandra-diagnostics-connector-" + THREAD_COUNT.getAndIncrement());
-                        thread.setDaemon(true);
-                        thread.setPriority(Thread.MIN_PRIORITY);
-                        return thread;
-                    }
-                });
+    public QueryProcessorWrapper(QueryReporter queryReporter, ConnectorConfiguration configuration) {
+        super(queryReporter, configuration);
     }
 
     /**
@@ -98,31 +63,18 @@ public class QueryProcessorWrapper {
         if (queryState.getClientState().isInternal) {
             return;
         }
-
-        int numQueuedEvents = executor.getQueue().size();
-        if (numQueuedEvents > configuration.maxQueuedEvents) {
-            if (!queueOverflowReporterd) {
-                queueOverflowReporterd = true;
-                logger.warn("Event queue full. Further events will be dropped.");
-            }
-        } else {
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Query query = extractQuery(startTime, execTime, statement, queryState, options, errorMessage);
-                        logger.trace("Reporting query: {}.", query);
-                        queryReporter.report(query);
-                    } catch (Exception e) {
-                        logger.warn("An error occured while reporting query", e);
-                    }
+        report(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Query query = extractQuery(startTime, execTime, statement, queryState, options, errorMessage);
+                    logger.trace("Reporting query: {}.", query);
+                    queryReporter.report(query);
+                } catch (Exception e) {
+                    logger.warn("An error occured while reporting query", e);
                 }
-            });
-            if (numQueuedEvents < (configuration.maxQueuedEvents * 0.9)) {
-                queueOverflowReporterd = false;
-                logger.info("Event queue relaxed.");
             }
-        }
+        });
     }
 
     private Query extractQuery(final long startTime, final long execTime, final CQLStatement statement,

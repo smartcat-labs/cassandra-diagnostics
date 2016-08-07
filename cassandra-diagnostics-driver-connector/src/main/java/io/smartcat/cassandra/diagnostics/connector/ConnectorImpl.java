@@ -52,7 +52,7 @@ public class ConnectorImpl implements Connector {
      * @param queryReporter QueryReporter implementation reference
      * @param configuration Connector configuration
      */
-    public void init(Instrumentation inst, QueryReporter queryReporter, Configuration configuration) {
+    public void init(Instrumentation inst, QueryReporter queryReporter, ConnectorConfiguration configuration) {
         executeStatementWrapper = new ExecuteStatementWrapper(queryReporter, configuration);
         setIntercepters(inst);
     }

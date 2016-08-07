@@ -29,7 +29,7 @@ public class ITConnector {
     public static void setUp() throws ConfigurationException, TTransportException, IOException, InterruptedException {
         queryIntercepted = false;
         Instrumentation inst = InstrumentationSavingAgent.getInstrumentation();
-        Configuration configuration = new Configuration();
+        ConnectorConfiguration configuration = new ConnectorConfiguration();
         Connector connector = new ConnectorImpl();
         connector.init(inst, new QueryReporter() {
             @Override

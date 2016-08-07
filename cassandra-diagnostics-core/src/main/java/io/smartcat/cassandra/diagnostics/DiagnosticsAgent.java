@@ -44,6 +44,12 @@ public class DiagnosticsAgent {
         });
         th.setName(INITIALIZATION_THREAD_NAME);
         th.setDaemon(true);
+        th.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                logger.error(e.getMessage(), e);
+            }
+        });
         th.start();
     }
 }

@@ -28,7 +28,7 @@ public class ConnectorImplTest {
 
     @Test
     public void invokes_wrapper_when_query_processor_activates() throws Exception {
-        Configuration configuration = new Configuration();
+        ConnectorConfiguration configuration = new ConnectorConfiguration();
         Connector connector = new ConnectorImpl();
         connector.init(instrumentation, mock(QueryReporter.class), configuration);
         QueryProcessorWrapper queryProcessorWrapper = mock(QueryProcessorWrapper.class);

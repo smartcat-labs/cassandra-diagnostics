@@ -14,7 +14,7 @@ public interface Connector {
      * @param reporter query reporter
      * @param configuration connector specific configuration
      */
-    void init(Instrumentation inst, QueryReporter reporter, Configuration configuration);
+    void init(Instrumentation inst, QueryReporter reporter, ConnectorConfiguration configuration);
 
     /**
      * Blocks the calling thread until the connector's target (e.g. Cassand node)

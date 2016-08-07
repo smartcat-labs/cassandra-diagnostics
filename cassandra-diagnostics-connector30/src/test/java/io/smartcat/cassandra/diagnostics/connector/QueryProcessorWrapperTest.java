@@ -41,7 +41,7 @@ public class QueryProcessorWrapperTest {
                 lock.countDown();
             }
         };
-        Configuration configuration = new Configuration();
+        ConnectorConfiguration configuration = new ConnectorConfiguration();
         QueryProcessorWrapper wrapper = new QueryProcessorWrapper(queryReporter, configuration);
 
         SelectStatement statement = mock(SelectStatement.class);

@@ -19,7 +19,7 @@ public class Configuration {
     /**
      * Get default configuration for fallback when no configuration is provided.
      *
-     * @return Configuration object with default {@code LogReporter} reporter
+     * @return ConnectorConfiguration object with default {@code LogReporter} reporter
      */
     public static Configuration getDefaultConfiguration() {
         return new Configuration() {
@@ -37,7 +37,7 @@ public class Configuration {
                 module.options = options;
                 modules.add(module);
 
-                queryQueueCapacity = 1000;
+                connector = io.smartcat.cassandra.diagnostics.connector.ConnectorConfiguration.getDefault();
             }
         };
     }
@@ -45,7 +45,8 @@ public class Configuration {
     /**
      * Connector-related configuration.
      */
-    public io.smartcat.cassandra.diagnostics.connector.Configuration connector;
+    public io.smartcat.cassandra.diagnostics.connector.ConnectorConfiguration connector =
+            io.smartcat.cassandra.diagnostics.connector.ConnectorConfiguration.getDefault();
 
     /**
      * Reporters configuration list with reporter specific properties.
@@ -56,11 +57,6 @@ public class Configuration {
      * Modules configuration list with module specific properties.
      */
     public List<ModuleConfiguration> modules = new ArrayList<>();
-
-    /**
-     * The capacity of the query buffer queue. The default value is 1000.
-     */
-    public int queryQueueCapacity = 1000;
 
     @Override
     public String toString() {

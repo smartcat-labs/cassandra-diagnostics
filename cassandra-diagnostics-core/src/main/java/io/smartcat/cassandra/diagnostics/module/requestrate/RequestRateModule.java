@@ -26,6 +26,8 @@ public class RequestRateModule extends Module {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestRateModule.class);
 
+    private static final String REQUEST_RATE_THREAD_NAME = "request-rate-module";
+
     private static final String PERIOD_PROP = "period";
 
     private static final String DEFAULT_PERIOD = "1";
@@ -73,12 +75,12 @@ public class RequestRateModule extends Module {
         timeunit = config.timeunit();
         rateFactor = timeunit.toSeconds(1);
 
-        logger.info("RequestRate module initialized with {} period and {} timeunit.", period, timeunit.name());
+        logger.info("RequestRate module initialized with {} {} reporting period.", period, timeunit.name());
         updateService = service + UPDATE_SUFFIX;
         selectService = service + SELECT_SUFFIX;
         updateRequests = new Meter();
         selectRequests = new Meter();
-        timer = new Timer();
+        timer = new Timer(REQUEST_RATE_THREAD_NAME);
         timer.schedule(new RequestRateTask(), 0, config.reportingRateInMillis());
     }
 

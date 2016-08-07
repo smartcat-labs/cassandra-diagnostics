@@ -69,6 +69,11 @@ public class InfluxReporter extends Reporter {
             return;
         }
 
+        if (!configuration.options.containsKey(DB_NAME_PROP)) {
+            logger.warn("Not properly configured. Missing influx db name. Aborting initialization.");
+            return;
+        }
+
         dbAddress = configuration.options.get(ADDRESS_PROP);
         username = configuration.getDefaultOption(USERNAME_PROP, "");
         password = configuration.getDefaultOption(PASSWORD_PROP, "");

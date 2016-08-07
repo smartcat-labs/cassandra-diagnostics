@@ -153,6 +153,7 @@ reporters:
 # Modules
 modules:
   - module: io.smartcat.cassandra.diagnostics.module.heartbeat.HeartbeatModule
+    measurement: heartbeat
     options:
       period: 15
       timeunit: MINUTES

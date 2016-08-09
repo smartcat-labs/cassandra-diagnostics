@@ -1,16 +1,17 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.aphyr.riemann.Proto.Msg;
 import com.aphyr.riemann.client.EventDSL;
 import com.aphyr.riemann.client.IRiemannClient;
+import com.aphyr.riemann.client.RiemannBatchClient;
 import com.aphyr.riemann.client.RiemannClient;
+import com.aphyr.riemann.client.UnsupportedJVMException;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
 
@@ -24,14 +25,18 @@ public class RiemannReporter extends Reporter {
 
     private static final String PORT_PROP = "riemannPort";
 
+    private static final String BATCH_EVENT_SIZE_PROP = "batchEventSize";
+
     private static final String DEFAULT_PORT = "5555";
+
+    private static final String DEFAULT_BATCH_EVENT_SIZE = "10";
 
     /**
      * Class logger.
      */
     private static final Logger logger = LoggerFactory.getLogger(RiemannReporter.class);
 
-    private static IRiemannClient riemann;
+    private static IRiemannClient riemannClient;
 
     /**
      * Constructor.
@@ -40,98 +45,80 @@ public class RiemannReporter extends Reporter {
      */
     public RiemannReporter(ReporterConfiguration configuration) {
         super(configuration);
+
+        logger.debug("Initializing riemann client with config: {}", configuration.toString());
+
+        if (!configuration.options.containsKey(HOST_PROP)) {
+            logger.warn("Tried to init Riemann client. Not properly configured. Aborting initialization.");
+            return;
+        }
+
+        String host = configuration.options.get(HOST_PROP);
+        int port = Integer.parseInt(configuration.getDefaultOption(PORT_PROP, DEFAULT_PORT));
+        int batchEventSize = Integer
+                .parseInt(configuration.getDefaultOption(BATCH_EVENT_SIZE_PROP, DEFAULT_BATCH_EVENT_SIZE));
+
+        try {
+            riemannClient = new RiemannBatchClient(RiemannClient.tcp(new InetSocketAddress(host, port)),
+                    batchEventSize);
+            riemannClient.connect();
+        } catch (IOException e) {
+            logger.warn("Riemann client cannot be initialized", e);
+        } catch (UnsupportedJVMException e) {
+            logger.warn("Riemann Batch client not supported, faling back to riemann client.");
+            try {
+                riemannClient = RiemannClient.tcp(new InetSocketAddress(host, port));
+            } catch (IOException e1) {
+                logger.warn("Riemann client cannot be initialized", e);
+            }
+        }
     }
 
     @Override
     public void report(Measurement measurement) {
-        IRiemannClient client = riemannClient();
-        if (client == null) {
-            logger.warn("Cannot report riemann event without initialized client.");
-            return;
+        if (!riemannClient.isConnected()) {
+            logger.warn("Riemann client dropped connection, reconnecting.");
+            try {
+                riemannClient.reconnect();
+            } catch (IOException e) {
+                logger.warn("Cannot reconnect, skipping measurement {} with value {}.", measurement.name(),
+                        measurement.value());
+                return;
+            }
         }
 
-        logger.debug("Sending Measurement: time={}", measurement.time());
+        logger.debug("Sending Measurement: name={}, value={}, time={}", measurement.name(), measurement.value(),
+                measurement.time());
         try {
             sendEvent(measurement);
         } catch (Exception e) {
             logger.debug("Sending Query failed, trying one more time: execTime={}, exception: {}", measurement.time(),
                     e.getMessage());
-            retry(measurement);
-        }
-    }
-
-    private void retry(Measurement measurement) {
-        try {
-            sendEvent(measurement);
-        } catch (IOException e) {
-            logger.debug("Sending Query failed, ignoring message: execTime={}, exception: {}", measurement.time(),
-                    e.getMessage());
         }
     }
 
     /**
-     * Method which is sending event. Must be thread safe since deref is blocking until timeout, so if multiple threads
-     * attempt to send event last one will win.
+     * Method which is sending event.
      *
      * @param measurement Measurement to send
-     * @return message of outcome.
      * @throws IOException
      */
-    private synchronized Msg sendEvent(Measurement measurement) throws IOException {
-        final EventDSL event = riemann.event();
+    private void sendEvent(Measurement measurement) throws IOException {
+        final EventDSL event = riemannClient.event();
         event.service(measurement.name());
         event.state("ok");
         event.metric(measurement.value());
+        event.time(measurement.time());
         event.ttl(30);
         for (Map.Entry<String, String> tag : measurement.tags().entrySet()) {
             event.tag(tag.getKey());
+            event.attribute(tag.getKey(), tag.getValue());
         }
         for (Map.Entry<String, String> field : measurement.fields().entrySet()) {
             event.attribute(field.getKey(), field.getValue());
         }
 
-        Msg message = event.send().deref(1, TimeUnit.SECONDS);
-
-        if (message == null || message.hasError()) {
-            throw new IOException("Message timed out.");
-        }
-
-        if (message.hasError()) {
-            throw new IOException(message.getError());
-        }
-
-        return message;
-    }
-
-    private IRiemannClient riemannClient() {
-        if (riemann == null) {
-            initRiemannClient(configuration);
-        }
-
-        return riemann;
-    }
-
-    private synchronized void initRiemannClient(ReporterConfiguration config) {
-        if (riemann != null) {
-            logger.warn("Riemann client already initialized");
-            return;
-        }
-
-        logger.debug("Initializing riemann client with config: {}", config.toString());
-
-        if (!config.options.containsKey(HOST_PROP)) {
-            logger.warn("Tried to init Riemann client. Not properly configured. Aborting initialization.");
-            return;
-        }
-
-        String host = config.options.get(HOST_PROP);
-        int port = Integer.parseInt(config.getDefaultOption(PORT_PROP, DEFAULT_PORT));
-        try {
-            riemann = RiemannClient.tcp(host, port);
-            riemann.connect();
-        } catch (IOException e) {
-            logger.warn("Riemann client cannot be initialized", e);
-        }
+        riemannClient.sendEvent(event.build());
     }
 
 }

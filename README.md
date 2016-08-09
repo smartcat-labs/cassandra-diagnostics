@@ -69,7 +69,7 @@ Values for `time` is given in milliseconds. `tags` are used to better specify me
 
 #### Riemann Reporter
 
-[RiemannReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-riemann/src/main/java/io/smartcat/cassandra/diagnostics/reporter/RiemannReporter.java) sends measurements as Riemann events towards the configured Riemann server using TCP transport.
+[RiemannReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-riemann/src/main/java/io/smartcat/cassandra/diagnostics/reporter/RiemannReporter.java) sends measurements as Riemann events towards the configured Riemann server using TCP transport. It is using batch Riemann client to save resources and send more events in one network roundtrip.
 
 Generated Riemann Events looks like the following:
 
@@ -91,6 +91,7 @@ fields:
 
 - _riemannHost_ - Riemann server's host name (IP address). This parameter is required.
 - _riemannPort_ - Riemann server's TCP port number (5555 by default). This parameter is optional.
+- _batchEventSize_ - Riemann events that fit in one batch, this is length that triggers sending of events (10 by default). This parameter is optional.
 
 #### Influx Reporter
 
@@ -140,6 +141,7 @@ reporters:
     options:
       riemannHost: 127.0.0.1
       riemannPort: 5555 #Optional
+      batchEventSize: 50 #Optional
   - reporter: io.smartcat.cassandra.diagnostics.reporter.InfluxReporter
     options:
       influxDbAddress: http://127.0.0.1:8086

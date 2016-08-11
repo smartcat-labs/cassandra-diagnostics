@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>io.smartcat</groupId>
 		<artifactId>cassandra-diagnostics</artifactId>
-		<version>1.0.2-SNAPSHOT</version>
+		<version>1.1.0</version>
 	</parent>
 	<artifactId>cassandra-diagnostics-connector21</artifactId>
 	<description>Cassandra Diagnostics Connector for Cassandra 2.1.x.</description>
@@ -21,7 +21,7 @@
 		<dependency>
 			<groupId>io.smartcat</groupId>
 			<artifactId>cassandra-diagnostics-commons</artifactId>
-			<version>1.0.2-SNAPSHOT</version>
+			<version>1.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.bytebuddy</groupId>

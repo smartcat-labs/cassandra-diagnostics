@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class represents the Reporter Configuration.
+ * This class represents the Reporter configuration.
  */
 public class ReporterConfiguration {
 

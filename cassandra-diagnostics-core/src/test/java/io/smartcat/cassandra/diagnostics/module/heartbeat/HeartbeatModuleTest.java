@@ -13,6 +13,7 @@ import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.LatchTestReporter;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.module.TestReporter;
+import io.smartcat.cassandra.diagnostics.reporter.LogReporter;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 
 public class HeartbeatModuleTest {
@@ -35,6 +36,23 @@ public class HeartbeatModuleTest {
 
         final HeartbeatModule module = new HeartbeatModule(testConfiguration(), reporters);
         boolean wait = latch.await(100, TimeUnit.MILLISECONDS);
+        module.stop();
+        assertThat(wait).isTrue();
+    }
+
+    @Test
+    public void should_report_using_log_reporter() throws ConfigurationException, InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final List<Reporter> reporters = new ArrayList<Reporter>() {
+            {
+                add(latchTestReporter);
+                add(new LogReporter(null));
+            }
+        };
+
+        final HeartbeatModule module = new HeartbeatModule(testConfiguration(), reporters);
+        boolean wait = latch.await(200, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
     }

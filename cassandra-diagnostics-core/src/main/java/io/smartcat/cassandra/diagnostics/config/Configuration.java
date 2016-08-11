@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import io.smartcat.cassandra.diagnostics.connector.ConnectorConfiguration;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.module.heartbeat.HeartbeatModule;
 import io.smartcat.cassandra.diagnostics.reporter.LogReporter;
@@ -36,9 +37,16 @@ public class Configuration {
                 module.module = HeartbeatModule.class.getName();
                 module.options = options;
                 modules.add(module);
+
+                connector = ConnectorConfiguration.getDefault();
             }
         };
     }
+
+    /**
+     * Connector-related configuration.
+     */
+    public ConnectorConfiguration connector = ConnectorConfiguration.getDefault();
 
     /**
      * Reporters configuration list with reporter specific properties.

@@ -2,10 +2,6 @@ package io.smartcat.cassandra.diagnostics.connector;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,43 +17,20 @@ import io.smartcat.cassandra.diagnostics.Query;
 /**
  * This class is a Diagnostics wrapper for driver session manager execute async method.
  */
-public class ExecuteStatementWrapper {
+public class ExecuteStatementWrapper extends AbstractEventProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(ExecuteStatementWrapper.class);
 
-    /**
-     * The number of threads used for executing query reports.
-     */
-    private static final int EXECUTOR_NO_THREADS = 2;
-
-    private static final AtomicLong THREAD_COUNT = new AtomicLong(0);
-
-    /**
-     * Executor service used for executing query reports.
-     */
-    private static ExecutorService executor = Executors.newFixedThreadPool(EXECUTOR_NO_THREADS,
-            new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable runnable) {
-                    Thread thread = new Thread(runnable);
-                    thread.setName("cassandra-diagnostics-connector-" + THREAD_COUNT.getAndIncrement());
-                    thread.setDaemon(true);
-                    thread.setPriority(Thread.MIN_PRIORITY);
-                    return thread;
-                }
-            });
-
-    private QueryReporter queryReporter;
     private final String host;
 
     /**
      * Constructor.
      *
      * @param queryReporter QueryReporter used to report queries
+     * @param configuration Connector configuration
      */
-    public ExecuteStatementWrapper(QueryReporter queryReporter) {
-        this.queryReporter = queryReporter;
-
+    public ExecuteStatementWrapper(QueryReporter queryReporter, ConnectorConfiguration configuration) {
+        super(queryReporter, configuration);
         // obtain host address
         String hostAddress;
         try {
@@ -89,21 +62,21 @@ public class ExecuteStatementWrapper {
      * @param result   ResultSetFuture
      */
     private void report(final long startTime, final Statement statement, final ResultSetFuture result) {
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    // wait for the statement to be executed
-                    result.getUninterruptibly();
-                    final long execTime = System.currentTimeMillis() - startTime;
-                    Query query = extractQuery(startTime, execTime, statement);
-                    logger.trace("Reporting query: {}.", query);
-                    queryReporter.report(query);
-                } catch (Exception e) {
-                    logger.warn("An error occured while reporting query", e);
+        report(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        // wait for the statement to be executed
+                        result.getUninterruptibly();
+                        final long execTime = System.currentTimeMillis() - startTime;
+                        Query query = extractQuery(startTime, execTime, statement);
+                        logger.trace("Reporting query: {}.", query);
+                        queryReporter.report(query);
+                    } catch (Exception e) {
+                        logger.warn("An error occured while reporting query", e);
+                    }
                 }
-            }
-        });
+            });
     }
 
     private Query extractQuery(final long startTime, final long execTime, final Statement statement) {

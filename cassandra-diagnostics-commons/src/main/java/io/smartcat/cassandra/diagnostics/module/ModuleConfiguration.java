@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class represents the Module Configuration.
+ * This class represents the Module configuration.
  */
 public class ModuleConfiguration {
 

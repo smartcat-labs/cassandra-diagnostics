@@ -16,6 +16,7 @@ import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.LatchTestReporter;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.module.TestReporter;
+import io.smartcat.cassandra.diagnostics.reporter.LogReporter;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 
 public class RequestRateModuleTest {
@@ -69,6 +70,23 @@ public class RequestRateModuleTest {
         assertThat(testReporter.reported).hasSize(4);
         assertThat(testReporter.reported.get(2).value()).isBetween(80.0, 100.0);
         assertThat(testReporter.reported.get(3).value()).isBetween(80.0, 100.0);
+    }
+
+    @Test
+    public void should_report_using_log_reporter() throws ConfigurationException, InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final List<Reporter> reporters = new ArrayList<Reporter>() {
+            {
+                add(latchTestReporter);
+                add(new LogReporter(null));
+            }
+        };
+
+        final RequestRateModule module = new RequestRateModule(testConfiguration(), reporters);
+        boolean wait = latch.await(200, TimeUnit.MILLISECONDS);
+        module.stop();
+        assertThat(wait).isTrue();
     }
 
     private ModuleConfiguration testConfiguration() {

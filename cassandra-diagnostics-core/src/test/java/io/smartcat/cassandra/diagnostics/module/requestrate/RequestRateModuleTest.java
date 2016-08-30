@@ -58,7 +58,7 @@ public class RequestRateModuleTest {
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
         final RequestRateModule module = new RequestRateModule(testConfiguration(), reporters);
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 20; i++) {
             module.process(selectQuery);
             module.process(updateQuery);
         }
@@ -68,8 +68,8 @@ public class RequestRateModuleTest {
         module.stop();
 
         assertThat(testReporter.reported).hasSize(4);
-        assertThat(testReporter.reported.get(2).value()).isEqualTo(100.0);
-        assertThat(testReporter.reported.get(3).value()).isEqualTo(100.0);
+        assertThat(testReporter.reported.get(2).value()).isEqualTo(20.0);
+        assertThat(testReporter.reported.get(3).value()).isEqualTo(20.0);
     }
 
     @Test

@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.LatchTestReporter;
@@ -23,7 +24,7 @@ public class RequestRateModuleTest {
 
     @Test
     public void should_load_default_configuration_and_initialize() throws ConfigurationException {
-        final RequestRateModule module = new RequestRateModule(testConfiguration(), testReporters());
+        final RequestRateModule module = new RequestRateModule(testConfiguration(1), testReporters());
         module.stop();
     }
 
@@ -37,7 +38,7 @@ public class RequestRateModuleTest {
             }
         };
 
-        final RequestRateModule module = new RequestRateModule(testConfiguration(), reporters);
+        final RequestRateModule module = new RequestRateModule(testConfiguration(1), reporters);
         boolean wait = latch.await(100, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
@@ -45,11 +46,11 @@ public class RequestRateModuleTest {
 
     @Test
     public void should_report_exact_request_rate_values() throws ConfigurationException, InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(4);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, latch);
+        final CountDownLatch latch = new CountDownLatch(20);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
-                add(testReporter);
+                add(latchTestReporter);
             }
         };
 
@@ -57,19 +58,31 @@ public class RequestRateModuleTest {
         when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
-        final RequestRateModule module = new RequestRateModule(testConfiguration(), reporters);
-        for (int i = 0; i < 5; i++) {
+        final RequestRateModule module = new RequestRateModule(testConfiguration(1), reporters);
+
+        final long numberOfRequests = 1000;
+        for (int i = 0; i < numberOfRequests / 2; i++) {
             module.process(selectQuery);
             module.process(updateQuery);
         }
-        boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
 
-        assertThat(wait).isTrue();
+        long requestRate = 0;
+        while (requestRate < numberOfRequests) {
+            requestRate = 0;
+            for (final Measurement measurement : latchTestReporter.reported) {
+                requestRate += measurement.value();
+            }
+            latch.await(1100, TimeUnit.MILLISECONDS);
+        }
+
         module.stop();
 
-        assertThat(testReporter.reported).hasSize(4);
-        assertThat(testReporter.reported.get(2).value()).isEqualTo(5.0);
-        assertThat(testReporter.reported.get(3).value()).isEqualTo(5.0);
+        long totalRequests = 0;
+        for (final Measurement measurement : latchTestReporter.reported) {
+            totalRequests += measurement.value();
+        }
+
+        assertThat(totalRequests).isEqualTo(numberOfRequests);
     }
 
     @Test
@@ -83,17 +96,17 @@ public class RequestRateModuleTest {
             }
         };
 
-        final RequestRateModule module = new RequestRateModule(testConfiguration(), reporters);
+        final RequestRateModule module = new RequestRateModule(testConfiguration(1), reporters);
         boolean wait = latch.await(200, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
     }
 
-    private ModuleConfiguration testConfiguration() {
+    private ModuleConfiguration testConfiguration(final int period) {
         final ModuleConfiguration configuration = new ModuleConfiguration();
         configuration.measurement = "test_measurement";
         configuration.module = "io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateModule";
-        configuration.options.put("period", 1);
+        configuration.options.put("period", period);
         configuration.options.put("timeunit", "SECONDS");
         return configuration;
     }

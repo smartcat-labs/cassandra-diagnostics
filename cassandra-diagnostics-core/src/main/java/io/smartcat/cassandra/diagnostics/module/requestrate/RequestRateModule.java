@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
-import io.smartcat.cassandra.diagnostics.metrics.Meter;
+import io.smartcat.cassandra.diagnostics.metrics.LongAdder;
 import io.smartcat.cassandra.diagnostics.module.Module;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
@@ -40,9 +40,9 @@ public class RequestRateModule extends Module {
 
     private static final String SELECT_SUFFIX = "_select";
 
-    private final Meter updateRequests;
+    private final LongAdder updateRequests;
 
-    private final Meter selectRequests;
+    private final LongAdder selectRequests;
 
     private final String service;
 
@@ -78,8 +78,8 @@ public class RequestRateModule extends Module {
         logger.info("RequestRate module initialized with {} {} reporting period.", period, timeunit.name());
         updateService = service + UPDATE_SUFFIX;
         selectService = service + SELECT_SUFFIX;
-        updateRequests = new Meter();
-        selectRequests = new Meter();
+        updateRequests = new LongAdder();
+        selectRequests = new LongAdder();
         timer = new Timer(REQUEST_RATE_THREAD_NAME);
         timer.schedule(new RequestRateTask(), 0, config.reportingRateInMillis());
     }
@@ -92,9 +92,9 @@ public class RequestRateModule extends Module {
     @Override
     public Measurement transform(Query query) {
         if (query.statementType() == Query.StatementType.SELECT) {
-            selectRequests.mark();
+            selectRequests.increment();
         } else if (query.statementType() == Query.StatementType.UPDATE) {
-            updateRequests.mark();
+            updateRequests.increment();
         }
 
         return null;
@@ -120,8 +120,8 @@ public class RequestRateModule extends Module {
     private class RequestRateTask extends TimerTask {
         @Override
         public void run() {
-            double updateRate = convertRate(updateRequests.getMeanRate());
-            double selectRate = convertRate(selectRequests.getMeanRate());
+            double updateRate = convertRate(updateRequests.sumThenReset());
+            double selectRate = convertRate(selectRequests.sumThenReset());
 
             logger.debug("Update request rate: {}/{}", updateRate, timeunit.name());
             logger.debug("Select request rate: {}/{}", selectRate, timeunit.name());

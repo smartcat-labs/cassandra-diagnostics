@@ -44,7 +44,7 @@ public class RequestRateModuleTest {
     }
 
     @Test
-    public void should_report_approximate_request_rate_values() throws ConfigurationException, InterruptedException {
+    public void should_report_exact_request_rate_values() throws ConfigurationException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(4);
         final LatchTestReporter testReporter = new LatchTestReporter(null, latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
@@ -58,7 +58,7 @@ public class RequestRateModuleTest {
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
         final RequestRateModule module = new RequestRateModule(testConfiguration(), reporters);
-        for (int i = 1; i < 100; i++) {
+        for (int i = 0; i < 100; i++) {
             module.process(selectQuery);
             module.process(updateQuery);
         }
@@ -68,8 +68,8 @@ public class RequestRateModuleTest {
         module.stop();
 
         assertThat(testReporter.reported).hasSize(4);
-        assertThat(testReporter.reported.get(2).value()).isBetween(80.0, 100.0);
-        assertThat(testReporter.reported.get(3).value()).isBetween(80.0, 100.0);
+        assertThat(testReporter.reported.get(2).value()).isEqualTo(100.0);
+        assertThat(testReporter.reported.get(3).value()).isEqualTo(100.0);
     }
 
     @Test

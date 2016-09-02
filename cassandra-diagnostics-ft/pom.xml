@@ -415,11 +415,6 @@
                                             <port>8086:8086</port>
                                             <port>8083:8083</port>
                                         </ports>
-                                        <volumes>
-                                            <bind>
-                                                <volume>${basedir}/src/functional-test/resources/${functional.test}/init.influxql:/init_script.influxql:ro</volume>
-                                           </bind>
-                                        </volumes>
                                         <env>
                                             <ADMIN_USER>admin</ADMIN_USER>
                                             <INFLUXDB_INIT_PWD>secret</INFLUXDB_INIT_PWD>

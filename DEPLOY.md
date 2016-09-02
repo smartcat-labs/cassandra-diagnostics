@@ -4,7 +4,7 @@ This document will explain what to do when new version is ready for release.
 
 ## Versioning
 
-We are versioning Cassandra Diagnostics with major.minor.patch versions. If changes included in new release are minor fixes and improvements we increase patch version. If subject of new release is new feature we increase minor version. If we changed extensively (adding new module, change in project structure) we increase major version and do release.
+We are versioning Cassandra Diagnostics with major.minor.patch versions. If changes included in new release are minor fixes and improvements we increase patch version. If subject of new release is new feature or new module we increase minor version. If we changed extensively (change in project structure, breakdown in backward compatibility) we increase major version and do release.
 
 ## Releasing
 
@@ -13,7 +13,7 @@ We are versioning Cassandra Diagnostics with major.minor.patch versions. If chan
 First step is to set new version in parent pom, and in all pom files in each submodule. This guide will follow release from 1.1.1. to 1.1.2. but it can be applyed to any new release we make.
 
 ```
-mvn versions:set -DnewVersion=1.1.1
+mvn versions:set -DnewVersion=1.1.2
 mvn versions:commit  
 ```
 
@@ -46,6 +46,6 @@ Github project has releases section. Here we tag all new releases and write what
 We need new snapshot version on dev branch so we can continue work. At this point we can create PR with new version:
 
 ```
-mvn versions:set -DnewVersion=1.1.2-SNAPSHOT
+mvn versions:set -DnewVersion=1.1.3-SNAPSHOT
 mvn versions:commit  
 ```

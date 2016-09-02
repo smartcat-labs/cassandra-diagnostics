@@ -30,7 +30,7 @@ import java.io.Serializable;
  * @since 1.8
  */
 @SuppressWarnings("all")
-class LongAdder extends Striped64 implements Serializable {
+public class LongAdder extends Striped64 implements Serializable {
     private static final long serialVersionUID = 7249069246863182397L;
 
     /**
@@ -43,7 +43,7 @@ class LongAdder extends Striped64 implements Serializable {
     /**
      * Creates a new adder with initial sum of zero.
      */
-    LongAdder() {
+    public LongAdder() {
     }
 
     /**
@@ -158,21 +158,27 @@ class LongAdder extends Striped64 implements Serializable {
     }
 
     /**
-     * Returns the {@link #sum} as an {@code int} after a narrowing primitive conversion.
+     * Int value of the sum.
+     *
+     * @return Returns the {@link #sum} as an {@code int} after a narrowing primitive conversion.
      */
     public int intValue() {
         return (int) sum();
     }
 
     /**
-     * Returns the {@link #sum} as a {@code float} after a widening primitive conversion.
+     * Float value of the sum.
+     *
+     * @return Returns the {@link #sum} as a {@code float} after a widening primitive conversion.
      */
     public float floatValue() {
         return (float) sum();
     }
 
     /**
-     * Returns the {@link #sum} as a {@code double} after a widening primitive conversion.
+     * Double value of the sum.
+     *
+     * @return Returns the {@link #sum} as a {@code double} after a widening primitive conversion.
      */
     public double doubleValue() {
         return (double) sum();

@@ -10,7 +10,7 @@ Monitoring and audit power kit for Apache Cassandra.
 
 Cassandra Diagnostics is an extension for Apache Cassandra server node implemented as Java agent. It uses bytecode instrumentation to augment Cassandra node with additional functionalities. On one side it has connectors for different versions of Cassandra and on the other it has reporters to send measurement to different tools. In between lies core which is glue between those two. Reusable code goes to commons.
 
-![Architecture diagram](https://docs.google.com/a/smartcat.io/drawings/d/16PJE2j9ycM7PvTevI18QfcrkOcKV5Ms1jAFfIwtvvAo/edit?usp=sharing)
+![Architecture diagram](https://github.com/smartcat-labs/cassandra-diagnostics/tree/dev/diagrams/architecture-diagram.png)
 
 ### Cassandra Connector
 

@@ -27,14 +27,6 @@ public class RequestRateModule extends Module {
 
     private static final String REQUEST_RATE_THREAD_NAME = "request-rate-module";
 
-    private static final String PERIOD_PROP = "period";
-
-    private static final String DEFAULT_PERIOD = "1";
-
-    private static final String TIMEUNIT_PROP = "timeunit";
-
-    private static final String DEFAULT_TIMEUNIT = "SECONDS";
-
     private static final String UPDATE_SUFFIX = "_update";
 
     private static final String SELECT_SUFFIX = "_select";

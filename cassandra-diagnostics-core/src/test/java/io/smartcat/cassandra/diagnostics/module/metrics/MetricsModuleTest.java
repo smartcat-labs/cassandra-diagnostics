@@ -49,28 +49,3 @@ public class MetricsModuleTest {
     }
 
 }
-
-/*
-      patterns:
-        - "^org.apache.cassandra.metrics.Cache.+"
-        - "^org.apache.cassandra.metrics.ClientRequest.+" # includes ClientRequestMetrics
-        - "^org.apache.cassandra.metrics.CommitLog.+"
-        - "^org.apache.cassandra.metrics.Compaction.+"
-        - "^org.apache.cassandra.metrics.ColumnFamily.PendingTasks"
-        - "^org.apache.cassandra.metrics.ColumnFamily.ReadLatency"
-        - "^org.apache.cassandra.metrics.ColumnFamily.WriteLatency"
-        - "^org.apache.cassandra.metrics.ColumnFamily.ReadTotalLatency"
-        - "^org.apache.cassandra.metrics.ColumnFamily.WriteTotalLatency"
-        - "^org.apache.cassandra.metrics.DroppedMetrics.+"
-        - "^org.apache.cassandra.metrics.ReadRepair.+"
-        - "^org.apache.cassandra.metrics.Storage.+"
-        - "^org.apache.cassandra.metrics.ThreadPools.+"
-
-Metrics package
-
-type=*, scope=*, name=*
-type=ThreadPools, path=*, scope=*, name=*
-type=ColumnFamily, keyspace=*, scope=*, name=*
-type=Keyspace, keyspace=*, name=*
-
- */

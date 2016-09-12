@@ -19,6 +19,7 @@ public class MetricsMBean {
      *
      * @param metricsPackageName metrics package name
      * @param mbean              mbean object instance
+     * @param mbeanAttributes    mbean attributes
      */
     public MetricsMBean(final String metricsPackageName, final ObjectInstance mbean,
             final MBeanAttributeInfo[] mbeanAttributes) {
@@ -37,7 +38,7 @@ public class MetricsMBean {
     }
 
     /**
-     * Get mbean object instance
+     * Get mbean object instance.
      *
      * @return mbean object instance
      */
@@ -46,7 +47,7 @@ public class MetricsMBean {
     }
 
     /**
-     * Get mbean attributes
+     * Get mbean attributes.
      *
      * @return mbean attribute info array
      */

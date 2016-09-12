@@ -31,6 +31,9 @@ import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
 
+/**
+ * Metrics collector class. Handles mbeans, jmx connection and collecting metrics.
+ */
 public class MetricsCollector {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsCollector.class);
@@ -47,10 +50,18 @@ public class MetricsCollector {
 
     private Set<MetricsMBean> mbeans;
 
+    /**
+     * Constructor.
+     *
+     * @param config metrics configuration
+     */
     public MetricsCollector(final MetricsConfiguration config) {
         this.config = config;
     }
 
+    /**
+     * Close jmx connection.
+     */
     public void close() {
         if (jmxc != null) {
             try {
@@ -62,6 +73,11 @@ public class MetricsCollector {
         }
     }
 
+    /**
+     * Open jmx connection and collect mbeans matching configuration defined patterns.
+     *
+     * @return success of connect and collect
+     */
     public boolean connect() {
         try {
             JMXServiceURL jmxUrl = new JMXServiceURL(String.format(JXM_URL_FORMAT, config.jmxHost(), config.jmxPort()));
@@ -94,7 +110,7 @@ public class MetricsCollector {
     }
 
     /**
-     * Collect all measurement using defined mbeans
+     * Collect all measurement using defined mbeans.
      *
      * @return list of measurements
      */

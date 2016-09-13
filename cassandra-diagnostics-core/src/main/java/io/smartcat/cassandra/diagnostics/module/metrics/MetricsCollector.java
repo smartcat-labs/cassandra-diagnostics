@@ -137,9 +137,9 @@ public class MetricsCollector {
         return measurements;
     }
 
-    private Measurement createMeasurement(String service, double rate) {
+    private Measurement createMeasurement(String service, double value) {
         return Measurement
-                .create(service, rate, new Date().getTime(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
+                .create(service, value, new Date().getTime(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
                         new HashMap<String, String>());
     }
 

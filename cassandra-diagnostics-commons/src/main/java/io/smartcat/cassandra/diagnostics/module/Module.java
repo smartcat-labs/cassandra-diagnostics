@@ -76,7 +76,7 @@ public abstract class Module {
     /**
      * Used to stop module with long running tasks.
      */
-    protected void stop() {
+    public void stop() {
 
     }
 

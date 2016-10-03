@@ -50,7 +50,7 @@ public class HeartbeatModule extends Module {
     }
 
     @Override
-    protected void stop() {
+    public void stop() {
         timer.cancel();
     }
 

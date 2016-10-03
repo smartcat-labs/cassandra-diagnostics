@@ -3,6 +3,7 @@ package io.smartcat.cassandra.diagnostics;
 import java.lang.management.ManagementFactory;
 
 import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -28,6 +29,8 @@ public class Diagnostics implements QueryReporter {
      * Class logger.
      */
     private static final Logger logger = LoggerFactory.getLogger(Diagnostics.class);
+
+    private ObjectName mxbeanName;
 
     private Configuration config;
 
@@ -76,13 +79,23 @@ public class Diagnostics implements QueryReporter {
         logger.info("Intializing Diagnostics MXBean.");
         final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         try {
-            ObjectName objectName = new ObjectName(
+            mxbeanName = new ObjectName(
                     DiagnosticsMXBean.class.getPackage() + ":type=" + DiagnosticsMXBean.class.getSimpleName());
-            final DiagnosticsMXBean mbean = new DiagnosticsMXBeanImpl(config);
-            server.registerMBean(mbean, objectName);
+            final DiagnosticsMXBean mbean = new DiagnosticsMXBeanImpl(config, this);
+            server.registerMBean(mbean, mxbeanName);
         } catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException
                 | NotCompliantMBeanException e) {
             logger.error("Unable to register DiagnosticsMBean", e);
+        }
+    }
+
+    private void unregisterMXBean() {
+        logger.info("Unregistering Diagnostics MXBean.");
+        final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+        try {
+            server.unregisterMBean(mxbeanName);
+        } catch (MBeanRegistrationException | InstanceNotFoundException e) {
+            logger.error("Unable to unregister DiagnosticsMBean", e);
         }
     }
 
@@ -93,4 +106,18 @@ public class Diagnostics implements QueryReporter {
         }
     }
 
+    /**
+     * Reloads configuration and reinitialize modules and reporters.
+     */
+    public void reload() {
+        logger.info("Reloading diagnostics configuation.");
+        DiagnosticsProcessor dp = diagnosticsProcessor;
+        diagnosticsProcessor = null;
+        dp.shutdown();
+        unregisterMXBean();
+        config = loadConfiguration();
+        dp = new DiagnosticsProcessor(config);
+        initMXBean();
+        diagnosticsProcessor = dp;
+    }
 }

@@ -22,6 +22,7 @@ public class MetricsConfigurationTest {
         assertThat(conf.jmxSslEnabled()).isEqualTo(false);
         assertThat(conf.metricsPackageName()).isEqualTo("org.apache.cassandra.metrics");
         assertThat(conf.metricsPatterns()).isNotNull();
+        assertThat(conf.metricsPatterns()).isEmpty();
     }
 
     @Test

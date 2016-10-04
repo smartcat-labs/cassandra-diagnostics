@@ -53,6 +53,38 @@ Default is 25 milliseconds.
 Request Rate Module uses codahale metrics library to create rate measurement of executed queries. Rates are reported for select and upsert statements using configured reporters in configured periods.
 Default is 1 second.
 
+#### Metrics Module
+
+Cassandra internal metrics are exposed over JMX. This module collects JMX metrics and ships them using predefined reporters. Metrics package names configuration is the same as a default metrics config reporter uses. Module specific configuration looks like this:
+```
+- module: io.smartcat.cassandra.diagnostics.module.metrics.MetricsModule
+    options:
+      period: 1
+      timeunit: SECONDS
+      jmxHost: 127.0.0.1 #optional
+      jmxPort: 7199 #optional
+      jmxSslEnabled: false #optional
+      jmxSslUsername: username #optional, set if ssl enabled
+      jmxSslPassword: password #optional, set if ssl enabled
+      metricsPackageName: org.apache.cassandra.metrics #optional
+      metricsPatterns:
+        - "^org.apache.cassandra.metrics.Cache.+"
+        - "^org.apache.cassandra.metrics.ClientRequest.+"
+        - "^org.apache.cassandra.metrics.CommitLog.+"
+        - "^org.apache.cassandra.metrics.Compaction.+"
+        - "^org.apache.cassandra.metrics.ColumnFamily.PendingTasks"
+        - "^org.apache.cassandra.metrics.ColumnFamily.ReadLatency"
+        - "^org.apache.cassandra.metrics.ColumnFamily.WriteLatency"
+        - "^org.apache.cassandra.metrics.ColumnFamily.ReadTotalLatency"
+        - "^org.apache.cassandra.metrics.ColumnFamily.WriteTotalLatency"
+        - "^org.apache.cassandra.metrics.DroppedMetrics.+"
+        - "^org.apache.cassandra.metrics.ReadRepair.+"
+        - "^org.apache.cassandra.metrics.Storage.+"
+        - "^org.apache.cassandra.metrics.ThreadPools.+"
+    reporters:
+      ...
+```
+
 ### Reporters
 
 Reporters take measurement from core and wrap them up in implementation specific format so it can be sent to reporters target (i.e. Influx reporter transforms measurement to influx query and stores it to InfluxDB).

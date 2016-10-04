@@ -24,6 +24,7 @@
         <module>cassandra-diagnostics-connector30</module>
         <module>cassandra-diagnostics-ft</module>
         <module>cassandra-diagnostics-driver-connector</module>
+        <module>cassandra-diagnostics-reporter-telegraf</module>
     </modules>
 
     <licenses>

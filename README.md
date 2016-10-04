@@ -93,7 +93,7 @@ Reporter implementations:
 
 #### Log Reporter
 
-[LogReporter}(https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-core/src/main/java/io/smartcat/cassandra/diagnostics/reporter/LogReporter.java) uses the Cassandra logger system to report measurement (this is default reporter and part of core). Reports are logged at the `INFO` log level in the following pattern:
+[LogReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-core/src/main/java/io/smartcat/cassandra/diagnostics/reporter/LogReporter.java) uses the Cassandra logger system to report measurement (this is default reporter and part of core). Reports are logged at the `INFO` log level in the following pattern:
 
 ```
 Measurement {} [time={}, value={}, tags={}, fields={}]

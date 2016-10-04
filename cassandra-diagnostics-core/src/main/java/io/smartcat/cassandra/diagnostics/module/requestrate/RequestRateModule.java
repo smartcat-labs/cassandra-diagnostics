@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
-import io.smartcat.cassandra.diagnostics.metrics.LongAdder;
 import io.smartcat.cassandra.diagnostics.module.Module;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
@@ -28,21 +27,13 @@ public class RequestRateModule extends Module {
 
     private static final String REQUEST_RATE_THREAD_NAME = "request-rate-module";
 
-    private static final String PERIOD_PROP = "period";
-
-    private static final String DEFAULT_PERIOD = "1";
-
-    private static final String TIMEUNIT_PROP = "timeunit";
-
-    private static final String DEFAULT_TIMEUNIT = "SECONDS";
-
     private static final String UPDATE_SUFFIX = "_update";
 
     private static final String SELECT_SUFFIX = "_select";
 
-    private final LongAdder updateRequests;
+    private final AtomicCounter updateRequests;
 
-    private final LongAdder selectRequests;
+    private final AtomicCounter selectRequests;
 
     private final String service;
 
@@ -78,8 +69,8 @@ public class RequestRateModule extends Module {
         logger.info("RequestRate module initialized with {} {} reporting period.", period, timeunit.name());
         updateService = service + UPDATE_SUFFIX;
         selectService = service + SELECT_SUFFIX;
-        updateRequests = new LongAdder();
-        selectRequests = new LongAdder();
+        updateRequests = new AtomicCounter();
+        selectRequests = new AtomicCounter();
         timer = new Timer(REQUEST_RATE_THREAD_NAME);
         timer.schedule(new RequestRateTask(), 0, config.reportingRateInMillis());
     }

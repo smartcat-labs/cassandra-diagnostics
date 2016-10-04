@@ -72,7 +72,7 @@ public class TelegrafReporter extends Reporter {
         if (telegrafClient == null || !telegrafClient.isConnected()) {
             logger.warn("Telegraf client is not connected. Skipping measurement {} with value {}.",
                     measurement.name(), measurement.value());
-           // return;
+            return;
         }
 
         logger.debug("Sending Measurement: name={}, value={}, time={}", measurement.name(), measurement.value(),

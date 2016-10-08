@@ -119,17 +119,22 @@ public class MetricsCollector {
 
         for (final MetricsMBean mbean : mbeans) {
             for (final MBeanAttributeInfo attribute : mbean.getMBeanAttributes()) {
+                if (attribute.getType().equals(TimeUnit.class.getName()) || attribute.getType()
+                        .equals(String.class.getName())) {
+                    continue;
+                }
+
                 try {
                     final Object value = mbeanServerConn
                             .getAttribute(mbean.getMBean().getObjectName(), attribute.getName());
 
-                    if (value != null && !attribute.getType().equals(String.class.getName())) {
+                    if (value != null) {
                         measurements.add(createMeasurement(mbean.getName() + "." + attribute.getName(),
                                 Double.parseDouble(value.toString())));
                     }
 
                 } catch (Exception e) {
-                    logger.info("Exception while reading attributes", e);
+                    logger.error("Exception while reading attributes", e);
                 }
             }
         }

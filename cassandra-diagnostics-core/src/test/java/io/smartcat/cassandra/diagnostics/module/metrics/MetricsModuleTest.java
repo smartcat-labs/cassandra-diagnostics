@@ -91,8 +91,7 @@ public class MetricsModuleTest {
                     TestMXBean.class.getPackage() + ":type=" + TestMXBean.class.getSimpleName());
             final TestMXBean mbean = new TestMXBean(config);
             server.registerMBean(mbean, objectName);
-        } catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException |
-                NotCompliantMBeanException e) {
+        } catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException e) {
         }
     }
 

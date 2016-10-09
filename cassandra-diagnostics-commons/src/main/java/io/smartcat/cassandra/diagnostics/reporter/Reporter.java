@@ -27,4 +27,11 @@ public abstract class Reporter {
      * @param measurement processed information about intercepted query
      */
     public abstract void report(Measurement measurement);
+
+    /**
+     * Used to gracefully stop reporter.
+     */
+    public void stop() {
+
+    }
 }

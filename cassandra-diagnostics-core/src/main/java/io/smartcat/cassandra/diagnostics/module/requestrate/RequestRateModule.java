@@ -97,7 +97,7 @@ public class RequestRateModule extends Module {
     }
 
     @Override
-    protected void stop() {
+    public void stop() {
         timer.cancel();
     }
 

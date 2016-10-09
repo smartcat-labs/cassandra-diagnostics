@@ -122,4 +122,14 @@ public class TelegrafReporter extends Reporter {
         telegrafClient.send(bytes);
     }
 
+    @Override
+    public void stop() {
+        try {
+            telegrafClient.stop();
+        } catch (IOException | InterruptedException e) {
+            logger.error("Errored while stopping telegraf client", e);
+        } finally {
+            telegrafClient = null;
+        }
+    }
 }

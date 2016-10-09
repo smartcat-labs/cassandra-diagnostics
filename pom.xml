@@ -18,13 +18,14 @@
     <modules>
         <module>cassandra-diagnostics-commons</module>
         <module>cassandra-diagnostics-core</module>
-        <module>cassandra-diagnostics-reporter-influx</module>
-        <module>cassandra-diagnostics-reporter-riemann</module>
         <module>cassandra-diagnostics-connector21</module>
         <module>cassandra-diagnostics-connector30</module>
         <module>cassandra-diagnostics-ft</module>
         <module>cassandra-diagnostics-driver-connector</module>
+        <module>cassandra-diagnostics-reporter-influx</module>
+        <module>cassandra-diagnostics-reporter-riemann</module>
         <module>cassandra-diagnostics-reporter-telegraf</module>
+        <module>cassandra-diagnostics-reporter-kafka</module>
     </modules>
 
     <licenses>

@@ -1,6 +1,7 @@
 package io.smartcat.cassandra.diagnostics;
 
 import java.lang.management.ManagementFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -30,6 +31,8 @@ public class Diagnostics implements QueryReporter {
      */
     private static final Logger logger = LoggerFactory.getLogger(Diagnostics.class);
 
+    private AtomicBoolean isRunning = new AtomicBoolean(false);
+
     private ObjectName mxbeanName;
 
     private Configuration config;
@@ -56,6 +59,7 @@ public class Diagnostics implements QueryReporter {
      */
     public void activate() {
         this.diagnosticsProcessor = new DiagnosticsProcessor(config);
+        this.isRunning.set(true);
         initMXBean();
     }
 
@@ -101,7 +105,7 @@ public class Diagnostics implements QueryReporter {
 
     @Override
     public void report(Query query) {
-        if (diagnosticsProcessor != null) {
+        if (isRunning.get()) {
             diagnosticsProcessor.process(query);
         }
     }
@@ -110,14 +114,15 @@ public class Diagnostics implements QueryReporter {
      * Reloads configuration and reinitialize modules and reporters.
      */
     public void reload() {
+        isRunning.set(false);
         logger.info("Reloading diagnostics configuation.");
-        DiagnosticsProcessor dp = diagnosticsProcessor;
-        diagnosticsProcessor = null;
-        dp.shutdown();
+        diagnosticsProcessor.shutdown();
         unregisterMXBean();
+
         config = loadConfiguration();
-        dp = new DiagnosticsProcessor(config);
+        diagnosticsProcessor = new DiagnosticsProcessor(config);
         initMXBean();
-        diagnosticsProcessor = dp;
+        logger.info("Configuration realoaded");
+        isRunning.set(true);
     }
 }

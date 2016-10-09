@@ -1,4 +1,4 @@
-package org.cassandra.diagnostics.reporter;
+package io.smartcat.cassandra.diagnostics.reporter;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -13,8 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.reporter.Reporter;
-import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
 
 /**
  * Reporter implementation for Telegraf.

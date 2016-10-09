@@ -1,4 +1,4 @@
-package org.cassandra.diagnostics.reporter;
+package io.smartcat.cassandra.diagnostics.reporter;
 
 import java.io.IOException;
 import java.net.SocketAddress;

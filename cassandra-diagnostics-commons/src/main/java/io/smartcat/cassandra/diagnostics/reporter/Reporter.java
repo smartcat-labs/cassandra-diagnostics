@@ -32,5 +32,6 @@ public abstract class Reporter {
      * Used to gracefully stop reporter.
      */
     public void stop() {
+
     }
 }

@@ -62,7 +62,7 @@ public class MetricsModule extends Module {
     }
 
     @Override
-    protected void stop() {
+    public void stop() {
         timer.cancel();
         metricsCollector.close();
     }

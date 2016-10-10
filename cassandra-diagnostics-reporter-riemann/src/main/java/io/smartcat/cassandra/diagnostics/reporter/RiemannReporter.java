@@ -121,4 +121,9 @@ public class RiemannReporter extends Reporter {
         riemannClient.sendEvent(event.build());
     }
 
+    @Override
+    public void stop() {
+        riemannClient.close();
+    }
+
 }

@@ -113,4 +113,15 @@ public class DiagnosticsProcessor {
         }
     }
 
+    /**
+     * Gracefully stop all modules and reporters.
+     */
+    public void shutdown() {
+        for (Module module : modules) {
+            module.stop();
+        }
+        for (Reporter reporter : reporters.values()) {
+            reporter.stop();
+        }
+    }
 }

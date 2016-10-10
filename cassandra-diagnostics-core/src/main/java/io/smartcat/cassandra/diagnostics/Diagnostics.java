@@ -1,8 +1,10 @@
 package io.smartcat.cassandra.diagnostics;
 
 import java.lang.management.ManagementFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -29,6 +31,10 @@ public class Diagnostics implements QueryReporter {
      */
     private static final Logger logger = LoggerFactory.getLogger(Diagnostics.class);
 
+    private AtomicBoolean isRunning = new AtomicBoolean(false);
+
+    private ObjectName mxbeanName;
+
     private Configuration config;
 
     private DiagnosticsProcessor diagnosticsProcessor = null;
@@ -53,6 +59,7 @@ public class Diagnostics implements QueryReporter {
      */
     public void activate() {
         this.diagnosticsProcessor = new DiagnosticsProcessor(config);
+        this.isRunning.set(true);
         initMXBean();
     }
 
@@ -76,21 +83,46 @@ public class Diagnostics implements QueryReporter {
         logger.info("Intializing Diagnostics MXBean.");
         final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         try {
-            ObjectName objectName = new ObjectName(
+            mxbeanName = new ObjectName(
                     DiagnosticsMXBean.class.getPackage() + ":type=" + DiagnosticsMXBean.class.getSimpleName());
-            final DiagnosticsMXBean mbean = new DiagnosticsMXBeanImpl(config);
-            server.registerMBean(mbean, objectName);
+            final DiagnosticsMXBean mbean = new DiagnosticsMXBeanImpl(config, this);
+            server.registerMBean(mbean, mxbeanName);
         } catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException
                 | NotCompliantMBeanException e) {
             logger.error("Unable to register DiagnosticsMBean", e);
         }
     }
 
+    private void unregisterMXBean() {
+        logger.info("Unregistering Diagnostics MXBean.");
+        final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+        try {
+            server.unregisterMBean(mxbeanName);
+        } catch (MBeanRegistrationException | InstanceNotFoundException e) {
+            logger.error("Unable to unregister DiagnosticsMBean", e);
+        }
+    }
+
     @Override
     public void report(Query query) {
-        if (diagnosticsProcessor != null) {
+        if (isRunning.get()) {
             diagnosticsProcessor.process(query);
         }
     }
 
+    /**
+     * Reloads configuration and reinitialize modules and reporters.
+     */
+    public void reload() {
+        isRunning.set(false);
+        logger.info("Reloading diagnostics configuation.");
+        diagnosticsProcessor.shutdown();
+        unregisterMXBean();
+
+        config = loadConfiguration();
+        diagnosticsProcessor = new DiagnosticsProcessor(config);
+        initMXBean();
+        logger.info("Configuration realoaded");
+        isRunning.set(true);
+    }
 }

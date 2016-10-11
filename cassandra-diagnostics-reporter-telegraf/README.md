@@ -35,7 +35,7 @@ Telegraf agent that receives diagnostics measurements should have enabled the TC
 
 ```
 [[inputs.tcp_listener]]
-  service_address = ":8094"
+  service_address = ":8084"
   allowed_pending_messages = 10000
   max_tcp_connections = 250
   data_format = "influx"

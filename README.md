@@ -139,7 +139,7 @@ Influx DB statement holds name of measurement, tags connected to this measuremen
 
 #### Telegraf Reporter
 
-[TelegrafReporter](cassandra-diagnostics-reporter-telegraf/README.md) sends measurements towards [Telegraf agent](https://github.com/influxdata/telegraf).
+[Telegraf Reporter](cassandra-diagnostics-reporter-telegraf/README.md) sends measurements towards [Telegraf agent](https://github.com/influxdata/telegraf).
 
 ## Configuration
 

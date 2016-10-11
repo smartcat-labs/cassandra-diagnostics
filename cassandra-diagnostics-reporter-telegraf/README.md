@@ -1,8 +1,8 @@
 # Telegraf Reporter
 
-[TelegrafReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-telegraf/src/main/java/io/smartcat/cassandra/diagnostics/reporter/TelegrafReporter.java) is a [Cassandra Diagnostics]() reporter that sends measurements towards an [Telegraf agent](https://github.com/influxdata/telegraf). It is a basic implementation based on Java's NIO framework and does not have any external dependencies.
+[Telegraf Reporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-telegraf/src/main/java/io/smartcat/cassandra/diagnostics/reporter/TelegrafReporter.java) is a [Cassandra Diagnostics]() reporter that sends measurements towards an [Telegraf agent](https://github.com/influxdata/telegraf). It is a basic implementation based on Java NIO framework and does not have external dependencies.
 
-The reporter uses Telegraf's [TCP Listener](https://github.com/influxdata/telegraf/tree/master/plugins/inputs/tcp_listener) input plugin to transport measurements in the `influx` format (Influx line protocol). Telegraf reporter converts every measurement objects into the following Inlufx protocol line:
+The reporter uses Telegraf's [TCP Listener](https://github.com/influxdata/telegraf/tree/master/plugins/inputs/tcp_listener) input plugin to transport measurements in the `influx` format (Influx line protocol). Telegraf reporter converts every measurement objects as an Inlufx protocol line. It supports multi-value measurements. A single Influx protocl line looks like this:
 
 ```
 <measurement name>[,<tag1>=<tag1 value>,...] value=<measurement value>[,<field1>=<field1 value>,...] <measurement timestamp>\r\n

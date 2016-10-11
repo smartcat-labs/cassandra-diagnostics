@@ -129,13 +129,17 @@ fields:
 
 #### Influx Reporter
 
-[InfluxReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-influx/src/main/java/io/smartcat/cassandra/diagnostics/reporter/InfluxReporter.java) sendss measurements to influx database.
+[InfluxReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-influx/src/main/java/io/smartcat/cassandra/diagnostics/reporter/InfluxReporter.java) sends measurements to influx database.
 
 Influx DB statement holds name of measurement, tags connected to this measurement, fields and timestamp of measurement in following format:
 
 ```
 <measurement name>,id=<UUID for this measurement>,statementType=<type of statement> value=<value of measurement> <timestamp of measurement>
 ```
+
+#### Telegraf Reporter
+
+[TelegrafReporter](cassandra-diagnostics-reporter-telegraf/README.md) sends measurements towards [Telegraf agent](https://github.com/influxdata/telegraf).
 
 ## Configuration
 

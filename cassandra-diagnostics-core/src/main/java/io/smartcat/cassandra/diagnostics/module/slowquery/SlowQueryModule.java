@@ -25,6 +25,8 @@ public class SlowQueryModule extends Module {
 
     private static final Logger logger = LoggerFactory.getLogger(SlowQueryModule.class);
 
+    private static final String DEFAULT_MEASUREMENT_NAME = "slow_query";
+
     private final String hostname;
 
     private final String service;
@@ -41,7 +43,7 @@ public class SlowQueryModule extends Module {
     public SlowQueryModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
         super(configuration, reporters);
         hostname = getHostname();
-        service = configuration.measurement;
+        service = configuration.getMeasurementOrDefault(DEFAULT_MEASUREMENT_NAME);
         slowQueryLogDecider = SlowQueryLogDecider.create(SlowQueryConfiguration.create(configuration.options));
     }
 

@@ -30,6 +30,16 @@ public class ModuleConfiguration {
      */
     public List<String> reporters = new ArrayList<>();
 
+    /**
+     * Get measurement name or default provided value.
+     *
+     * @param defaultMeasurement Default measurement name value
+     * @return measurement name value
+     */
+    public String getMeasurementOrDefault(String defaultMeasurement) {
+        return measurement == null || measurement.isEmpty() ? defaultMeasurement : measurement;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

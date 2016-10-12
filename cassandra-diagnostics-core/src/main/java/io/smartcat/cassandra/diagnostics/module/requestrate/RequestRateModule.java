@@ -25,6 +25,8 @@ public class RequestRateModule extends Module {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestRateModule.class);
 
+    private static final String DEFAULT_MEASUREMENT_NAME = "request_rate";
+
     private static final String REQUEST_RATE_THREAD_NAME = "request-rate-module";
 
     private static final String UPDATE_SUFFIX = "_update";
@@ -61,7 +63,7 @@ public class RequestRateModule extends Module {
         super(configuration, reporters);
 
         RequestRateConfiguration config = RequestRateConfiguration.create(configuration.options);
-        service = configuration.measurement;
+        service = configuration.getMeasurementOrDefault(DEFAULT_MEASUREMENT_NAME);
         period = config.period();
         timeunit = config.timeunit();
         rateFactor = timeunit.toSeconds(1);

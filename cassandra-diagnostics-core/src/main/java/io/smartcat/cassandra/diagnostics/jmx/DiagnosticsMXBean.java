@@ -5,6 +5,12 @@ package io.smartcat.cassandra.diagnostics.jmx;
  */
 public interface DiagnosticsMXBean {
     /**
+     * Cassandra Diagnostics version.
+     * @return version string
+     */
+    public String getVersion();
+
+    /**
      * Reload diagnostics configuration.
      */
     public void reload();

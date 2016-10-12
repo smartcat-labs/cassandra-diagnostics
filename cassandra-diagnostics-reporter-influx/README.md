@@ -1,6 +1,6 @@
 # Influx reporter
 
-[InfluxReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-influx/src/main/java/io/smartcat/cassandra/diagnostics/reporter/InfluxReporter.java) sends measurements to influx database.
+[InfluxReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-influx/src/main/java/io/smartcat/cassandra/diagnostics/reporter/InfluxReporter.java) sends measurements to [Influx database](https://www.influxdata.com/time-series-platform/influxdb/).
 
 Influx DB statement holds name of measurement, tags connected to this measurement, fields and timestamp of measurement in following format:
 

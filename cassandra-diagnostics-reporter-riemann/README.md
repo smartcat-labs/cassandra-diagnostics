@@ -1,6 +1,6 @@
 # Riemann reporter
 
-[Riemann reporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-riemann/src/main/java/io/smartcat/cassandra/diagnostics/reporter/RiemannReporter.java) sends measurements as Riemann events towards the configured Riemann server using TCP transport. It is using batch Riemann client to save resources and send more events in one network round trip.
+[Riemann reporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-riemann/src/main/java/io/smartcat/cassandra/diagnostics/reporter/RiemannReporter.java) sends measurements as Riemann events towards the configured [Riemann server](http://riemann.io/) using TCP transport. It is using batch Riemann client to save resources and send more events in one network round trip.
 
 Generated Riemann Events looks like the following:
 

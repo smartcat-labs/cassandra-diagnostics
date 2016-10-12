@@ -10,6 +10,8 @@ public class MetricsMBean {
 
     private final String name;
 
+    private final String separator;
+
     private final ObjectInstance mbean;
 
     private MBeanAttributeInfo[] mbeanAttributes = new MBeanAttributeInfo[0];
@@ -17,13 +19,14 @@ public class MetricsMBean {
     /**
      * Constructor.
      *
-     * @param metricsPackageName metrics package name
-     * @param mbean              mbean object instance
-     * @param mbeanAttributes    mbean attributes
+     * @param config          metrics configuration
+     * @param mbean           mbean object instance
+     * @param mbeanAttributes mbean attributes
      */
-    public MetricsMBean(final String metricsPackageName, final ObjectInstance mbean,
+    public MetricsMBean(final MetricsConfiguration config, final ObjectInstance mbean,
             final MBeanAttributeInfo[] mbeanAttributes) {
-        this.name = getMBeanName(metricsPackageName, mbean);
+        this.name = getMBeanName(config.metricsPackageName(), mbean);
+        this.separator = config.metricsSeparator();
         this.mbean = mbean;
         this.mbeanAttributes = mbeanAttributes;
     }
@@ -78,22 +81,22 @@ public class MetricsMBean {
 
         StringBuilder nameBuilder = new StringBuilder();
         nameBuilder.append(metricsPackageName);
-        nameBuilder.append(".");
+        nameBuilder.append(separator);
         nameBuilder.append(type);
         if (path != null && !path.isEmpty()) {
-            nameBuilder.append(".");
+            nameBuilder.append(separator);
             nameBuilder.append(path);
         }
         if (keyspace != null && !keyspace.isEmpty()) {
-            nameBuilder.append(".");
+            nameBuilder.append(separator);
             nameBuilder.append(keyspace);
         }
         if (scope != null && !scope.isEmpty()) {
-            nameBuilder.append(".");
+            nameBuilder.append(separator);
             nameBuilder.append(scope);
         }
         if (name != null && !name.isEmpty()) {
-            nameBuilder.append(".");
+            nameBuilder.append(separator);
             nameBuilder.append(name);
         }
 

@@ -157,7 +157,7 @@ public class MetricsCollector {
         }
 
         for (ObjectInstance objectInstance : mbeanObjectInstances) {
-            MetricsMBean mbean = new MetricsMBean(config.metricsPackageName(), objectInstance,
+            MetricsMBean mbean = new MetricsMBean(config, objectInstance,
                     mbeanServerConn.getMBeanInfo(objectInstance.getObjectName()).getAttributes());
 
             boolean matches = false;

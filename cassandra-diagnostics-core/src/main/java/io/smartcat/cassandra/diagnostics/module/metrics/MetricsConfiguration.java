@@ -26,6 +26,7 @@ public class MetricsConfiguration {
         private static final String DEFAULT_JMX_SSL_USERNAME = null;
         private static final String DEFAULT_JMX_SSL_PASSWORD = null;
         private static final String DEFAULT_METRICS_PACKAGE_NAME = "org.apache.cassandra.metrics";
+        private static final String DEFAULT_METRICS_SEPARATOR = "_";
         private static final List<String> DEFAULT_METRICS_PATTERNS = new ArrayList<String>();
 
         /**
@@ -64,14 +65,19 @@ public class MetricsConfiguration {
         public String jmxSslPassword = DEFAULT_JMX_SSL_PASSWORD;
 
         /**
-         * Metrics names list.
-         */
-        public List<String> metricsPatterns = DEFAULT_METRICS_PATTERNS;
-
-        /**
          * Metrics package name.
          */
         public String metricsPackageName = DEFAULT_METRICS_PACKAGE_NAME;
+
+        /**
+         * Metrics measurement name separator.
+         */
+        public String metricsSeparator = DEFAULT_METRICS_SEPARATOR;
+
+        /**
+         * Metrics names list.
+         */
+        public List<String> metricsPatterns = DEFAULT_METRICS_PATTERNS;
     }
 
     private Values values = new Values();
@@ -168,21 +174,30 @@ public class MetricsConfiguration {
     }
 
     /**
-     * Metrics patterns for gathering measurements.
-     *
-     * @return metrics patterns
-     */
-    public List<String> metricsPatterns() {
-        return values.metricsPatterns;
-    }
-
-    /**
      * Metrics package name. Defaults to org.apache.cassandra.metrics:*.
      *
      * @return metrics package name
      */
     public String metricsPackageName() {
         return values.metricsPackageName;
+    }
+
+    /**
+     * Metrics measurement name separator. Defaults to '_' character.
+     *
+     * @return metrics measurement name separator
+     */
+    public String metricsSeparator() {
+        return values.metricsSeparator;
+    }
+
+    /**
+     * Metrics patterns for gathering measurements.
+     *
+     * @return metrics patterns
+     */
+    public List<String> metricsPatterns() {
+        return values.metricsPatterns;
     }
 
 }

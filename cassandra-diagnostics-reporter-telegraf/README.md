@@ -19,12 +19,12 @@ Here is an example configuration that uses Telegraf reporter:
 reporters:
   - reporter: io.smartcat.cassandra.diagnostics.reporter.TelegrafReporter
     options:
-  	  telegrafHost: 10.173.12.11
+  	  telegrafHost: 127.0.0.1
       telegrafPort: 8084
 
 modules:
   - module: io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule
-    measurement: queryReport
+    measurement: slow_query
     options:
       slowQueryThresholdInMilliseconds: 10
     reporters:

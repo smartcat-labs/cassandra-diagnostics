@@ -1,6 +1,7 @@
 package io.smartcat.cassandra.diagnostics.jmx;
 
 import io.smartcat.cassandra.diagnostics.Diagnostics;
+import io.smartcat.cassandra.diagnostics.ProjectInfo;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 
 /**
@@ -24,6 +25,11 @@ public class DiagnosticsMXBeanImpl implements DiagnosticsMXBean {
     public DiagnosticsMXBeanImpl(Configuration config, Diagnostics diagnostics) {
         this.config = config;
         this.diagnostics = diagnostics;
+    }
+
+    @Override
+    public String getVersion() {
+        return ProjectInfo.VERSION;
     }
 
     /**

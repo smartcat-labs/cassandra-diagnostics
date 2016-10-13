@@ -1,12 +1,45 @@
-# Cassandra Diagnostics Releasing
+## Building
+
+Cassandra Diagnostics is a maven project and the project could be built using a single maven command like the following:
+
+```
+$ mvn clean package
+```
+
+As the result of this, all project's sub-modules would be compiled, unit test run and output artifacts (JARs) generated. In every sub-module directory, there is a `target` directory that contains generated JAR files. For example, in `cassandra-diagnostics-core` there is a `target` directory that contains `cassandra-diagnostics-core-<VERSION>.jar`.
+
+## Running Integration and Functional Tests
+
+In Cassandra Diagnostics projects, integration and functional tests kept separately. They are not activated for the default maven profile (`dev`) and, therefore, not executed in the maven test phase by default.
+
+The `integration-test` profile has to be activated in order to execute integration tests (quite unexpected, right?). This profile is executed by `maven-failsafe-plugin` in maven `verify` phase. The maven command to execute integration tests:
+
+```
+$ mvn verify -P integration-test
+```
+
+The `functional-test` profile has to be activated in order to execute functional tests in the `verify` maven phase. The maven command line for this:
+
+```
+$ mvn verify -P functional-test
+```
+
+`functional-test` activates by default the basic functional test (`basic` profile). Another available functional tests could be activated by specifying the respective maven profile (from `cassandra-diagnostics-ft.pom`) explicitly. For example:
+
+```
+$ mvn verify -P functional-test,influx
+```  
+
+
+## Releasing
 
 This document will explain what to do when new version is ready for release.
 
-## Versioning
+### Versioning
 
 We are versioning Cassandra Diagnostics with major.minor.patch versions. If changes included in new release are minor fixes and improvements we increase patch version. If subject of new release is new feature or new module we increase minor version. If we changed extensively (change in project structure, breakdown in backward compatibility) we increase major version and do release.
 
-## Releasing
+### Releasing
 
 1. Increase new release version
 

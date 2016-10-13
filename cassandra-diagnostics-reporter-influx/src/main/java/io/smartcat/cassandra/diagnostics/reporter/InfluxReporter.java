@@ -33,7 +33,7 @@ public class InfluxReporter extends Reporter {
 
     private static final String FLUSH_PERIOD_IN_SECONDS_PROP = "influxFlushPeriodInSeconds";
 
-    private static final String DEFAULT_DB_NAME = "slowQueries";
+    private static final String DEFAULT_DB_NAME = "cassandradb";
 
     private static final String RETENTION_POLICY_PROP = "influxRetentionPolicy";
 

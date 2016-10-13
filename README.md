@@ -10,7 +10,11 @@ Monitoring and audit power kit for Apache Cassandra.
 
 Cassandra Diagnostics is an extension for Apache Cassandra server node implemented as Java agent. It uses bytecode instrumentation to augment Cassandra node with additional functionalities. On one side it has connectors for different versions of Cassandra and on the other it has reporters to send measurement to different tools. In between lies core which is glue between those two. Reusable code goes to commons.
 
-![Architecture diagram](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/diagrams/architecture-diagram.png?raw=true)
+![Architecture diagram](diagrams/architecture-diagram.png?raw=true)
+
+### Cassandra Diagnostic Commons
+
+[Cassandra Diagnostics Commons](cassandra-diagnostics-commons/) holds interface for core, connector and reports and it provides signature all the modules need to confront to be able to work together.
 
 ### Cassandra Connector
 
@@ -18,25 +22,21 @@ Connector is a module which hooks into the query path and extract information fo
 
 Currently Cassandra Diagnostics implements the following connector implementation:
 
-- [Cassandra Connector 2.1](https://github.com/smartcat-labs/cassandra-diagnostics/tree/dev/cassandra-diagnostics-connector21) is a connector implementation for Cassandra node for Cassandra version 2.1.x.
+- [Cassandra Connector 2.1](cassandra-diagnostics-connector21/) is a connector implementation for Cassandra node for Cassandra version 2.1.x.
 
-- [Cassandra Connector 3.0](https://github.com/smartcat-labs/cassandra-diagnostics/tree/dev/cassandra-diagnostics-connector30) is a connector implementation for Cassandra node for Cassandra version 3.0.x.
+- [Cassandra Connector 3.0](cassandra-diagnostics-connector30/) is a connector implementation for Cassandra node for Cassandra version 3.0.x.
 
-- [Cassandra Driver Connector](https://github.com/smartcat-labs/cassandra-diagnostics/tree/dev/cassandra-diagnostics-driver-connector) is a connector implementation for Datastax's Cassandra driver for diagnostics on the application side.
+- [Cassandra Driver Connector](cassandra-diagnostics-driver-connector/) is a connector implementation for Datastax's Cassandra driver for diagnostics on the application side.
 
 ### Cassandra Core
 
-[Cassandra Diagnostics Core](https://github.com/smartcat-labs/cassandra-diagnostics/tree/dev/cassandra-diagnostics-core) is glue between connector and reporters. It holds all the modules for diagnostics, it has business logic for measurement and it decides what will be measured and what would be skipped. Its job is to load provided configuration or to setup sensible defaults.
-
-### Cassandra Diagnostic Commons
-
-[Cassandra Diagnostics Commons](https://github.com/smartcat-labs/cassandra-diagnostics/tree/dev/cassandra-diagnostics-commons) holds interface for core, connector and reports and it provides signature all the modules need to confront to be able to work together.
+[Cassandra Diagnostics Core](cassandra-diagnostics-core/) is glue between connector and reporters. It holds all the modules for diagnostics, it has business logic for measurement and it decides what will be measured and what would be skipped. Its job is to load provided configuration or to setup sensible defaults.
 
 ### Modules
 
 There are default module implementations which serve as core features. Modules use configured reporters to report their activity.
 
-Module implementations:
+[Core module](cassandra-diagnostics-core/COREMODULES.md) implementations:
 
 #### Heartbeat Module
 
@@ -56,34 +56,6 @@ Default is 1 second.
 #### Metrics Module
 
 Cassandra internal metrics are exposed over JMX. This module collects JMX metrics and ships them using predefined reporters. Metrics package names configuration is the same as a default metrics config reporter uses. Module specific configuration looks like this:
-```
-- module: io.smartcat.cassandra.diagnostics.module.metrics.MetricsModule
-    options:
-      period: 1
-      timeunit: SECONDS
-      jmxHost: 127.0.0.1 #optional
-      jmxPort: 7199 #optional
-      jmxSslEnabled: false #optional
-      jmxSslUsername: username #optional, set if ssl enabled
-      jmxSslPassword: password #optional, set if ssl enabled
-      metricsPackageName: org.apache.cassandra.metrics #optional
-      metricsPatterns:
-        - "^org.apache.cassandra.metrics.Cache.+"
-        - "^org.apache.cassandra.metrics.ClientRequest.+"
-        - "^org.apache.cassandra.metrics.CommitLog.+"
-        - "^org.apache.cassandra.metrics.Compaction.+"
-        - "^org.apache.cassandra.metrics.ColumnFamily.PendingTasks"
-        - "^org.apache.cassandra.metrics.ColumnFamily.ReadLatency"
-        - "^org.apache.cassandra.metrics.ColumnFamily.WriteLatency"
-        - "^org.apache.cassandra.metrics.ColumnFamily.ReadTotalLatency"
-        - "^org.apache.cassandra.metrics.ColumnFamily.WriteTotalLatency"
-        - "^org.apache.cassandra.metrics.DroppedMetrics.+"
-        - "^org.apache.cassandra.metrics.ReadRepair.+"
-        - "^org.apache.cassandra.metrics.Storage.+"
-        - "^org.apache.cassandra.metrics.ThreadPools.+"
-    reporters:
-      ...
-```
 
 ### Reporters
 
@@ -93,49 +65,21 @@ Reporter implementations:
 
 #### Log Reporter
 
-[LogReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-core/src/main/java/io/smartcat/cassandra/diagnostics/reporter/LogReporter.java) uses the Cassandra logger system to report measurement (this is default reporter and part of core). Reports are logged at the `INFO` log level in the following pattern:
+[LogReporter](cassandra-diagnostics-core/src/main/java/io/smartcat/cassandra/diagnostics/reporter/LogReporter.java) uses the Cassandra logger system to report measurement (this is default reporter and part of core). Reports are logged at the `INFO` log level in the following pattern:
 
 ```
 Measurement {} [time={}, value={}, tags={}, fields={}]
 ```
 
-Values for `time` is given in milliseconds. `tags` are used to better specify measurement and provide additional searchable labels and fields is placeholder for additional fields connected to this measurement. Example can be Slow Query measurement, where `value` is execution time of query, `tags` can be type of statement (UPDATE or SELECT) so you can differentiate and search easy and `fields` can hold actual statement, which is not something you want to search against but it is valuable metadata for measurement.
+Values for `time` is given in milliseconds. `tags` are used to better specify measurement and provide additional searchable labels and fields is a placeholder for additional fields connected to this measurement. Example can be Slow Query measurement, where `value` is execution time of query, `tags` can be type of statement (UPDATE or SELECT) so you can differentiate and search easy and `fields` can hold actual statement, which is not something you want to search against but it is valuable metadata for measurement.
 
 #### Riemann Reporter
 
-[RiemannReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-riemann/src/main/java/io/smartcat/cassandra/diagnostics/reporter/RiemannReporter.java) sends measurements as Riemann events towards the configured Riemann server using TCP transport. It is using batch Riemann client to save resources and send more events in one network roundtrip.
-
-Generated Riemann Events looks like the following:
-
-```
-host: <originating host name>
-service: <measurement name>
-state: "ok"
-metric: <measurement value>
-ttl: 30
-tags:
-  id: <UUID for this measurement>
-  statementType: <type of statement>
-fields:
-  client: <client doing request>
-  statement: <statement which was executed>
-```
-
-`RiemannReporter` has the following configuration parameters (that can be specified using `options`):
-
-- _riemannHost_ - Riemann server's host name (IP address). This parameter is required.
-- _riemannPort_ - Riemann server's TCP port number (5555 by default). This parameter is optional.
-- _batchEventSize_ - Riemann events that fit in one batch, this is length that triggers sending of events (10 by default). This parameter is optional.
+[RiemannReporter](cassandra-diagnostics-reporter-riemann/README.md) sends measurements towards [Riemann server](http://riemann.io/).
 
 #### Influx Reporter
 
-[InfluxReporter](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-reporter-influx/src/main/java/io/smartcat/cassandra/diagnostics/reporter/InfluxReporter.java) sends measurements to influx database.
-
-Influx DB statement holds name of measurement, tags connected to this measurement, fields and timestamp of measurement in following format:
-
-```
-<measurement name>,id=<UUID for this measurement>,statementType=<type of statement> value=<value of measurement> <timestamp of measurement>
-```
+[InfluxReporter](cassandra-diagnostics-reporter-influx/README.md) sends measurements towards [Influx database](https://www.influxdata.com/time-series-platform/influxdb/).
 
 #### Telegraf Reporter
 
@@ -169,7 +113,7 @@ modules:
       - io.smartcat.cassandra.diagnostics.reporter.LogReporter
 ```
 
-Specific query reporter may require additional configuration options. Those options could be specified using `options` property. The following example shows a configuration options in case of `RiemannReporter` and `InfluxReporter`. Also it shows how you can configure specific modules:
+Specific query reporter may require additional configuration options. Those options are specified using `options` property. The following example shows a configuration options in case of `RiemannReporter` and it shows how you can configure specific modules to use this reporter:
 
 ```
 # Reporters
@@ -180,35 +124,9 @@ reporters:
       riemannHost: 127.0.0.1
       riemannPort: 5555 #Optional
       batchEventSize: 50 #Optional
-  - reporter: io.smartcat.cassandra.diagnostics.reporter.InfluxReporter
-    options:
-      influxDbAddress: http://127.0.0.1:8086
-      influxUsername: username #Optional
-      influxPassword: password #Optional
-      influxDbName: cassandradb #Optional
-      influxRetentionPolicy: default #Optional
-      influxPointsInBatch: 1000 #optional
-      influxFlushPeriodInSeconds: 5 #optional
 
 # Modules
 modules:
-  - module: io.smartcat.cassandra.diagnostics.module.heartbeat.HeartbeatModule
-    measurement: heartbeat
-    options:
-      period: 15
-      timeunit: MINUTES
-    reporters:
-      - io.smartcat.cassandra.diagnostics.reporter.LogReporter
-  - module: io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule
-    measurement: queryReport
-    options:
-      # Slow query threshold
-      slowQueryThresholdInMilliseconds: 25
-      # Slow query tables for logging
-      tablesForLogging:
-        - keyspace.table_name
-    reporters:
-      - io.smartcat.cassandra.diagnostics.reporter.LogReporter
   - module: io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateModule
     measurement: requestRate
     options:
@@ -216,7 +134,7 @@ modules:
       timeunit: SECONDS
     reporters:
       - io.smartcat.cassandra.diagnostics.reporter.LogReporter
-      - io.smartcat.cassandra.diagnostics.reporter.InfluxReporter
+      - io.smartcat.cassandra.diagnostics.reporter.RiemannReporter
 ```
 
 ### Dynamic Configuration
@@ -227,38 +145,6 @@ The Diagnostics JMX MXBean could be found under the following object name:
 ```
 package io.smartcat.cassandra.diagnostics.jmx:type=DiagnosticsMXBean
 ```
-
-## Building
-
-Cassandra Diagnostics is a maven project and the project could be built using a single maven command like the following:
-
-```
-$ mvn clean package
-```
-
-As the result of this, all project's sub-modules would be compiled, unit test run and output artifacts (JARs) generated. In every sub-module directory, there is a `target` directory that contains generated JAR files. For example, in `cassandra-diagnostics-core` there is a `target` directory that contains `cassandra-diagnostics-core-<VERSION>.jar`.
-
-## Running Integration and Functional Tests
-
-In Cassandra Diagnostics projects, integration and functional tests kept separately. They are not activated for the default maven profile (`dev`) and, therefore, not executed in the maven test phase by default.
-
-The `integration-test` profile has to be activated in order to execute integration tests (quite unexpected, right?). This profile is executed by `maven-failsafe-plugin` in maven `verify` phase. The maven command to execute integration tests:
-
-```
-$ mvn verify -P integration-test
-```
-
-The `functional-test` profile has to be activated in order to execute functional tests in the `verify` maven phase. The maven command line for this:
-
-```
-$ mvn verify -P functional-test
-```
-
-`functional-test` activates by default the basic functional test (`basic` profile). Another available functional tests could be activated by specifying the respective maven profile (from `cassandra-diagnostics-ft.pom`) explicitly. For example:
-
-```
-$ mvn verify -P functional-test,influx
-```  
 
 ## Installation
 
@@ -288,6 +174,10 @@ JVM_OPTS="$JVM_OPTS -javaagent:$CASSANDRA_HOME/lib/cassandra-diagnostics-core-VE
 Upon Cassandra node start, the Diagnostics agent kicks in and instrument necessary target classes to inject diagnostics additions.
 `LogReporter` repors slow queries in `logs/system.log` at `INFO` level.
 The dynamic configuration could be inspected/changed using `jconsole` and connecting to `org.apache.cassandra.service.CassandraDaemon`.
+
+## Build and deploy
+
+Build and deploy process is described [here](BUILDANDDEPLOY.md).
 
 ## License and development
 

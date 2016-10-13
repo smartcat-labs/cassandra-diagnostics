@@ -30,13 +30,13 @@ Currently Cassandra Diagnostics implements the following connector implementatio
 
 ### Cassandra Core
 
-[Cassandra Diagnostics Core](cassandra-diagnostics-core) is glue between connector and reporters. It holds all the modules for diagnostics, it has business logic for measurement and it decides what will be measured and what would be skipped. Its job is to load provided configuration or to setup sensible defaults.
+[Cassandra Diagnostics Core](cassandra-diagnostics-core/) is glue between connector and reporters. It holds all the modules for diagnostics, it has business logic for measurement and it decides what will be measured and what would be skipped. Its job is to load provided configuration or to setup sensible defaults.
 
 ### Modules
 
 There are default module implementations which serve as core features. Modules use configured reporters to report their activity.
 
-[Core module](COREMODULES.md) implementations:
+[Core module](cassandra-diagnostics-core/COREMODULES.md) implementations:
 
 #### Heartbeat Module
 
@@ -177,7 +177,7 @@ The dynamic configuration could be inspected/changed using `jconsole` and connec
 
 ## Build and deploy
 
-Build and deploy process is described [here]()BUILDANDDEPLOY.md).
+Build and deploy process is described [here](BUILDANDDEPLOY.md).
 
 ## License and development
 

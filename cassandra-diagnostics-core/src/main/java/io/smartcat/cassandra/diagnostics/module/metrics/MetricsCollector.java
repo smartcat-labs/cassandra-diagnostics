@@ -129,7 +129,7 @@ public class MetricsCollector {
                             .getAttribute(mbean.getMBean().getObjectName(), attribute.getName());
 
                     if (value != null) {
-                        measurements.add(createMeasurement(mbean.getName() + "." + attribute.getName(),
+                        measurements.add(createMeasurement(mbean.getMeasurementName() + "." + attribute.getName(),
                                 Double.parseDouble(value.toString())));
                     }
 
@@ -166,7 +166,7 @@ public class MetricsCollector {
             }
 
             for (Pattern pattern : patterns) {
-                if (pattern.matcher(mbean.getName()).matches()) {
+                if (pattern.matcher(mbean.getmbeanName()).matches()) {
                     matches = true;
                 }
             }

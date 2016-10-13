@@ -8,9 +8,11 @@ import javax.management.ObjectInstance;
  */
 public class MetricsMBean {
 
-    private final String name;
+    private static final String METRICS_PACKAGE_SEPARATOR = ".";
 
-    private final String separator;
+    private final String mbeanName;
+
+    private final String measurementName;
 
     private final ObjectInstance mbean;
 
@@ -25,19 +27,28 @@ public class MetricsMBean {
      */
     public MetricsMBean(final MetricsConfiguration config, final ObjectInstance mbean,
             final MBeanAttributeInfo[] mbeanAttributes) {
-        this.name = getMBeanName(config.metricsPackageName(), mbean);
-        this.separator = config.metricsSeparator();
+        this.mbeanName = getMBeanName(config.metricsPackageName(), mbean);
+        this.measurementName = nameBuilder(config.metricsPackageName(), mbean, config.metricsSeparator());
         this.mbean = mbean;
         this.mbeanAttributes = mbeanAttributes;
     }
 
     /**
-     * Get metrics mbean name.
+     * Get comma separated metrics mbean name.
      *
      * @return mbean name
      */
-    public String getName() {
-        return name;
+    public String getmbeanName() {
+        return mbeanName;
+    }
+
+    /**
+     * Get metrics mbean measurement name. Used for reporting metrics.
+     *
+     * @return mbean measurement name
+     */
+    public String getMeasurementName() {
+        return measurementName;
     }
 
     /**
@@ -73,6 +84,10 @@ public class MetricsMBean {
      * @return mbean measurement name
      */
     private String getMBeanName(final String metricsPackageName, final ObjectInstance mbean) {
+        return nameBuilder(metricsPackageName, mbean, METRICS_PACKAGE_SEPARATOR);
+    }
+
+    private String nameBuilder(final String metricsPackageName, final ObjectInstance mbean, final String separator) {
         String type = mbean.getObjectName().getKeyProperty("type");
         String path = mbean.getObjectName().getKeyProperty("path");
         String keyspace = mbean.getObjectName().getKeyProperty("keyspace");
@@ -105,6 +120,6 @@ public class MetricsMBean {
 
     @Override
     public String toString() {
-        return name;
+        return mbeanName;
     }
 }

@@ -1,6 +1,5 @@
 package io.smartcat.cassandra.diagnostics.module.requestrate;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
@@ -131,7 +130,7 @@ public class RequestRateModule extends Module {
 
     private Measurement createMeasurement(String service, double rate) {
         return Measurement
-                .create(service, rate, new Date().getTime(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
+                .create(service, rate, System.currentTimeMillis(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
                         new HashMap<String, String>());
     }
 }

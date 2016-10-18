@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMISocketFactory;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -129,7 +128,8 @@ public class MetricsCollector {
                             .getAttribute(mbean.getMBean().getObjectName(), attribute.getName());
 
                     if (value != null) {
-                        measurements.add(createMeasurement(mbean.getMeasurementName() + "." + attribute.getName(),
+                        measurements.add(createMeasurement(
+                                mbean.getMeasurementName() + config.metricsSeparator() + attribute.getName(),
                                 Double.parseDouble(value.toString())));
                     }
 
@@ -143,9 +143,8 @@ public class MetricsCollector {
     }
 
     private Measurement createMeasurement(String service, double value) {
-        return Measurement
-                .create(service, value, new Date().getTime(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
-                        new HashMap<String, String>());
+        return Measurement.create(service, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS,
+                new HashMap<String, String>(), new HashMap<String, String>());
     }
 
     private Set<MetricsMBean> filterMBeans(final Set<ObjectInstance> mbeanObjectInstances)

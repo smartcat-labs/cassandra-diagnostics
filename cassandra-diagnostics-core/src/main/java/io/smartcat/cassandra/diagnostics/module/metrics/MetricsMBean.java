@@ -88,14 +88,15 @@ public class MetricsMBean {
     }
 
     private String nameBuilder(final String metricsPackageName, final ObjectInstance mbean, final String separator) {
-        String type = mbean.getObjectName().getKeyProperty("type");
-        String path = mbean.getObjectName().getKeyProperty("path");
-        String keyspace = mbean.getObjectName().getKeyProperty("keyspace");
-        String scope = mbean.getObjectName().getKeyProperty("scope");
-        String name = mbean.getObjectName().getKeyProperty("name");
+        final String type = mbean.getObjectName().getKeyProperty("type");
+        final String path = mbean.getObjectName().getKeyProperty("path");
+        final String keyspace = mbean.getObjectName().getKeyProperty("keyspace");
+        final String scope = mbean.getObjectName().getKeyProperty("scope");
+        final String name = mbean.getObjectName().getKeyProperty("name");
+        final String packageName = metricsPackageName.replace(".", separator);
 
         StringBuilder nameBuilder = new StringBuilder();
-        nameBuilder.append(metricsPackageName);
+        nameBuilder.append(packageName);
         nameBuilder.append(separator);
         nameBuilder.append(type);
         if (path != null && !path.isEmpty()) {

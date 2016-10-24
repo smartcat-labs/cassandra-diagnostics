@@ -30,6 +30,7 @@ public class FTTelegraf {
 
     @BeforeClass
     public static void setUp() throws ConfigurationException, TTransportException, IOException, InterruptedException {
+        System.out.println("Connecting to " + SystemPropertyUtil.get("cassandra.host") + ":" + SystemPropertyUtil.get("cassandra.port"));
         cluster = Cluster.builder()
                 .addContactPoint(SystemPropertyUtil.get("cassandra.host"))
                 .withPort(Integer.parseInt(SystemPropertyUtil.get("cassandra.port")))
@@ -53,16 +54,13 @@ public class FTTelegraf {
 
         session.execute("SELECT * FROM test_keyspace.test_table");
 
-        QueryResult result = null;
-        for (int i = 0; i < 10; i++) {
-            result = influxdb.query(new Query("SHOW SERIES FROM \"queryReport\"", SystemPropertyUtil.get("influxdb.dbname")));
-            if (!result.hasError()) {
-                break;
-            }
-            Thread.sleep(500);
-        }
+        Thread.sleep(10000);
 
-        Assertions.assertThat(result.getResults().size()).isEqualTo(1);
-        cluster.close();
+        QueryResult result = influxdb.query(new Query("select count(value) from queryReport", SystemPropertyUtil.get("influxdb.dbname")));
+
+        result = influxdb.query(new Query("select count(value) from queryReport", "diagnostics"));
+
+        Assertions.assertThat(result.getResults().get(0).getSeries()).isNotNull();
+        cluster.close();        
     }
 }

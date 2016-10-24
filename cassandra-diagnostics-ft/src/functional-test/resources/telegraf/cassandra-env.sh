@@ -312,4 +312,4 @@ JVM_OPTS="$JVM_OPTS $JVM_EXTRA_OPTS"
 
 JVM_OPTS="$JVM_OPTS -javaagent:/cassandra-diagnostics/cassandra-diagnostics-core.jar"
 JVM_OPTS="$JVM_OPTS -Dcassandra.diagnostics.config=/etc/cassandra/cassandra-diagnostics.yml"
-CLASSPATH="/cassandra-diagnostics/cassandra-diagnostics-connector.jar:/cassandra-diagnostics/cassandra-diagnostics-reporter-riemann.jar:$CLASSPATH"
+CLASSPATH="/cassandra-diagnostics/cassandra-diagnostics-connector.jar:/cassandra-diagnostics/cassandra-diagnostics-reporter-telegraf.jar:$CLASSPATH"

@@ -1,4 +1,4 @@
-package io.smartcat.cassandra.diagnostics.ft.influx;
+package io.smartcat.cassandra.diagnostics.ft.riemann;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;

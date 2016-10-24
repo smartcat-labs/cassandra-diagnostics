@@ -5,8 +5,6 @@ reporters:
       riemannPort: 5555
       batchEventSize: 1
       
-      reporter: io.smartcat.cassandra.diagnostics.reporter.RiemannReporter
-
 modules:
   - module: io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule
     measurement: queryReport

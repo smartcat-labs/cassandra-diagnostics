@@ -9,6 +9,7 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import org.influxdb.dto.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,35 +92,10 @@ public class TelegrafReporter extends Reporter {
      * @throws InterruptedException
      */
     private void sendEvent(Measurement measurement) throws IOException, InterruptedException {
-        StringBuilder buf = new StringBuilder();
-        buf.append(measurement.name());
-
-        for (Map.Entry<String, String> tag : measurement.tags().entrySet()) {
-            buf.append(",");
-            buf.append(tag.getKey());
-            buf.append("=");
-            buf.append(tag.getValue());
+        ByteBuffer line = lineProtocol(measurement);
+        if (line != null) {
+            telegrafClient.send(line);
         }
-
-        buf.append(" value=");
-        buf.append(measurement.value());
-
-        for (Map.Entry<String, String> field : measurement.fields().entrySet()) {
-            buf.append(",");
-            buf.append(field.getKey());
-            buf.append("=");
-            buf.append(field.getValue());
-        }
-
-        buf.append(" ");
-        buf.append(measurement.time());
-        buf.append("\r\n");
-
-        Charset charset = StandardCharsets.UTF_8;
-        CharsetEncoder encoder = charset.newEncoder();
-        ByteBuffer bytes = encoder.encode(CharBuffer.wrap(buf));
-
-        telegrafClient.send(bytes);
     }
 
     @Override
@@ -130,6 +106,27 @@ public class TelegrafReporter extends Reporter {
             logger.error("Errored while stopping telegraf client", e);
         } finally {
             telegrafClient = null;
+        }
+    }
+
+    private ByteBuffer lineProtocol(Measurement measurement) {
+        try {
+            final Point.Builder builder = Point.measurement(measurement.name());
+            builder.time(measurement.time(), measurement.timeUnit());
+
+            builder.tag(measurement.tags());
+
+            builder.addField("value", measurement.value());
+            for (Map.Entry<String, String> field : measurement.fields().entrySet()) {
+                builder.addField(field.getKey(), field.getValue());
+            }
+            Charset charset = StandardCharsets.UTF_8;
+            CharsetEncoder encoder = charset.newEncoder();
+            return encoder.encode(
+                    CharBuffer.wrap(builder.build().lineProtocol().concat("\r\n").toCharArray()));
+        } catch (Exception e) {
+            logger.warn("Failed to send report to influx", e);
+            return null;
         }
     }
 }

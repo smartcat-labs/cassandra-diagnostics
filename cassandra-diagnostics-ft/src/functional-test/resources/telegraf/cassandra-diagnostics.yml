@@ -1,11 +1,8 @@
 reporters:
-  - reporter: io.smartcat.cassandra.diagnostics.reporter.RiemannReporter
+  - reporter: io.smartcat.cassandra.diagnostics.reporter.TelegrafReporter
     options:
-      riemannHost: riemann
-      riemannPort: 5555
-      batchEventSize: 1
-      
-      reporter: io.smartcat.cassandra.diagnostics.reporter.RiemannReporter
+      telegrafHost: telegraf
+      telegrafPort: 8094
 
 modules:
   - module: io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule
@@ -13,4 +10,4 @@ modules:
     options:
       slowQueryThresholdInMilliseconds: 0
     reporters:
-      - io.smartcat.cassandra.diagnostics.reporter.RiemannReporter
+      - io.smartcat.cassandra.diagnostics.reporter.TelegrafReporter

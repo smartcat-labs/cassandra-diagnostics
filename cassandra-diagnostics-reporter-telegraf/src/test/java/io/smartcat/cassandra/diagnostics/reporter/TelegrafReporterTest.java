@@ -61,7 +61,7 @@ public class TelegrafReporterTest {
         Measurement measurement = Measurement.create("m1", 1.0, 1434055662, TimeUnit.SECONDS, tags, fields);
 
         reporter.report(measurement);
-        assertThat(line).isEqualTo("m1,tag1=tv1,tag2=tv2 value=1.0,v2=abc 1434055662\r\n");
+        assertThat(line).isEqualTo("m1,tag1=tv1,tag2=tv2 v2=\"abc\",value=1.0 1434055662000000000\r\n");
 
     }
 }

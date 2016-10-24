@@ -34,6 +34,18 @@
             <classifier>all</classifier>
         </dependency>
         <dependency>
+            <groupId>io.smartcat</groupId>
+            <artifactId>cassandra-diagnostics-reporter-riemann</artifactId>
+            <version>1.2.3-SNAPSHOT</version>
+            <classifier>all</classifier>
+        </dependency>
+        <dependency>
+            <groupId>io.smartcat</groupId>
+            <artifactId>cassandra-diagnostics-reporter-telegraf</artifactId>
+            <version>1.2.3-SNAPSHOT</version>
+            <classifier>all</classifier>
+        </dependency>
+        <dependency>
             <groupId>org.influxdb</groupId>
             <artifactId>influxdb-java</artifactId>
             <version>${version.influxdb-java}</version>
@@ -599,11 +611,11 @@
                                         </ports>
                                         <volumes>
                                             <bind>
-                                                <volume>${basedir}/src/functional-test/resources/${functional.test}/telegraf.conf:/etc/telegraf/telegraf.conf:ro</volume>
+                                                <volume>${basedir}/src/functional-test/resources/${functional.test}/telegraf.conf:/etc/telegraf/telegraf.conf</volume>
                                             </bind>
                                         </volumes>
                                         <links>
-                                            <link>cassandra-diagnostics-influxdb:influxdb</link>
+                                            <link>cassandra-diagnostics-influxdb:influx</link>
                                         </links>
                                         <wait>
                                             <time>120000</time>
@@ -635,7 +647,7 @@
                                             <time>120000</time>
                                             <log>Starting listening for CQL clients</log>
                                             <exec>
-                                                <postStart>sleep 60s</postStart>
+                                                <postStart>sleep 30s</postStart>
                                             </exec>
                                         </wait>
                                     </run>

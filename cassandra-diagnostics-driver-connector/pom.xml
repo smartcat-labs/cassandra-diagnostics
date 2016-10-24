@@ -5,10 +5,10 @@
     <parent>
         <groupId>io.smartcat</groupId>
         <artifactId>cassandra-diagnostics</artifactId>
-        <version>1.2.3-SNAPSHOT</version>
+        <version>1.2.3</version>
     </parent>
     <artifactId>cassandra-diagnostics-driver-connector</artifactId>
-    <version>1.2.3-SNAPSHOT</version>
+    <version>1.2.3</version>
     <name>cassandra-diagnostics-driver-connector</name>
     <description>Cassandra Diagnostics Connector for Cassandra Driver</description>
 
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>io.smartcat</groupId>
             <artifactId>cassandra-diagnostics-commons</artifactId>
-            <version>1.2.3-SNAPSHOT</version>
+            <version>1.2.3</version>
         </dependency>
         <dependency>
             <groupId>net.bytebuddy</groupId>

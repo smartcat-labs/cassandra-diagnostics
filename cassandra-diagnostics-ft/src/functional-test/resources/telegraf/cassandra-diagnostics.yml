@@ -1,0 +1,13 @@
+reporters:
+  - reporter: io.smartcat.cassandra.diagnostics.reporter.TelegrafReporter
+    options:
+      telegrafHost: telegraf
+      telegrafPort: 8094
+
+modules:
+  - module: io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule
+    measurement: queryReport
+    options:
+      slowQueryThresholdInMilliseconds: 0
+    reporters:
+      - io.smartcat.cassandra.diagnostics.reporter.TelegrafReporter

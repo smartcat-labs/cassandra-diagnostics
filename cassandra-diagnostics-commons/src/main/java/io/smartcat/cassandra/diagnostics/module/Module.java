@@ -33,34 +33,13 @@ public abstract class Module {
     }
 
     /**
-     * Process an intercepted query if it is eligible for reporting and report measurement.
+     * Process an intercepted query.
      *
      * @param query Query object
      */
     public void process(Query query) {
-        if (isForReporting(query)) {
-            Measurement measurement = transform(query);
-            report(measurement);
-        }
-    }
 
-    /**
-     * Check if query is for reporting by this module.
-     *
-     * @param query Query object
-     * @return if query is eligible for reporting or not
-     */
-    protected boolean isForReporting(Query query) {
-        return true;
     }
-
-    /**
-     * Transforms query into module specific measurement.
-     *
-     * @param query Query object
-     * @return measurement ready for reporting
-     */
-    protected abstract Measurement transform(Query query);
 
     /**
      * Report measurement on all configured reporters.

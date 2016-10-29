@@ -48,14 +48,13 @@ public class SlowQueryModule extends Module {
     }
 
     @Override
-    protected boolean isForReporting(Query query) {
-        return slowQueryLogDecider.isForReporting(query);
-    }
-
-    @Override
-    public Measurement transform(Query query) {
+    public void process(Query query) {
         if (query == null) {
             throw new IllegalArgumentException("query cannot be null");
+        }
+
+        if (!slowQueryLogDecider.isForReporting(query)) {
+            return;
         }
 
         if (hostname == null) {
@@ -77,7 +76,7 @@ public class SlowQueryModule extends Module {
                         TimeUnit.MILLISECONDS, tags, fields);
 
         logger.trace("Measurement transformed: {}", measurement);
-        return measurement;
+        report(measurement);
     }
 
     private String getHostname() {

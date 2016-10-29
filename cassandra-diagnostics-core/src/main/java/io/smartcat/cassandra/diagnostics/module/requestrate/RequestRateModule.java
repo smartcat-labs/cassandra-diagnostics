@@ -77,24 +77,12 @@ public class RequestRateModule extends Module {
     }
 
     @Override
-    protected boolean isForReporting(Query query) {
-        return true;
-    }
-
-    @Override
-    public Measurement transform(Query query) {
+    public void process(Query query) {
         if (query.statementType() == Query.StatementType.SELECT) {
             selectRequests.increment();
         } else if (query.statementType() == Query.StatementType.UPDATE) {
             updateRequests.increment();
         }
-
-        return null;
-    }
-
-    @Override
-    protected void report(Measurement measurement) {
-
     }
 
     @Override

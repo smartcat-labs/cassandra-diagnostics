@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.Module;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
@@ -74,15 +73,5 @@ public class HeartbeatModule extends Module {
                 .create(service, 1.0, System.currentTimeMillis(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
                         new HashMap<String, String>());
         return m;
-    }
-
-    @Override
-    protected boolean isForReporting(Query query) {
-        return false;
-    }
-
-    @Override
-    public Measurement transform(Query query) {
-        return null;
     }
 }

@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.Module;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
@@ -49,16 +48,6 @@ public class MetricsModule extends Module {
         if (metricsCollector.connect()) {
             timer.schedule(new MetricsTask(), 0, config.reportingRateInMillis());
         }
-    }
-
-    @Override
-    protected Measurement transform(Query query) {
-        return null;
-    }
-
-    @Override
-    protected void report(Measurement measurement) {
-
     }
 
     @Override

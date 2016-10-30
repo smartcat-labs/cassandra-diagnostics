@@ -63,16 +63,7 @@ public class MetricsModuleTest {
         configuration.options.put("timeunit", "SECONDS");
         configuration.options.put("jmxHost", "127.0.0.1");
         configuration.options.put("jmxPort", 7199);
-        configuration.options.put("metricsPatterns",
-                Arrays.asList("^org.apache.cassandra.metrics.Cache.+", "^org.apache.cassandra.metrics.ClientRequest.+",
-                        "^org.apache.cassandra.metrics.CommitLog.+", "^org.apache.cassandra.metrics.Compaction.+",
-                        "^org.apache.cassandra.metrics.ColumnFamily.PendingTasks",
-                        "^org.apache.cassandra.metrics.ColumnFamily.ReadLatency",
-                        "^org.apache.cassandra.metrics.ColumnFamily.WriteLatency",
-                        "^org.apache.cassandra.metrics.ColumnFamily.ReadTotalLatency",
-                        "^org.apache.cassandra.metrics.ColumnFamily.WriteTotalLatency",
-                        "^org.apache.cassandra.metrics.DroppedMetrics.+", "^org.apache.cassandra.metrics.ReadRepair.+",
-                        "^org.apache.cassandra.metrics.Storage.+", "^org.apache.cassandra.metrics.ThreadPools.+"));
+        configuration.options.put("metricsPatterns", Arrays.asList("^org.apache.cassandra.metrics.+"));
         return configuration;
     }
 

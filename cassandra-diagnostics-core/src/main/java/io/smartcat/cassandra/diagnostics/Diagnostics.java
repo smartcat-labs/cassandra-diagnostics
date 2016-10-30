@@ -48,6 +48,7 @@ public class Diagnostics implements QueryReporter {
 
     /**
      * Returns the diagnostics configuration.
+     *
      * @return the diagnostics configuration
      */
     public Configuration getConfiguration() {
@@ -87,8 +88,8 @@ public class Diagnostics implements QueryReporter {
                     DiagnosticsMXBean.class.getPackage() + ":type=" + DiagnosticsMXBean.class.getSimpleName());
             final DiagnosticsMXBean mbean = new DiagnosticsMXBeanImpl(config, this);
             server.registerMBean(mbean, mxbeanName);
-        } catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException
-                | NotCompliantMBeanException e) {
+        } catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException |
+                NotCompliantMBeanException e) {
             logger.error("Unable to register DiagnosticsMBean", e);
         }
     }
@@ -125,4 +126,5 @@ public class Diagnostics implements QueryReporter {
         logger.info("Configuration realoaded");
         isRunning.set(true);
     }
+
 }

@@ -6,25 +6,25 @@
     <parent>
         <groupId>io.smartcat</groupId>
         <artifactId>cassandra-diagnostics</artifactId>
-        <version>1.2.1-SNAPSHOT</version>
+        <version>1.2.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>cassandra-diagnostics-reporter-kafka</artifactId>
 
     <properties>
-        <version.kakfa.clients>0.10.0.1</version.kakfa.clients>
+        <version.kafka.clients>0.10.0.1</version.kafka.clients>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>io.smartcat</groupId>
             <artifactId>cassandra-diagnostics-commons</artifactId>
-            <version>1.2.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>${version.kakfa.clients}</version>
+            <version>${version.kafka.clients}</version>
         </dependency>
     </dependencies>
 

@@ -19,15 +19,16 @@ import io.smartcat.cassandra.diagnostics.Measurement;
  * name and time of the measurement.
  */
 public class KafkaReporter extends Reporter {
-
     /**
      * Class logger.
      */
     private static final Logger logger = LoggerFactory.getLogger(KafkaReporter.class);
 
-    private final String hostname;
+    private static final String SERVERS = "kafkaBootstrapServers";
 
-    private final Producer<String, Measurement> kafkaProducer;
+    private static Producer<String, Measurement> producer;
+
+    private String partitionKey;
 
     /**
      * Constructor.
@@ -37,29 +38,47 @@ public class KafkaReporter extends Reporter {
     public KafkaReporter(ReporterConfiguration configuration) {
         super(configuration);
 
-        hostname = getHostname();
+        final String servers = configuration.getDefaultOption(SERVERS, "");
+        if (servers.isEmpty()) {
+            logger.warn("Missing required property " + SERVERS + ". Aborting initialization.");
+            return;
+        }
 
         final Properties properties = new Properties();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
-        this.kafkaProducer = new KafkaProducer<String, Measurement>(properties);
+        producer = new KafkaProducer<>(properties);
+        partitionKey = hostname();
+    }
+
+    private String hostname() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            logger.warn("Cannot resolve local host partitionKey");
+            return "HOST_UNKNOWN";
+        }
     }
 
     @Override
     public void report(Measurement measurement) {
-        ProducerRecord<String, Measurement> record = new ProducerRecord<String, Measurement>(measurement.name(),
-                hostname, measurement);
-        kafkaProducer.send(record);
+        if (producer == null) {
+            logger.warn("Kafka producer is not initialized.");
+            return;
+        }
+
+        ProducerRecord<String, Measurement> record =
+                new ProducerRecord<>(measurement.name(), partitionKey, measurement);
+
+        producer.send(record);
     }
 
-    private String getHostname() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            logger.warn("Cannot resolve local host hostname");
-            return "HOST_UNKNOWN";
+    @Override
+    public void stop() {
+        if (producer != null) {
+            producer.close();
         }
     }
 }

@@ -26,7 +26,7 @@ public class KafkaReporter extends Reporter {
 
     private static final String SERVERS = "kafkaBootstrapServers";
 
-    private static Producer<String, Measurement> producer;
+    private static Producer<String, String> producer;
 
     private String partitionKey;
 
@@ -69,8 +69,8 @@ public class KafkaReporter extends Reporter {
             return;
         }
 
-        ProducerRecord<String, Measurement> record =
-                new ProducerRecord<>(measurement.name(), partitionKey, measurement);
+        ProducerRecord<String, String> record =
+                new ProducerRecord<>(measurement.name(), partitionKey, measurement.toString());
 
         producer.send(record);
     }

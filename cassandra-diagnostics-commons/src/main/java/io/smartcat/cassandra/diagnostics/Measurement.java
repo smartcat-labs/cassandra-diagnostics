@@ -1,6 +1,7 @@
 package io.smartcat.cassandra.diagnostics;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -70,7 +71,7 @@ public class Measurement {
     }
 
     private Measurement(final String name, final double value, final long time, final TimeUnit timeUnit,
-            final Map<String, String> tags, final Map<String, String> fields) {
+                        final Map<String, String> tags, final Map<String, String> fields) {
         this.name = name;
         this.value = value;
         this.time = time;
@@ -91,20 +92,39 @@ public class Measurement {
      * @return Measurement object
      */
     public static Measurement create(final String name, final double value, final long time, final TimeUnit timeUnit,
-            final Map<String, String> tags, final Map<String, String> fields) {
+                                     final Map<String, String> tags, final Map<String, String> fields) {
         return new Measurement(name, value, time, timeUnit, tags, fields);
     }
 
     @Override
     public String toString() {
-        return "Measurement [ " +
-                "name=" + name +
-                ", value=" + value +
-                ", time=" + time +
-                ", timeUnit=" + timeUnit +
-                ", tags: " + tags +
-                ", fields: " + fields +
-                " ]";
+        return "{\"name\":\"" + name + "\"" +
+                ",\"value\":" + value +
+                ",\"time\":" + time +
+                ",\"timeUnit\":\"" + timeUnit + "\"" +
+                ",\"tags\":" + appendMap(tags) +
+                ",\"fields\":" + appendMap(fields) +
+                "}";
+    }
+
+    private String appendMap(Map<String, String> map) {
+        StringBuilder builder = new StringBuilder("{");
+
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            builder.append("\"");
+            builder.append(entry.getKey());
+            builder.append("\":\"");
+            builder.append(entry.getValue());
+            builder.append("\",");
+        }
+
+        if (builder.length() > 1) {
+            builder.replace(builder.length() - 1, builder.length(), "}");
+        } else {
+            builder.append("}");
+        }
+
+        return builder.toString();
     }
 
 }

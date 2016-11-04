@@ -12,7 +12,9 @@
     <artifactId>cassandra-diagnostics-reporter-kafka</artifactId>
 
     <properties>
-        <version.kafka.clients>0.10.0.1</version.kafka.clients>
+        <version.kafka>0.10.0.1</version.kafka>
+        <version.junit>4.12</version.junit>
+        <version.powermock>1.6.5</version.powermock>
     </properties>
 
     <dependencies>
@@ -24,8 +26,39 @@
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>${version.kafka.clients}</version>
+            <version>${version.kafka}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${version.junit}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>${version.powermock}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.11</artifactId>
+            <version>${version.kafka}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.11</artifactId>
+            <version>${version.kafka}</version>
+            <classifier>test</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${version.kafka}</version>
+            <classifier>test</classifier>
+            <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>

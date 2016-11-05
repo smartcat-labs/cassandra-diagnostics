@@ -18,7 +18,7 @@
         <dependency>
             <groupId>io.smartcat</groupId>
             <artifactId>cassandra-diagnostics-commons</artifactId>
-            <version>1.2.4-SNAPSHOT</version>
+            <version>${parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>

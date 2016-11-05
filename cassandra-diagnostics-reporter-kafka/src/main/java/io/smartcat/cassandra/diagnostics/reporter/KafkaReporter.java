@@ -68,10 +68,7 @@ public class KafkaReporter extends Reporter {
             return;
         }
 
-        ProducerRecord<String, String> record =
-                new ProducerRecord<>(measurement.name(), partitionKey, measurement.toJson());
-
-        producer.send(record);
+        producer.send(new ProducerRecord<>(measurement.name(), partitionKey, measurement.toJson()));
     }
 
     @Override

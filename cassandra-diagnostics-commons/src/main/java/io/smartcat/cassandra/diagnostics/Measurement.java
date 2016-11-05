@@ -1,7 +1,6 @@
 package io.smartcat.cassandra.diagnostics;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -107,6 +106,11 @@ public class Measurement {
                 " ]";
     }
 
+    /**
+     * Encodes measurement into JSON.
+     *
+     * @return JSON-formatted string representation of measurement.
+     */
     public String toJson() {
         return "{\"name\":\"" + name + "\"" +
                 ",\"value\":" + value +

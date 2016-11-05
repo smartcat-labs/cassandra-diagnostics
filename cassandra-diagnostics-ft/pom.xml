@@ -20,29 +20,29 @@
         <dependency>
             <groupId>io.smartcat</groupId>
             <artifactId>cassandra-diagnostics-core</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>io.smartcat</groupId>
             <artifactId>cassandra-diagnostics-connector21</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>io.smartcat</groupId>
             <artifactId>cassandra-diagnostics-reporter-influx</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
             <classifier>all</classifier>
         </dependency>
         <dependency>
             <groupId>io.smartcat</groupId>
             <artifactId>cassandra-diagnostics-reporter-riemann</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
             <classifier>all</classifier>
         </dependency>
         <dependency>
             <groupId>io.smartcat</groupId>
             <artifactId>cassandra-diagnostics-reporter-telegraf</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
             <classifier>all</classifier>
         </dependency>
         <dependency>

@@ -72,7 +72,7 @@ public class KafkaReporterTest {
         consumerProps.put("group.id", "test-group");
         consumerProps.put("client.id", "test-consumer");
         consumerProps.put("auto.offset.reset", "earliest");
-        consumerProps.put("key.deserializer","org.apache.kafka.common.serialization.StringDeserializer");
+        consumerProps.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         consumerProps.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProps);

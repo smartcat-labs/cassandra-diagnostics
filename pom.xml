@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.smartcat</groupId>
@@ -18,13 +18,14 @@
     <modules>
         <module>cassandra-diagnostics-commons</module>
         <module>cassandra-diagnostics-core</module>
-        <module>cassandra-diagnostics-reporter-influx</module>
-        <module>cassandra-diagnostics-reporter-riemann</module>
         <module>cassandra-diagnostics-connector21</module>
         <module>cassandra-diagnostics-connector30</module>
         <module>cassandra-diagnostics-ft</module>
         <module>cassandra-diagnostics-driver-connector</module>
+        <module>cassandra-diagnostics-reporter-influx</module>
+        <module>cassandra-diagnostics-reporter-riemann</module>
         <module>cassandra-diagnostics-reporter-telegraf</module>
+        <module>cassandra-diagnostics-reporter-kafka</module>
     </modules>
 
     <licenses>
@@ -62,7 +63,7 @@
             <organizationUrl>http://www.smartcat.io</organizationUrl>
         </developer>
         <developer>
-            <name>Nikola Invancevic</name>
+            <name>Nikola Ivancevic</name>
             <email>nikola.ivancevic@smartcat.io</email>
             <organization>SmartCat</organization>
             <organizationUrl>http://www.smartcat.io</organizationUrl>

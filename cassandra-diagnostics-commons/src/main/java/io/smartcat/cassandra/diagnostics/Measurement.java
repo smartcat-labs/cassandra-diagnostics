@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
  * This class represents a module generated measurement.
  */
 public class Measurement {
-
     private final String name;
     private final double value;
     private final long time;
@@ -107,4 +106,38 @@ public class Measurement {
                 " ]";
     }
 
+    /**
+     * Encodes measurement into JSON.
+     *
+     * @return JSON-formatted string representation of measurement.
+     */
+    public String toJson() {
+        return "{\"name\":\"" + name + "\"" +
+                ",\"value\":" + value +
+                ",\"time\":" + time +
+                ",\"timeUnit\":\"" + timeUnit + "\"" +
+                ",\"tags\":" + appendMap(tags) +
+                ",\"fields\":" + appendMap(fields) +
+                "}";
+    }
+
+    private String appendMap(Map<String, String> map) {
+        StringBuilder builder = new StringBuilder("{");
+
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            builder.append("\"");
+            builder.append(entry.getKey());
+            builder.append("\":\"");
+            builder.append(entry.getValue());
+            builder.append("\",");
+        }
+
+        if (builder.length() > 1) {
+            builder.replace(builder.length() - 1, builder.length(), "}");
+        } else {
+            builder.append("}");
+        }
+
+        return builder.toString();
+    }
 }

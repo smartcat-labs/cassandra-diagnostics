@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
  * This class represents a module generated measurement.
  */
 public class Measurement {
-
     private final String name;
     private final double value;
     private final long time;
@@ -71,7 +70,7 @@ public class Measurement {
     }
 
     private Measurement(final String name, final double value, final long time, final TimeUnit timeUnit,
-                        final Map<String, String> tags, final Map<String, String> fields) {
+            final Map<String, String> tags, final Map<String, String> fields) {
         this.name = name;
         this.value = value;
         this.time = time;
@@ -92,12 +91,23 @@ public class Measurement {
      * @return Measurement object
      */
     public static Measurement create(final String name, final double value, final long time, final TimeUnit timeUnit,
-                                     final Map<String, String> tags, final Map<String, String> fields) {
+            final Map<String, String> tags, final Map<String, String> fields) {
         return new Measurement(name, value, time, timeUnit, tags, fields);
     }
 
     @Override
     public String toString() {
+        return "Measurement [ " +
+                "name=" + name +
+                ", value=" + value +
+                ", time=" + time +
+                ", timeUnit=" + timeUnit +
+                ", tags: " + tags +
+                ", fields: " + fields +
+                " ]";
+    }
+
+    public String toJson() {
         return "{\"name\":\"" + name + "\"" +
                 ",\"value\":" + value +
                 ",\"time\":" + time +
@@ -126,5 +136,4 @@ public class Measurement {
 
         return builder.toString();
     }
-
 }

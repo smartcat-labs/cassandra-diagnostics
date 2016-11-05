@@ -1,9 +1,6 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Properties;
-
+import io.smartcat.cassandra.diagnostics.Measurement;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -12,7 +9,9 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.smartcat.cassandra.diagnostics.Measurement;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Properties;
 
 /**
  * Apache Kafka based {@Link Reporter} implementation. All measurements are written into Kafka based on measurements
@@ -70,7 +69,7 @@ public class KafkaReporter extends Reporter {
         }
 
         ProducerRecord<String, String> record =
-                new ProducerRecord<>(measurement.name(), partitionKey, measurement.toString());
+                new ProducerRecord<>(measurement.name(), partitionKey, measurement.toJson());
 
         producer.send(record);
     }

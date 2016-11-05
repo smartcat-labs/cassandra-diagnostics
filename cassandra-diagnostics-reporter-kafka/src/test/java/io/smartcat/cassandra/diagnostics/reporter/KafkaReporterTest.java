@@ -1,19 +1,20 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
-import kafka.admin.AdminUtils;
-import kafka.admin.RackAwareMode;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServer;
-import kafka.utils.*;
+import kafka.utils.MockTime;
+import kafka.utils.TestUtils;
+import kafka.utils.ZKStringSerializer$;
 import kafka.zk.EmbeddedZookeeper;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.junit.*;
-import org.junit.runner.RunWith;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.powermock.reflect.Whitebox;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
-public class KafkaReporterShould {
+public class KafkaReporterTest {
     private static final String HOST = "127.0.0.1";
     private static final String BROKER_PORT = "9092";
 
@@ -77,14 +78,14 @@ public class KafkaReporterShould {
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProps);
         consumer.subscribe(Collections.singletonList(measurement.name()));
 
-        // starting consumer
         ConsumerRecords<String, String> records = consumer.poll(3000);
         assertEquals(1, records.count());
 
         Iterator<ConsumerRecord<String, String>> recordIterator = records.iterator();
         ConsumerRecord<String, String> record = recordIterator.next();
+
         assertEquals(Whitebox.getInternalState(reporter, "partitionKey"), record.key());
-        assertEquals(measurement.toString(), record.value());
+        assertEquals(measurement.toJson(), record.value());
     }
 
     @After

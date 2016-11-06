@@ -26,6 +26,7 @@
         <module>cassandra-diagnostics-reporter-riemann</module>
         <module>cassandra-diagnostics-reporter-telegraf</module>
         <module>cassandra-diagnostics-reporter-kafka</module>
+        <module>cassandra-diagnostics-reporter-datadog</module>
     </modules>
 
     <licenses>

@@ -20,7 +20,7 @@ public class DatadogReporter extends Reporter {
 
     private static final Logger logger = LoggerFactory.getLogger(DatadogReporter.class);
 
-    private static final String API_KEY_PROP = "apiKey";
+    private static final String STATSD_HOST_KEY = "statsDHost";
 
     private static final String UDP_PORT_KEY = "udpPort";
 
@@ -42,21 +42,16 @@ public class DatadogReporter extends Reporter {
 
         logger.debug("Initializing datadog client with config: {}", configuration.toString());
 
-        if (!configuration.options.containsKey(API_KEY_PROP)) {
-            logger.warn("Failed to init Datadog client: missing api key. Aborting initialization.");
-            return;
-        }
-
         hostname = getHostname();
         if (hostname == null || hostname.isEmpty()) {
             logger.warn("Failed to init Datadog client: cannot resolve hostname. Aborting initialization.");
             return;
         }
 
-        final String apiKey = configuration.options.get(API_KEY_PROP);
+        final String statsdHost = configuration.getDefaultOption(STATSD_HOST_KEY, "localhost");
         final int udpPort = Integer.parseInt(configuration.getDefaultOption(UDP_PORT_KEY, DEFAULT_UDP_PORT));
 
-        transport = new UdpTransport.Builder().withPort(udpPort).build();
+        transport = new UdpTransport.Builder().withStatsdHost(statsdHost).withPort(udpPort).build();
 
         logger.info("Initialized Datadog UDP reporter targeting port {}", udpPort);
     }

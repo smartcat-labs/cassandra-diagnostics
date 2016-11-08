@@ -17,7 +17,6 @@ public class DatadogReporterTest {
     @Test
     public void should_send_measurement() {
         final ReporterConfiguration config = new ReporterConfiguration();
-        config.options.put("apiKey", "123");
         config.options.put("udpPort", "8215");
         final DatadogReporter reporter = new DatadogReporter(config);
 

@@ -18,6 +18,7 @@ public class DatadogReporterTest {
     public void should_send_measurement() {
         final ReporterConfiguration config = new ReporterConfiguration();
         config.options.put("apiKey", "123");
+        config.options.put("udpPort", "8215");
         final DatadogReporter reporter = new DatadogReporter(config);
 
         Map<String, String> tags = new HashMap<>();
@@ -28,7 +29,7 @@ public class DatadogReporterTest {
         fields.put("v2", "abc");
 
         final Measurement measurement = Measurement
-                .create("test", 909, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+                .create("test-metric", 909, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
 
         reporter.report(measurement);
     }

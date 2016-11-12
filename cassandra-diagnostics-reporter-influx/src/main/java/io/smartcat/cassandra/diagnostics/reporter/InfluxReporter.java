@@ -74,7 +74,7 @@ public class InfluxReporter extends Reporter {
             return;
         }
 
-        dbAddress = configuration.options.get(ADDRESS_PROP);
+        dbAddress = configuration.getOption(ADDRESS_PROP);
         username = configuration.getDefaultOption(USERNAME_PROP, "");
         password = configuration.getDefaultOption(PASSWORD_PROP, "");
 

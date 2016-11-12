@@ -21,6 +21,8 @@ import io.smartcat.cassandra.diagnostics.Measurement;
  */
 public class RiemannReporter extends Reporter {
 
+    private static final Logger logger = LoggerFactory.getLogger(RiemannReporter.class);
+
     private static final String HOST_PROP = "riemannHost";
 
     private static final String PORT_PROP = "riemannPort";
@@ -30,11 +32,6 @@ public class RiemannReporter extends Reporter {
     private static final String DEFAULT_PORT = "5555";
 
     private static final String DEFAULT_BATCH_EVENT_SIZE = "10";
-
-    /**
-     * Class logger.
-     */
-    private static final Logger logger = LoggerFactory.getLogger(RiemannReporter.class);
 
     private static IRiemannClient riemannClient;
 
@@ -53,9 +50,9 @@ public class RiemannReporter extends Reporter {
             return;
         }
 
-        String host = configuration.options.get(HOST_PROP);
-        int port = Integer.parseInt(configuration.getDefaultOption(PORT_PROP, DEFAULT_PORT));
-        int batchEventSize = Integer
+        final String host = configuration.getOption(HOST_PROP);
+        final int port = Integer.parseInt(configuration.getDefaultOption(PORT_PROP, DEFAULT_PORT));
+        final int batchEventSize = Integer
                 .parseInt(configuration.getDefaultOption(BATCH_EVENT_SIZE_PROP, DEFAULT_BATCH_EVENT_SIZE));
 
         try {

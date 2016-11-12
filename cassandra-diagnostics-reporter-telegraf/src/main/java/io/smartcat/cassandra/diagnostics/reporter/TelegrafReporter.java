@@ -45,7 +45,7 @@ public class TelegrafReporter extends Reporter {
             return;
         }
 
-        final String host = configuration.options.get(HOST_PROP);
+        final String host = configuration.getOption(HOST_PROP);
         final int port = Integer.parseInt(configuration.getDefaultOption(PORT_PROP, DEFAULT_PORT));
 
         try {

@@ -1,8 +1,5 @@
 package io.smartcat.cassandra.diagnostics.connector;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +10,7 @@ import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Statement;
 
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.utils.Utils;
 
 /**
  * This class is a Diagnostics wrapper for driver session manager execute async method.
@@ -32,13 +30,7 @@ public class ExecuteStatementWrapper extends AbstractEventProcessor {
     public ExecuteStatementWrapper(QueryReporter queryReporter, ConnectorConfiguration configuration) {
         super(queryReporter, configuration);
         // obtain host address
-        String hostAddress;
-        try {
-            hostAddress = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            hostAddress = "UNKNOWN";
-        }
-        host = hostAddress;
+        host = Utils.getHostname();
     }
 
     /**

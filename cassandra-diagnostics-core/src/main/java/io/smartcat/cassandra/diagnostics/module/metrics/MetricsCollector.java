@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.utils.Utils;
 
 /**
  * Metrics collector class. Handles mbeans, jmx connection and collecting metrics.
@@ -143,8 +144,10 @@ public class MetricsCollector {
     }
 
     private Measurement createMeasurement(String service, double value) {
+        final Map<String, String> tags = new HashMap<>(1);
+        tags.put("host", Utils.getHostname());
         return Measurement.create(service, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS,
-                new HashMap<String, String>(), new HashMap<String, String>());
+                tags, new HashMap<String, String>());
     }
 
     private Set<MetricsMBean> filterMBeans(final Set<ObjectInstance> mbeanObjectInstances)

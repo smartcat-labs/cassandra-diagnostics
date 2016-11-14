@@ -2,6 +2,7 @@ package io.smartcat.cassandra.diagnostics.module.heartbeat;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -69,9 +70,11 @@ public class HeartbeatModule extends Module {
     }
 
     private Measurement createMeasurement() {
-        Measurement m = Measurement
-                .create(service, 1.0, System.currentTimeMillis(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
+        final Map<String, String> tags = new HashMap<>(1);
+        tags.put("host", hostname);
+        Measurement measurement = Measurement
+                .create(service, 1.0, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
                         new HashMap<String, String>());
-        return m;
+        return measurement;
     }
 }

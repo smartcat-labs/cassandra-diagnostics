@@ -1,7 +1,5 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +11,7 @@ import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.utils.Utils;
 
 /**
  * A Datadog based {@link Reporter} implementation. Query reports are reporter via Datadog HTTP API
@@ -49,7 +48,7 @@ public class DatadogReporter extends Reporter {
 
         logger.debug("Initializing datadog client with config: {}", configuration.toString());
 
-        hostname = getHostname();
+        hostname = Utils.getHostname();
         if (hostname == null || hostname.isEmpty()) {
             logger.warn("Failed to init Datadog client: cannot resolve hostname. Aborting initialization.");
             return;
@@ -80,15 +79,6 @@ public class DatadogReporter extends Reporter {
                     convertTagsMap(measurement.tags()));
         } catch (Exception e) {
             logger.warn("Sending measurement failed: execTime={}, exception: {}", measurement.time(), e.getMessage());
-        }
-    }
-
-    private String getHostname() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            logger.warn("Cannot resolve local host hostname");
-            return null;
         }
     }
 

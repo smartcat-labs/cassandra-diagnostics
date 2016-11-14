@@ -2,6 +2,7 @@ package io.smartcat.cassandra.diagnostics.module.requestrate;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -117,8 +118,10 @@ public class RequestRateModule extends Module {
     }
 
     private Measurement createMeasurement(String service, double rate) {
+        final Map<String, String> tags = new HashMap<>(1);
+        tags.put("host", hostname);
         return Measurement
-                .create(service, rate, System.currentTimeMillis(), TimeUnit.MILLISECONDS, new HashMap<String, String>(),
+                .create(service, rate, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
                         new HashMap<String, String>());
     }
 }

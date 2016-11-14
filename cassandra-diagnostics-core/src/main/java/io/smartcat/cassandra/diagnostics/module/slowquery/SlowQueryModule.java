@@ -1,7 +1,5 @@
 package io.smartcat.cassandra.diagnostics.module.slowquery;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +25,6 @@ public class SlowQueryModule extends Module {
 
     private static final String DEFAULT_MEASUREMENT_NAME = "slow_query";
 
-    private final String hostname;
 
     private final String service;
 
@@ -42,7 +39,6 @@ public class SlowQueryModule extends Module {
      */
     public SlowQueryModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
         super(configuration, reporters);
-        hostname = getHostname();
         service = configuration.getMeasurementOrDefault(DEFAULT_MEASUREMENT_NAME);
         slowQueryLogDecider = SlowQueryLogDecider.create(SlowQueryConfiguration.create(configuration.options));
     }
@@ -77,14 +73,5 @@ public class SlowQueryModule extends Module {
 
         logger.trace("Measurement transformed: {}", measurement);
         report(measurement);
-    }
-
-    private String getHostname() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            logger.warn("Cannot resolve local host hostname");
-            return null;
-        }
     }
 }

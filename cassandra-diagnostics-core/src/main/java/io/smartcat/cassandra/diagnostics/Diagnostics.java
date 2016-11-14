@@ -21,6 +21,7 @@ import io.smartcat.cassandra.diagnostics.config.YamlConfigurationLoader;
 import io.smartcat.cassandra.diagnostics.connector.QueryReporter;
 import io.smartcat.cassandra.diagnostics.jmx.DiagnosticsMXBean;
 import io.smartcat.cassandra.diagnostics.jmx.DiagnosticsMXBeanImpl;
+import io.smartcat.cassandra.diagnostics.utils.Utils;
 
 /**
  * This class implements the Diagnostics module initialization.
@@ -44,6 +45,9 @@ public class Diagnostics implements QueryReporter {
      */
     public Diagnostics() {
         config = loadConfiguration();
+        if (config.hostname != null && !config.hostname.isEmpty()) {
+            Utils.setHostname(config.hostname);
+        }
     }
 
     /**

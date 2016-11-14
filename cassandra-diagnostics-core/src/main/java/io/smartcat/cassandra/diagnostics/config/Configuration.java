@@ -49,6 +49,11 @@ public class Configuration {
     public ConnectorConfiguration connector = ConnectorConfiguration.getDefault();
 
     /**
+     * System wide hostname. Set to override {@code InetAddress} querying.
+     */
+    public String hostname = null;
+
+    /**
      * Reporters configuration list with reporter specific properties.
      */
     public List<ReporterConfiguration> reporters = new ArrayList<>();
@@ -61,7 +66,8 @@ public class Configuration {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("{  reporters: ");
+        sb.append("{ hostname: " + hostname);
+        sb.append(", reporters: ");
         for (ReporterConfiguration reporter: reporters) {
             sb.append(reporter.toString());
         }

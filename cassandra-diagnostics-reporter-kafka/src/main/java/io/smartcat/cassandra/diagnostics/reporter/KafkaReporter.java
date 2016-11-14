@@ -1,6 +1,7 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
-import io.smartcat.cassandra.diagnostics.Measurement;
+import java.util.Properties;
+
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -9,9 +10,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Properties;
+import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.utils.Utils;
 
 /**
  * Apache Kafka based {@Link Reporter} implementation. All measurements are written into Kafka based on measurements
@@ -49,16 +49,7 @@ public class KafkaReporter extends Reporter {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
         producer = new KafkaProducer<>(properties);
-        partitionKey = hostname();
-    }
-
-    private String hostname() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            logger.warn("Cannot resolve local host partitionKey");
-            return "HOST_UNKNOWN";
-        }
+        partitionKey = Utils.getHostname();
     }
 
     @Override

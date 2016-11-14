@@ -85,6 +85,10 @@ Values for `time` is given in milliseconds. `tags` are used to better specify me
 
 [Telegraf Reporter](cassandra-diagnostics-reporter-telegraf/README.md) sends measurements towards [Telegraf agent](https://github.com/influxdata/telegraf).
 
+#### Datadog Reporter
+
+[Datadog Reporter](cassandra-diagnostics-reporter-datadog/README.md) send measurements towards [Datadog Agent](https://github.com/DataDog/dd-agent) using UDP.
+
 ## Configuration
 
 Cassandra Diagnostics can be configured statically, using a configuration file, and dynamically (in runtime) using JMX.
@@ -135,6 +139,13 @@ modules:
     reporters:
       - io.smartcat.cassandra.diagnostics.reporter.LogReporter
       - io.smartcat.cassandra.diagnostics.reporter.RiemannReporter
+```
+By default all measurements are reported with hostname queried with [InetAddress](http://docs.oracle.com/javase/7/docs/api/java/net/InetAddress.html) java class. If required, hostname can be set using a hostname variable in configuration file:
+```
+hostname: "test-hostname"
+
+reporters:
+etc...
 ```
 
 ### Dynamic Configuration

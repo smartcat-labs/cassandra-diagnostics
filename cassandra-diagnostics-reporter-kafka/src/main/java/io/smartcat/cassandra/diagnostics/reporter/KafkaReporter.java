@@ -14,7 +14,7 @@ import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.utils.Utils;
 
 /**
- * Apache Kafka based {@Link Reporter} implementation. All measurements are written into Kafka based on measurements
+ * Apache Kafka based {@link Reporter} implementation. All measurements are written into Kafka based on measurements
  * name and time of the measurement.
  */
 public class KafkaReporter extends Reporter {

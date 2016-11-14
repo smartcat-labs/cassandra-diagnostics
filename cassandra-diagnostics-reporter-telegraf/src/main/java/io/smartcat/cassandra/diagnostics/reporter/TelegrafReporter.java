@@ -23,7 +23,7 @@ public class TelegrafReporter extends Reporter {
 
     private static final String PORT_PROP = "telegrafPort";
 
-    private static final String DEFAULT_PORT = "8084";
+    private static final int DEFAULT_PORT = 8084;
 
     private static final Logger logger = LoggerFactory.getLogger(TelegrafReporter.class);
 
@@ -46,7 +46,7 @@ public class TelegrafReporter extends Reporter {
         }
 
         final String host = configuration.getOption(HOST_PROP);
-        final int port = Integer.parseInt(configuration.getDefaultOption(PORT_PROP, DEFAULT_PORT));
+        final int port = configuration.getDefaultOption(PORT_PROP, DEFAULT_PORT);
 
         try {
             telegrafClient = new TcpClient(new InetSocketAddress(host, port)) {

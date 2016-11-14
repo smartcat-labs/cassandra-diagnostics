@@ -31,7 +31,11 @@ public class InfluxReporter extends Reporter {
 
     private static final String POINTS_IN_BATCH_PROP = "influxPointsInBatch";
 
+    private static final int DEFAULT_POINTS_IN_BATCH = 1000;
+
     private static final String FLUSH_PERIOD_IN_SECONDS_PROP = "influxFlushPeriodInSeconds";
+
+    private static final int DEFAULT_FLUSH_PERIOD_IN_SECONDS = 5;
 
     private static final String DEFAULT_DB_NAME = "cassandradb";
 
@@ -84,9 +88,9 @@ public class InfluxReporter extends Reporter {
         influx = InfluxDBFactory.connect(dbAddress, username, password);
         influx.createDatabase(dbName);
 
-        final int pointsInBatch = Integer.parseInt(configuration.getDefaultOption(POINTS_IN_BATCH_PROP, "1000"));
-        final int flushPeriodInSeconds = Integer
-                .parseInt(configuration.getDefaultOption(FLUSH_PERIOD_IN_SECONDS_PROP, "5"));
+        final int pointsInBatch = configuration.getDefaultOption(POINTS_IN_BATCH_PROP, DEFAULT_POINTS_IN_BATCH);
+        final int flushPeriodInSeconds = configuration.getDefaultOption(FLUSH_PERIOD_IN_SECONDS_PROP,
+                DEFAULT_FLUSH_PERIOD_IN_SECONDS);
 
         influx.enableBatch(pointsInBatch, flushPeriodInSeconds, TimeUnit.SECONDS);
     }

@@ -24,7 +24,7 @@ public class DatadogReporter extends Reporter {
 
     private static final String STATSD_PORT_KEY = "statsDPort";
 
-    private static final String DEFAULT_STATSD_PORT = "8125";
+    private static final int DEFAULT_STATSD_PORT = 8125;
 
     private static final String KEYS_PREFIX_KEY = "keysPerfix";
 
@@ -55,7 +55,7 @@ public class DatadogReporter extends Reporter {
         }
 
         final String statsdHost = configuration.getDefaultOption(STATSD_HOST_KEY, hostname);
-        final int statsdPort = Integer.parseInt(configuration.getDefaultOption(STATSD_PORT_KEY, DEFAULT_STATSD_PORT));
+        final int statsdPort = configuration.getDefaultOption(STATSD_PORT_KEY, DEFAULT_STATSD_PORT);
         final String keysPrefix = configuration.getDefaultOption(KEYS_PREFIX_KEY, DEFAULT_KEYS_PREFIX);
         final List<String> fixedTags = configuration.getDefaultOption(FIXED_TAGS_KEY, DEFAULT_FIXED_TAGS);
 

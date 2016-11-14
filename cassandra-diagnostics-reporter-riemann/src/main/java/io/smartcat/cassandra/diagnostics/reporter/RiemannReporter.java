@@ -29,9 +29,9 @@ public class RiemannReporter extends Reporter {
 
     private static final String BATCH_EVENT_SIZE_PROP = "batchEventSize";
 
-    private static final String DEFAULT_PORT = "5555";
+    private static final int DEFAULT_PORT = 5555;
 
-    private static final String DEFAULT_BATCH_EVENT_SIZE = "10";
+    private static final int DEFAULT_BATCH_EVENT_SIZE = 10;
 
     private static IRiemannClient riemannClient;
 
@@ -51,9 +51,8 @@ public class RiemannReporter extends Reporter {
         }
 
         final String host = configuration.getOption(HOST_PROP);
-        final int port = Integer.parseInt(configuration.getDefaultOption(PORT_PROP, DEFAULT_PORT));
-        final int batchEventSize = Integer
-                .parseInt(configuration.getDefaultOption(BATCH_EVENT_SIZE_PROP, DEFAULT_BATCH_EVENT_SIZE));
+        final int port = configuration.getDefaultOption(PORT_PROP, DEFAULT_PORT);
+        final int batchEventSize = configuration.getDefaultOption(BATCH_EVENT_SIZE_PROP, DEFAULT_BATCH_EVENT_SIZE);
 
         try {
             riemannClient = new RiemannBatchClient(RiemannClient.tcp(new InetSocketAddress(host, port)),

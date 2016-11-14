@@ -26,7 +26,7 @@ public class DatadogReporterTest {
     public void should_load_configuration() {
         final ReporterConfiguration config = new ReporterConfiguration();
         config.options.put("statsDHost", "localhost");
-        config.options.put("statsDPort", "7000");
+        config.options.put("statsDPort", 7000);
         config.options.put("keysPrefix", "");
         config.options.put("fixedTags", Arrays.asList("host:hostname"));
 
@@ -35,7 +35,7 @@ public class DatadogReporterTest {
         reporter.stop();
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test(expected = ClassCastException.class)
     public void should_fail_to_load_configuration_port() {
         final ReporterConfiguration config = new ReporterConfiguration();
         config.options.put("statsDPort", "NONE");
@@ -67,7 +67,7 @@ public class DatadogReporterTest {
 
         final ReporterConfiguration config = new ReporterConfiguration();
         config.options.put("statsDHost", "localhost");
-        config.options.put("statsDPort", "9876");
+        config.options.put("statsDPort", 9876);
         config.options.put("keysPrefix", "prefix");
         config.options.put("fixedTags", Arrays.asList("host:somehost,tag2:two,tag3:three"));
         final DatadogReporter reporter = new DatadogReporter(config);

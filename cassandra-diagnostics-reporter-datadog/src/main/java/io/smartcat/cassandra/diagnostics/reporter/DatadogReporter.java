@@ -26,7 +26,7 @@ public class DatadogReporter extends Reporter {
 
     private static final int DEFAULT_STATSD_PORT = 8125;
 
-    private static final String KEYS_PREFIX_KEY = "keysPerfix";
+    private static final String KEYS_PREFIX_KEY = "keysPrefix";
 
     private static final String DEFAULT_KEYS_PREFIX = "";
 

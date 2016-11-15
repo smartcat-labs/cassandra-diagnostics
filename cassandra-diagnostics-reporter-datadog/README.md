@@ -6,7 +6,7 @@ Datadog reporter has the following configuration parameters (that can be specifi
 
 - _statsDHost_ - Datadog statsd server host name (IP address). This parameter is required.
 - _statsDPort_ - Datadog statsd server UDP port number (8125 by default). This parameter is optional.
-- _keysPerfix_ - Datadog measurement prefix (empty string by default). This parameter is optional.
+- _keysPrefix_ - Datadog measurement prefix (empty string by default). This parameter is optional.
 - _fixedTags_ - Datadog measurement tags applied to all measurements (default none). This parameter is optional.
 
 Here is an example configuration that uses Datadog reporter:
@@ -17,7 +17,7 @@ reporters:
     options:
   	  statsDHost: localhost
       statsDPort: 8125 #Optional
-      keysPerfix: test #Optional
+      keysPrefix: test #Optional
       fixedTags:
         - tag1:val1
         - tag2:val2

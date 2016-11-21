@@ -75,7 +75,7 @@ public class DatadogReporter extends Reporter {
 
         try {
             client.recordGaugeValue(measurement.name(), measurement.value(), convertTagsMap(measurement.tags()));
-            logger.info("Reporting measurement {}, value {} and tags {}", measurement.name(), measurement.value(),
+            logger.debug("Reporting measurement {}, value {} and tags {}", measurement.name(), measurement.value(),
                     convertTagsMap(measurement.tags()));
         } catch (Exception e) {
             logger.warn("Sending measurement failed: execTime={}, exception: {}", measurement.time(), e.getMessage());

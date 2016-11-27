@@ -1,4 +1,4 @@
-package io.smartcat.cassandra.diagnostics.jmx;
+package io.smartcat.cassandra.diagnostics.api;
 
 import io.smartcat.cassandra.diagnostics.Diagnostics;
 import io.smartcat.cassandra.diagnostics.ProjectInfo;

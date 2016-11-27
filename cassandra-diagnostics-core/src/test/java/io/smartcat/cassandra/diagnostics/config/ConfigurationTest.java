@@ -27,7 +27,9 @@ public class ConfigurationTest {
         Configuration conf = Configuration.getDefaultConfiguration();
         assertThat(conf.reporters.size()).isEqualTo(1);
         assertThat(conf.modules.size()).isEqualTo(1);
-
+        assertThat(conf.httpApiEnabled).isTrue();
+        assertThat(conf.httpApiHost).isEqualTo("127.0.0.1");
+        assertThat(conf.httpApiPort).isEqualTo(8998);
         ReporterConfiguration reporterConfiguration = conf.reporters.get(0);
         assertThat(reporterConfiguration.reporter).isEqualTo(LogReporter.class.getName());
 

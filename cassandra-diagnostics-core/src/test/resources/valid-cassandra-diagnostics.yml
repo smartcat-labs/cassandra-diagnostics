@@ -1,5 +1,9 @@
 hostname: "test-hostname"
 
+httpApiEnabled: false
+httpApiHost: 10.0.0.1
+httpApiPort: 8001
+
 # Reporters
 reporters:
   - reporter: io.smartcat.cassandra.diagnostics.reporter.LogReporter

@@ -54,6 +54,21 @@ public class Configuration {
     public String hostname = null;
 
     /**
+     * Enables diagnostics HTTP API.
+     */
+    public Boolean httpApiEnabled = true;
+
+    /**
+     * Host name for binding HTTP API listening socket.
+     */
+    public String httpApiHost = "127.0.0.1";
+
+    /**
+     * TCP port for diagnostics HTTP API.
+     */
+    public Integer httpApiPort = 8998;
+
+    /**
      * Reporters configuration list with reporter specific properties.
      */
     public List<ReporterConfiguration> reporters = new ArrayList<>();
@@ -67,6 +82,8 @@ public class Configuration {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{ hostname: " + hostname);
+        sb.append(", httpApiEnabled: " + httpApiEnabled);
+        sb.append(", httpApiPort: " + httpApiPort);
         sb.append(", reporters: ");
         for (ReporterConfiguration reporter: reporters) {
             sb.append(reporter.toString());

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMISocketFactory;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -119,11 +120,6 @@ public class MetricsCollector {
 
         for (final MetricsMBean mbean : mbeans) {
             for (final MBeanAttributeInfo attribute : mbean.getMBeanAttributes()) {
-                if (attribute.getType().equals(TimeUnit.class.getName()) || attribute.getType()
-                        .equals(String.class.getName())) {
-                    continue;
-                }
-
                 try {
                     final Object value = mbeanServerConn
                             .getAttribute(mbean.getMBean().getObjectName(), attribute.getName());
@@ -135,7 +131,8 @@ public class MetricsCollector {
                     }
 
                 } catch (Exception e) {
-                    logger.error("Exception while reading attributes", e);
+                    logger.error("Exception while reading attribute {} of type {}", attribute.getName(),
+                            attribute.getType(), e);
                 }
             }
         }
@@ -146,9 +143,14 @@ public class MetricsCollector {
     private Measurement createMeasurement(String service, double value) {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", Utils.getHostname());
-        return Measurement.create(service, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS,
-                tags, new HashMap<String, String>());
+        return Measurement.create(service, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
+                new HashMap<String, String>());
     }
+
+    private List<String> allowedTypes = Arrays
+            .asList(Short.class.getName(), Integer.class.getName(), Long.class.getName(), Double.class.getName(),
+                    Float.class.getName(), short.class.getName(), int.class.getName(), long.class.getName(),
+                    double.class.getName(), float.class.getName());
 
     private Set<MetricsMBean> filterMBeans(final Set<ObjectInstance> mbeanObjectInstances)
             throws IntrospectionException, ReflectionException, InstanceNotFoundException, IOException {
@@ -159,8 +161,17 @@ public class MetricsCollector {
         }
 
         for (ObjectInstance objectInstance : mbeanObjectInstances) {
-            MetricsMBean mbean = new MetricsMBean(config, objectInstance,
-                    mbeanServerConn.getMBeanInfo(objectInstance.getObjectName()).getAttributes());
+            final MBeanAttributeInfo[] attributes = mbeanServerConn.getMBeanInfo(objectInstance.getObjectName())
+                    .getAttributes();
+            final List<MBeanAttributeInfo> filteredAttributes = new ArrayList<>();
+
+            for (MBeanAttributeInfo attributeInfo : attributes) {
+                if (allowedTypes.contains(attributeInfo.getType())) {
+                    filteredAttributes.add(attributeInfo);
+                }
+            }
+
+            MetricsMBean mbean = new MetricsMBean(config, objectInstance, filteredAttributes);
 
             boolean matches = false;
             if (patterns.isEmpty()) {
@@ -186,10 +197,11 @@ public class MetricsCollector {
     }
 
     private RMIClientSocketFactory getRMIClientSocketFactory() {
-        if (config.jmxSslEnabled())
+        if (config.jmxSslEnabled()) {
             return new SslRMIClientSocketFactory();
-        else
+        } else {
             return RMISocketFactory.getDefaultSocketFactory();
+        }
     }
 
 }

@@ -13,7 +13,7 @@ import io.smartcat.cassandra.diagnostics.config.Configuration;
 public class HttpHandler extends NanoHTTPD {
     private static final Logger logger = LoggerFactory.getLogger(HttpHandler.class);
 
-    private DiagnosticsMXBean mxBean;
+    private DiagnosticsApi mxBean;
 
     /**
      * Constructor.
@@ -21,7 +21,7 @@ public class HttpHandler extends NanoHTTPD {
      * @param config diagnostics configuration
      * @param mxBean diagnostics control bean
      */
-    public HttpHandler(Configuration config, DiagnosticsMXBean mxBean) {
+    public HttpHandler(Configuration config, DiagnosticsApi mxBean) {
         super(config.httpApiHost, config.httpApiPort);
         this.mxBean = mxBean;
     }

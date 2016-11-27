@@ -16,8 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fi.iki.elonen.NanoHTTPD;
-import io.smartcat.cassandra.diagnostics.api.DiagnosticsMXBean;
-import io.smartcat.cassandra.diagnostics.api.DiagnosticsMXBeanImpl;
+import io.smartcat.cassandra.diagnostics.api.DiagnosticsApi;
+import io.smartcat.cassandra.diagnostics.api.DiagnosticsApiImpl;
 import io.smartcat.cassandra.diagnostics.api.HttpHandler;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
@@ -92,10 +92,10 @@ public class Diagnostics implements QueryReporter {
     private void initMXBean() {
         logger.info("Intializing Diagnostics MXBean.");
         final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-        final DiagnosticsMXBean mbean = new DiagnosticsMXBeanImpl(config, this);
+        final DiagnosticsApi mbean = new DiagnosticsApiImpl(config, this);
         try {
             mxbeanName = new ObjectName(
-                    DiagnosticsMXBean.class.getPackage() + ":type=" + DiagnosticsMXBean.class.getSimpleName());
+                    DiagnosticsApi.class.getPackage() + ":type=" + DiagnosticsApi.class.getSimpleName());
             server.registerMBean(mbean, mxbeanName);
         } catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException |
                 NotCompliantMBeanException e) {

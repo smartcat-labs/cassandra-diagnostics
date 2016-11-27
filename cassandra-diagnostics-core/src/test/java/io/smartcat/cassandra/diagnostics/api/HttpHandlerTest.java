@@ -22,7 +22,7 @@ public class HttpHandlerTest {
     @Test
     public void not_found() {
         Configuration config = Configuration.getDefaultConfiguration();
-        DiagnosticsMXBean mxBean = mock(DiagnosticsMXBean.class);
+        DiagnosticsApi mxBean = mock(DiagnosticsApi.class);
         HttpHandler httpApi = new HttpHandler(config, mxBean);
         IHTTPSession session = mock(IHTTPSession.class);
         when(session.getMethod()).thenReturn(Method.GET);
@@ -34,7 +34,7 @@ public class HttpHandlerTest {
     @Test
     public void get_version() {
         Configuration config = Configuration.getDefaultConfiguration();
-        DiagnosticsMXBean mxBean = mock(DiagnosticsMXBean.class);
+        DiagnosticsApi mxBean = mock(DiagnosticsApi.class);
         when(mxBean.getVersion()).thenReturn("1.2.3");
         HttpHandler httpApi = new HttpHandler(config, mxBean);
         IHTTPSession session = mock(IHTTPSession.class);
@@ -49,7 +49,7 @@ public class HttpHandlerTest {
     @Test
     public void reload() {
         Configuration config = Configuration.getDefaultConfiguration();
-        DiagnosticsMXBean mxBean = mock(DiagnosticsMXBean.class);
+        DiagnosticsApi mxBean = mock(DiagnosticsApi.class);
         HttpHandler httpApi = new HttpHandler(config, mxBean);
         IHTTPSession session = mock(IHTTPSession.class);
         when(session.getMethod()).thenReturn(Method.POST);

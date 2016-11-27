@@ -7,7 +7,7 @@ import io.smartcat.cassandra.diagnostics.config.Configuration;
 /**
  * Diagnostics JMX MXBean.
  */
-public class DiagnosticsMXBeanImpl implements DiagnosticsMXBean {
+public class DiagnosticsApiImpl implements DiagnosticsApi {
 
     /**
      * Module configuration.
@@ -22,7 +22,7 @@ public class DiagnosticsMXBeanImpl implements DiagnosticsMXBean {
      * @param config configuration object
      * @param diagnostics diagnostics instance
      */
-    public DiagnosticsMXBeanImpl(Configuration config, Diagnostics diagnostics) {
+    public DiagnosticsApiImpl(Configuration config, Diagnostics diagnostics) {
         this.config = config;
         this.diagnostics = diagnostics;
     }

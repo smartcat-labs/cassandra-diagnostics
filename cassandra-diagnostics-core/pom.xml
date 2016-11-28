@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.smartcat</groupId>
         <artifactId>cassandra-diagnostics</artifactId>
-        <version>1.2.5</version>
+        <version>1.3.0</version>
     </parent>
     <artifactId>cassandra-diagnostics-core</artifactId>
     <packaging>jar</packaging>
@@ -12,6 +12,7 @@
     <properties>
         <version.snakeyaml>1.11</version.snakeyaml>
         <version.commons.lang3>3.4</version.commons.lang3>
+        <version.nanohttpd>2.3.1</version.nanohttpd>
     </properties>
 
     <dependencies>
@@ -34,7 +35,11 @@
             <artifactId>commons-lang3</artifactId>
             <version>${version.commons.lang3}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.nanohttpd</groupId>
+            <artifactId>nanohttpd</artifactId>
+            <version>${version.nanohttpd}</version>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -75,11 +80,12 @@
                             <artifactSet>
                                 <includes>
                                     <include>io.smartcat:*</include>
+                                    <include>org.nanohttpd:*</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
                                 <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Created-By>SmartCat</Created-By>
                                         <Premain-Class>io.smartcat.cassandra.diagnostics.DiagnosticsAgent

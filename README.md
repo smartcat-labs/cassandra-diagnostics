@@ -91,11 +91,7 @@ Values for `time` is given in milliseconds. `tags` are used to better specify me
 
 ## Configuration
 
-Cassandra Diagnostics can be configured statically, using a configuration file, and dynamically (in runtime) using JMX.
-
-### Static Configuration
-
-Cassandra Diagnostics uses an external configuration file in YAML format. You can see default configuration in [cassandra-diagnostics-default.yml](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-core/src/main/resources/cassandra-diagnostics-default.yml). The default name of the config file is `cassandra-diagnostics.yml` and it is expected to be found on the Cassandra classpath. This can be changed using property `cassandra.diagnostics.config`.
+Cassandra Diagnostics uses an external configuration file in YAML format. You can see default configuration in [cassandra-diagnostics-default.yml](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-core/src/main/resources/cassandra-diagnostics-default.yml). The default name of the config file is `cassandra-diagnostics.yml` and it is expected to be found on the classpath. This can be changed using property `cassandra.diagnostics.config`.
 For example, the configuration can be set explicitly by changing `cassandra-env.sh` and adding the following line:
 
 ```
@@ -140,7 +136,9 @@ modules:
       - io.smartcat.cassandra.diagnostics.reporter.LogReporter
       - io.smartcat.cassandra.diagnostics.reporter.RiemannReporter
 ```
+
 By default all measurements are reported with hostname queried with [InetAddress](http://docs.oracle.com/javase/7/docs/api/java/net/InetAddress.html) java class. If required, hostname can be set using a hostname variable in configuration file:
+
 ```
 hostname: "test-hostname"
 
@@ -148,15 +146,37 @@ reporters:
 etc...
 ```
 
-### Dynamic Configuration
+## Control and Configuration API
 
-Cassandra Diagnostics exposes configurable properties through Java JMX. Only properties that could be changed/applied in runtime are exposed.
-The Diagnostics JMX MXBean could be found under the following object name:
+Cassandra Diagnostics exposes a control and configuration API. This API currently offers the following operations:
+
+    - getVersion - returns the actual Cassandra Diagnostics version.
+    - reload - reloads the configuration
+
+This API is exposed over JMX and HTTP protocols.
+
+The Diagnostics API JMX MXBean could be found under the following object name:
 
 ```
-package io.smartcat.cassandra.diagnostics.jmx:type=DiagnosticsMXBean
+package io.smartcat.cassandra.diagnostics.api:type=DiagnosticsApi
 ```
 
+The HTTP API is controlled using the following options in the configuration file:
+
+```
+# controls if HTTP API is turned on. 'true' by default.
+httpApiEnabled: true
+# specifies the host/address part for listening TCP socket. '127.0.0.1' by default.
+httpApiHost: 127.0.0.1
+# specifies the port number for the listening TCP socket. '8998' by default.
+httpApiPort: 8998
+```
+
+It implements the following endpoints for mapping HTTP requests to API operations:
+
+- `GET /version` for `getVersion`
+- `POST /reload` for `reload`
+  
 ## Installation
 
 Cassandra Diagnostics consists of the following three components:

@@ -1,5 +1,8 @@
 package io.smartcat.cassandra.diagnostics.module.metrics;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectInstance;
 
@@ -16,7 +19,7 @@ public class MetricsMBean {
 
     private final ObjectInstance mbean;
 
-    private MBeanAttributeInfo[] mbeanAttributes = new MBeanAttributeInfo[0];
+    private List<MBeanAttributeInfo> mbeanAttributes = new ArrayList<>(0);
 
     /**
      * Constructor.
@@ -26,7 +29,7 @@ public class MetricsMBean {
      * @param mbeanAttributes mbean attributes
      */
     public MetricsMBean(final MetricsConfiguration config, final ObjectInstance mbean,
-            final MBeanAttributeInfo[] mbeanAttributes) {
+            final List<MBeanAttributeInfo> mbeanAttributes) {
         this.mbeanName = getMBeanName(config.metricsPackageName(), mbean);
         this.measurementName = nameBuilder(config.metricsPackageName(), mbean, config.metricsSeparator());
         this.mbean = mbean;
@@ -63,9 +66,9 @@ public class MetricsMBean {
     /**
      * Get mbean attributes.
      *
-     * @return mbean attribute info array
+     * @return mbean attribute info list
      */
-    public MBeanAttributeInfo[] getMBeanAttributes() {
+    public List<MBeanAttributeInfo> getMBeanAttributes() {
         return mbeanAttributes;
     }
 

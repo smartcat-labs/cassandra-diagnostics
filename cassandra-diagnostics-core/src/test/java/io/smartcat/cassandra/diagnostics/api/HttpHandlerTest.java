@@ -80,7 +80,7 @@ public class HttpHandlerTest {
         when(session.getMethod()).thenReturn(Method.GET);
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", config.httpApiKey);
+        headers.put("authorization", config.httpApiKey);
         when(session.getHeaders()).thenReturn(headers);
         when(session.getUri()).thenReturn("/version");
 
@@ -119,7 +119,7 @@ public class HttpHandlerTest {
         HttpHandler httpApi = new HttpHandler(config, mxBean);
         IHTTPSession session = mock(IHTTPSession.class);
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", "invalid-key");
+        headers.put("authorization", "invalid-key");
         when(session.getHeaders()).thenReturn(headers);
         when(session.getUri()).thenReturn("/version");
         when(session.getMethod()).thenReturn(Method.GET);

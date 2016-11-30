@@ -66,7 +66,7 @@ public class HttpHandler extends NanoHTTPD {
     }
 
     private boolean hasValidCredentials(IHTTPSession session) {
-        String header = session.getHeaders().get("Authorization");
+        String header = session.getHeaders().get("authorization");
         return apiKey.equals(header);
     }
 }

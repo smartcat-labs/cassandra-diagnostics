@@ -170,6 +170,10 @@ httpApiEnabled: true
 httpApiHost: 127.0.0.1
 # specifies the port number for the listening TCP socket. '8998' by default.
 httpApiPort: 8998
+# if API authorization is enabled, API key must be provided through the 'Authorization' header
+httpApiAuthEnabled: false
+# API access key
+httpApiKey: "diagnostics-api-key"
 ```
 
 It implements the following endpoints for mapping HTTP requests to API operations:

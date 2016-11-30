@@ -11,6 +11,7 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
+import javax.management.StandardMBean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,9 +95,10 @@ public class Diagnostics implements QueryReporter {
         final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         final DiagnosticsApi mbean = new DiagnosticsApiImpl(config, this);
         try {
+            final StandardMBean smbean = new StandardMBean(mbean, DiagnosticsApi.class);
             mxbeanName = new ObjectName(
                     DiagnosticsApi.class.getPackage() + ":type=" + DiagnosticsApi.class.getSimpleName());
-            server.registerMBean(mbean, mxbeanName);
+            server.registerMBean(smbean, mxbeanName);
         } catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException |
                 NotCompliantMBeanException e) {
             logger.error("Unable to register DiagnosticsMBean", e);

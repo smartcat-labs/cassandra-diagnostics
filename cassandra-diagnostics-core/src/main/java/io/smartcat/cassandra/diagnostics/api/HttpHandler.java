@@ -15,6 +15,9 @@ public class HttpHandler extends NanoHTTPD {
 
     private DiagnosticsApi mxBean;
 
+    private final boolean apiAuthEnabled;
+    private final String apiKey;
+
     /**
      * Constructor.
      *
@@ -24,6 +27,9 @@ public class HttpHandler extends NanoHTTPD {
     public HttpHandler(Configuration config, DiagnosticsApi mxBean) {
         super(config.httpApiHost, config.httpApiPort);
         this.mxBean = mxBean;
+
+        apiAuthEnabled = config.httpApiAuthEnabled;
+        apiKey = config.httpApiKey;
     }
 
     /* (non-Javadoc)
@@ -31,8 +37,21 @@ public class HttpHandler extends NanoHTTPD {
      */
     @Override
     public Response serve(IHTTPSession session) {
+        if (apiAuthEnabled) {
+            if (hasValidCredentials(session)) {
+                return respond(session);
+            }
+
+            return newFixedLengthResponse(Status.FORBIDDEN, NanoHTTPD.MIME_PLAINTEXT, "Invalid API key");
+        }
+
+        return respond(session);
+    }
+
+    private Response respond(IHTTPSession session) {
         Method method = session.getMethod();
         String uri = session.getUri();
+
         logger.debug("Serving {} {} request.", method, uri);
         if (Method.GET.equals(method) && "/version".equalsIgnoreCase(uri)) {
             return newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_PLAINTEXT, mxBean.getVersion());
@@ -46,4 +65,8 @@ public class HttpHandler extends NanoHTTPD {
         }
     }
 
+    private boolean hasValidCredentials(IHTTPSession session) {
+        String header = session.getHeaders().get("Authorization");
+        return apiKey.equals(header);
+    }
 }

@@ -1,13 +1,16 @@
 package io.smartcat.cassandra.diagnostics.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -42,8 +45,13 @@ public class HttpHandlerTest {
         when(session.getUri()).thenReturn("/version");
         Response res = httpApi.serve(session);
         assertThat(res.getStatus()).isEqualTo(Status.OK);
-        String text = new BufferedReader(new InputStreamReader(res.getData())).lines().collect(Collectors.joining());
-        assertThat(text).isEqualTo("1.2.3");
+
+        try {
+            String text = new BufferedReader(new InputStreamReader(res.getData())).readLine();
+            assertThat(text).isEqualTo("1.2.3");
+        } catch (IOException ex) {
+            fail(ex.getMessage());
+        }
     }
 
     @Test
@@ -59,4 +67,65 @@ public class HttpHandlerTest {
         verify(mxBean).reload();
     }
 
+    @Test
+    public void get_version_valid_api_key() {
+        Configuration config = Configuration.getDefaultConfiguration();
+        config.httpApiAuthEnabled = true;
+
+        DiagnosticsApi mxBean = mock(DiagnosticsApi.class);
+        when(mxBean.getVersion()).thenReturn("1.2.3");
+
+        HttpHandler httpApi = new HttpHandler(config, mxBean);
+        IHTTPSession session = mock(IHTTPSession.class);
+        when(session.getMethod()).thenReturn(Method.GET);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", config.httpApiKey);
+        when(session.getHeaders()).thenReturn(headers);
+        when(session.getUri()).thenReturn("/version");
+
+        Response res = httpApi.serve(session);
+        assertThat(res.getStatus()).isEqualTo(Status.OK);
+
+        try {
+            String text = new BufferedReader(new InputStreamReader(res.getData())).readLine();
+            assertThat(text).isEqualTo("1.2.3");
+        } catch (IOException ex) {
+            fail(ex.getMessage());
+        }
+    }
+
+    @Test
+    public void get_version_missing_api_key() {
+        Configuration config = Configuration.getDefaultConfiguration();
+        config.httpApiAuthEnabled = true;
+
+        DiagnosticsApi mxBean = mock(DiagnosticsApi.class);
+        HttpHandler httpApi = new HttpHandler(config, mxBean);
+        IHTTPSession session = mock(IHTTPSession.class);
+        when(session.getMethod()).thenReturn(Method.GET);
+        when(session.getUri()).thenReturn("/version");
+
+        Response res = httpApi.serve(session);
+        assertThat(res.getStatus()).isEqualTo(Status.FORBIDDEN);
+    }
+
+    @Test
+    public void get_version_invalid_api_key() {
+        Configuration config = Configuration.getDefaultConfiguration();
+        config.httpApiAuthEnabled = true;
+
+        DiagnosticsApi mxBean = mock(DiagnosticsApi.class);
+        HttpHandler httpApi = new HttpHandler(config, mxBean);
+        IHTTPSession session = mock(IHTTPSession.class);
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "invalid-key");
+        when(session.getHeaders()).thenReturn(headers);
+        when(session.getUri()).thenReturn("/version");
+        when(session.getMethod()).thenReturn(Method.GET);
+        when(session.getUri()).thenReturn("/version");
+
+        Response res = httpApi.serve(session);
+        assertThat(res.getStatus()).isEqualTo(Status.FORBIDDEN);
+    }
 }

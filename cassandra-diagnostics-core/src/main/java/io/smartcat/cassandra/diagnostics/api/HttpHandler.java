@@ -37,15 +37,15 @@ public class HttpHandler extends NanoHTTPD {
      */
     @Override
     public Response serve(IHTTPSession session) {
-        if (apiAuthEnabled) {
-            if (hasValidCredentials(session)) {
-                return respond(session);
-            }
-
-            return newFixedLengthResponse(Status.FORBIDDEN, NanoHTTPD.MIME_PLAINTEXT, "Invalid API key");
+        if (!apiAuthEnabled) {
+            return respond(session);
         }
 
-        return respond(session);
+        if (hasValidCredentials(session)) {
+            return respond(session);
+        }
+
+        return newFixedLengthResponse(Status.FORBIDDEN, NanoHTTPD.MIME_PLAINTEXT, "Invalid API key");
     }
 
     private Response respond(IHTTPSession session) {

@@ -69,6 +69,16 @@ public class Configuration {
     public Integer httpApiPort = 8998;
 
     /**
+     * Enables HTTP API key-based authentication.
+     */
+    public Boolean httpApiAuthEnabled = false;
+
+    /**
+     * HTTP API access key.
+     */
+    public String httpApiKey = "diagnostics-api-key";
+
+    /**
      * Reporters configuration list with reporter specific properties.
      */
     public List<ReporterConfiguration> reporters = new ArrayList<>();
@@ -95,5 +105,4 @@ public class Configuration {
         sb.append(" }");
         return sb.toString();
     }
-
 }

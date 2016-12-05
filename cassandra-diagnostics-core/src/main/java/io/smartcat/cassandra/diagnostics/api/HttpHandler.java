@@ -37,11 +37,7 @@ public class HttpHandler extends NanoHTTPD {
      */
     @Override
     public Response serve(IHTTPSession session) {
-        if (!apiAuthEnabled) {
-            return respond(session);
-        }
-
-        if (hasValidCredentials(session)) {
+        if (!apiAuthEnabled || hasValidCredentials(session)) {
             return respond(session);
         }
 

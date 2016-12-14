@@ -163,10 +163,13 @@ public class MetricsCollector {
                 try {
                     final Object obj = mbeanServerConn
                             .getAttribute(objectInstance.getObjectName(), attributeInfo.getName());
+                    // With trying to parse double we are including all mbean attributes that have a number value.
+                    // This is necessary because some of the attributes are defined as type Object and type checking
+                    // is not possible in that case.
                     Double.parseDouble(obj.toString());
                     filteredAttributes.add(attributeInfo);
                 } catch (Exception e) {
-
+                    // Exception handling is unnecessary because we are skipping this attribute
                 }
             }
 

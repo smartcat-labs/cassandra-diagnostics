@@ -37,11 +37,11 @@ public class MetricsMBean {
     }
 
     /**
-     * Get comma separated metrics mbean name.
+     * Get comma separated metrics MBean name.
      *
-     * @return mbean name
+     * @return MBean name
      */
-    public String getmbeanName() {
+    public String getMBeanName() {
         return mbeanName;
     }
 

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMISocketFactory;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -147,11 +146,6 @@ public class MetricsCollector {
                 new HashMap<String, String>());
     }
 
-    private List<String> allowedTypes = Arrays
-            .asList(Short.class.getName(), Integer.class.getName(), Long.class.getName(), Double.class.getName(),
-                    Float.class.getName(), short.class.getName(), int.class.getName(), long.class.getName(),
-                    double.class.getName(), float.class.getName());
-
     private Set<MetricsMBean> filterMBeans(final Set<ObjectInstance> mbeanObjectInstances)
             throws IntrospectionException, ReflectionException, InstanceNotFoundException, IOException {
         Set<MetricsMBean> results = new HashSet<MetricsMBean>();
@@ -166,8 +160,16 @@ public class MetricsCollector {
             final List<MBeanAttributeInfo> filteredAttributes = new ArrayList<>();
 
             for (MBeanAttributeInfo attributeInfo : attributes) {
-                if (allowedTypes.contains(attributeInfo.getType())) {
+                try {
+                    final Object obj = mbeanServerConn
+                            .getAttribute(objectInstance.getObjectName(), attributeInfo.getName());
+                    // With trying to parse double we are including all mbean attributes that have a number value.
+                    // This is necessary because some of the attributes are defined as type Object and type checking
+                    // is not possible in that case.
+                    Double.parseDouble(obj.toString());
                     filteredAttributes.add(attributeInfo);
+                } catch (Exception e) {
+                    // Exception handling is unnecessary because we are skipping this attribute
                 }
             }
 
@@ -179,7 +181,7 @@ public class MetricsCollector {
             }
 
             for (Pattern pattern : patterns) {
-                if (pattern.matcher(mbean.getmbeanName()).matches()) {
+                if (pattern.matcher(mbean.getMBeanName()).matches()) {
                     matches = true;
                 }
             }

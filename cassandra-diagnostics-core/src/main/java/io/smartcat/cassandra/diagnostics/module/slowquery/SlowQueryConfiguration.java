@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -20,6 +21,9 @@ public class SlowQueryConfiguration {
      */
     public static class Values {
         private static final int DEFAULT_SLOW_QUERY_THRESHOLD = 25;
+        private static final boolean DEFAULT_SLOW_QUERY_COUNT_REPORT_ENABLED = false;
+        private static final int DEFAULT_SLOW_QUERY_COUNT_REPORT_PERIOD = 1;
+        private static final String DEFAULT_SLOW_QUERY_COUNT_REPORT_TIMEUNIT = "MINUTES";
 
         /**
          * Query execution's threshold.
@@ -29,6 +33,21 @@ public class SlowQueryConfiguration {
          * Table names to filter queries.
          */
         public List<String> tablesForLogging = new ArrayList<String>();
+
+        /**
+         * Slow query count reporting enabled.
+         */
+        public boolean slowQueryCountReportEnabled = DEFAULT_SLOW_QUERY_COUNT_REPORT_ENABLED;
+
+        /**
+         * Slow query count reporting period.
+         */
+        public int slowQueryCountReportPeriod = DEFAULT_SLOW_QUERY_COUNT_REPORT_PERIOD;
+
+        /**
+         * Slow query count reporting time unit.
+         */
+        public TimeUnit slowQueryCountReportTimeunit = TimeUnit.valueOf(DEFAULT_SLOW_QUERY_COUNT_REPORT_TIMEUNIT);
     }
 
     private Values values = new Values();
@@ -69,4 +88,41 @@ public class SlowQueryConfiguration {
     public List<String> tablesForLogging() {
         return Collections.unmodifiableList(values.tablesForLogging);
     }
+
+    /**
+     * Should report slow query count.
+     *
+     * @return should report slow query count
+     */
+    public boolean slowQueryCountReportEnabled() {
+        return values.slowQueryCountReportEnabled;
+    }
+
+    /**
+     * Slow query count reporting period.
+     *
+     * @return slow query count reporting period
+     */
+    public int slowQueryCountReportPeriod() {
+        return values.slowQueryCountReportPeriod;
+    }
+
+    /**
+     * Slow query count reporting time unit.
+     *
+     * @return slow query count reporting time unit
+     */
+    public TimeUnit slowQueryCountReportTimeunit() {
+        return values.slowQueryCountReportTimeunit;
+    }
+
+    /**
+     * Slow query count reporting rate in milliseconds.
+     *
+     * @return Slow query count reporting rate in milliseconds
+     */
+    public long slowQueryCountReportingRateInMillis() {
+        return slowQueryCountReportTimeunit().toMillis(slowQueryCountReportPeriod());
+    }
+
 }

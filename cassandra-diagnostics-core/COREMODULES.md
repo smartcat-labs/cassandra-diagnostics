@@ -28,12 +28,16 @@ Slow Query module is monitoring execution time of each query and if it is above 
 #### Configuration
 
 You can specify slow query threshold (in ms) and list of keyspace.table_name for logging. All options are optional with default threshold of 25ms and all table logging.
+There is a slow query counter available that periodically reports the count of slow queries over the configured period.
 
 ```
 - module: io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule
   measurement: slow_query #optional
   options:
     slowQueryThresholdInMilliseconds: 25 #optional
+    slowQueryCountReportEnabled: false #optional
+    slowQueryCountReportPeriod: 1 #optional
+    slowQueryCountReportTimeunit: MINUTES #optional
     tablesForLogging: #optional
       - keyspace.table_name
   reporters:

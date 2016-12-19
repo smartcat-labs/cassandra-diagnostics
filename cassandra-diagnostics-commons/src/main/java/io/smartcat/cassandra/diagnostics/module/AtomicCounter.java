@@ -1,4 +1,4 @@
-package io.smartcat.cassandra.diagnostics.module.requestrate;
+package io.smartcat.cassandra.diagnostics.module;
 
 import java.util.concurrent.atomic.AtomicLong;
 

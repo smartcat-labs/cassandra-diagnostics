@@ -1,12 +1,16 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
-import io.smartcat.cassandra.diagnostics.Measurement;
-import kafka.server.KafkaConfig;
-import kafka.server.KafkaServer;
-import kafka.utils.MockTime;
-import kafka.utils.TestUtils;
-import kafka.utils.ZKStringSerializer$;
-import kafka.zk.EmbeddedZookeeper;
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -17,12 +21,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.powermock.reflect.Whitebox;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
+import io.smartcat.cassandra.diagnostics.Measurement;
+import kafka.server.KafkaConfig;
+import kafka.server.KafkaServer;
+import kafka.utils.MockTime;
+import kafka.utils.TestUtils;
+import kafka.utils.ZKStringSerializer$;
+import kafka.zk.EmbeddedZookeeper;
 
 public class KafkaReporterTest {
     private static final String HOST = "127.0.0.1";
@@ -78,7 +83,7 @@ public class KafkaReporterTest {
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProps);
         consumer.subscribe(Collections.singletonList(measurement.name()));
 
-        ConsumerRecords<String, String> records = consumer.poll(3000);
+        ConsumerRecords<String, String> records = consumer.poll(30000);
         assertEquals(1, records.count());
 
         Iterator<ConsumerRecord<String, String>> recordIterator = records.iterator();

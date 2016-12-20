@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
+import io.smartcat.cassandra.diagnostics.module.AtomicCounter;
 import io.smartcat.cassandra.diagnostics.module.Module;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;

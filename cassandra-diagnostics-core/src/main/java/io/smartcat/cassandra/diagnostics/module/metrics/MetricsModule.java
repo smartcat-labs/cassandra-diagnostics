@@ -52,6 +52,7 @@ public class MetricsModule extends Module {
 
     @Override
     public void stop() {
+        logger.trace("Stopping metrics module.");
         timer.cancel();
         metricsCollector.close();
     }

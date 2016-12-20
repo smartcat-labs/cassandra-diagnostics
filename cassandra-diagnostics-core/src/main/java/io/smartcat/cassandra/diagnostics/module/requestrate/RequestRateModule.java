@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.Query.StatementType;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.AtomicCounter;
 import io.smartcat.cassandra.diagnostics.module.Module;
@@ -30,19 +31,11 @@ public class RequestRateModule extends Module {
 
     private static final String REQUEST_RATE_THREAD_NAME = "request-rate-module";
 
-    private static final String UPDATE_SUFFIX = "_update";
+    private static final String SUFFIX_SEPARATOR = "_";
 
-    private static final String SELECT_SUFFIX = "_select";
-
-    private final AtomicCounter updateRequests;
-
-    private final AtomicCounter selectRequests;
+    private final Map<StatementType, RequestRateCounter> requestRates;
 
     private final String service;
-
-    private final String updateService;
-
-    private final String selectService;
 
     private final int period;
 
@@ -70,21 +63,37 @@ public class RequestRateModule extends Module {
         rateFactor = timeunit.toSeconds(1);
 
         logger.info("RequestRate module initialized with {} {} reporting period.", period, timeunit.name());
-        updateService = service + UPDATE_SUFFIX;
-        selectService = service + SELECT_SUFFIX;
-        updateRequests = new AtomicCounter();
-        selectRequests = new AtomicCounter();
+        requestRates = new HashMap<>();
+        for (StatementType statementType : StatementType.values()) {
+            if (statementType != StatementType.UNKNOWN) {
+                requestRates.put(statementType, new RequestRateCounter(
+                        service.concat(SUFFIX_SEPARATOR).concat(statementType.name().toLowerCase()),
+                        new AtomicCounter()));
+            }
+        }
+
         timer = new Timer(REQUEST_RATE_THREAD_NAME);
         timer.schedule(new RequestRateTask(), 0, config.reportingRateInMillis());
     }
 
+    /**
+     * Request rate counter wrapper class.
+     */
+    private class RequestRateCounter {
+
+        public final String serviceName;
+
+        public final AtomicCounter counter;
+
+        RequestRateCounter(String serviceName, AtomicCounter counter) {
+            this.serviceName = serviceName;
+            this.counter = counter;
+        }
+    }
+
     @Override
     public void process(Query query) {
-        if (query.statementType() == Query.StatementType.SELECT) {
-            selectRequests.increment();
-        } else if (query.statementType() == Query.StatementType.UPDATE) {
-            updateRequests.increment();
-        }
+        requestRates.get(query.statementType()).counter.increment();
     }
 
     @Override
@@ -103,18 +112,18 @@ public class RequestRateModule extends Module {
     private class RequestRateTask extends TimerTask {
         @Override
         public void run() {
-            double updateRate = convertRate(updateRequests.sumThenReset());
-            double selectRate = convertRate(selectRequests.sumThenReset());
+            for (StatementType statementType : requestRates.keySet()) {
+                RequestRateCounter requestRateCounter = requestRates.get(statementType);
 
-            logger.debug("Update request rate: {}/{}", updateRate, timeunit.name());
-            logger.debug("Select request rate: {}/{}", selectRate, timeunit.name());
+                double requestRate = convertRate(requestRateCounter.counter.sumThenReset());
 
-            Measurement updates = createMeasurement(updateService, updateRate);
-            Measurement selects = createMeasurement(selectService, selectRate);
+                logger.debug("{} request rate: {}/{}", statementType, requestRate, timeunit.name());
 
-            for (Reporter reporter : reporters) {
-                reporter.report(updates);
-                reporter.report(selects);
+                Measurement measurement = createMeasurement(requestRateCounter.serviceName, requestRate);
+
+                for (Reporter reporter : reporters) {
+                    reporter.report(measurement);
+                }
             }
         }
     }
@@ -122,8 +131,7 @@ public class RequestRateModule extends Module {
     private Measurement createMeasurement(String service, double rate) {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", hostname);
-        return Measurement
-                .create(service, rate, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
-                        new HashMap<String, String>());
+        return Measurement.create(service, rate, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
+                new HashMap<String, String>());
     }
 }

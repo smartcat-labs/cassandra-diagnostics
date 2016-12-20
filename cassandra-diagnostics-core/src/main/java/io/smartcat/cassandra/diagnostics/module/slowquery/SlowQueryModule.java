@@ -59,7 +59,9 @@ public class SlowQueryModule extends Module {
 
         slowQueryCounts = new HashMap<>();
         for (StatementType statementType : StatementType.values()) {
-            slowQueryCounts.put(statementType, new AtomicCounter());
+            if (statementType != StatementType.UNKNOWN) {
+                slowQueryCounts.put(statementType, new AtomicCounter());
+            }
         }
 
         if (config.slowQueryCountReportEnabled()) {

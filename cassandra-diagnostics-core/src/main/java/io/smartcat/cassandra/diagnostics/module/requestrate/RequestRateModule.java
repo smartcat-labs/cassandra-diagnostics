@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.Query.StatementType;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.AtomicCounter;
 import io.smartcat.cassandra.diagnostics.module.Module;
@@ -30,19 +31,9 @@ public class RequestRateModule extends Module {
 
     private static final String REQUEST_RATE_THREAD_NAME = "request-rate-module";
 
-    private static final String UPDATE_SUFFIX = "_update";
-
-    private static final String SELECT_SUFFIX = "_select";
-
-    private final AtomicCounter updateRequests;
-
-    private final AtomicCounter selectRequests;
+    private final Map<StatementType, AtomicCounter> requestRates;
 
     private final String service;
-
-    private final String updateService;
-
-    private final String selectService;
 
     private final int period;
 
@@ -70,21 +61,20 @@ public class RequestRateModule extends Module {
         rateFactor = timeunit.toSeconds(1);
 
         logger.info("RequestRate module initialized with {} {} reporting period.", period, timeunit.name());
-        updateService = service + UPDATE_SUFFIX;
-        selectService = service + SELECT_SUFFIX;
-        updateRequests = new AtomicCounter();
-        selectRequests = new AtomicCounter();
+        requestRates = new HashMap<>();
+        for (StatementType statementType : StatementType.values()) {
+            if (statementType != StatementType.UNKNOWN) {
+                requestRates.put(statementType, new AtomicCounter());
+            }
+        }
+
         timer = new Timer(REQUEST_RATE_THREAD_NAME);
         timer.schedule(new RequestRateTask(), 0, config.reportingRateInMillis());
     }
 
     @Override
     public void process(Query query) {
-        if (query.statementType() == Query.StatementType.SELECT) {
-            selectRequests.increment();
-        } else if (query.statementType() == Query.StatementType.UPDATE) {
-            updateRequests.increment();
-        }
+        requestRates.get(query.statementType()).increment();
     }
 
     @Override
@@ -103,27 +93,25 @@ public class RequestRateModule extends Module {
     private class RequestRateTask extends TimerTask {
         @Override
         public void run() {
-            double updateRate = convertRate(updateRequests.sumThenReset());
-            double selectRate = convertRate(selectRequests.sumThenReset());
+            for (StatementType statementType : requestRates.keySet()) {
+                double requestRate = convertRate(requestRates.get(statementType).sumThenReset());
 
-            logger.debug("Update request rate: {}/{}", updateRate, timeunit.name());
-            logger.debug("Select request rate: {}/{}", selectRate, timeunit.name());
+                logger.debug("{} request rate: {}/{}", statementType, requestRate, timeunit.name());
 
-            Measurement updates = createMeasurement(updateService, updateRate);
-            Measurement selects = createMeasurement(selectService, selectRate);
+                Measurement measurement = createMeasurement(service, statementType, requestRate);
 
-            for (Reporter reporter : reporters) {
-                reporter.report(updates);
-                reporter.report(selects);
+                for (Reporter reporter : reporters) {
+                    reporter.report(measurement);
+                }
             }
         }
     }
 
-    private Measurement createMeasurement(String service, double rate) {
+    private Measurement createMeasurement(String service, StatementType statementType, double rate) {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", hostname);
-        return Measurement
-                .create(service, rate, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
-                        new HashMap<String, String>());
+        tags.put("statementType", statementType.toString());
+        return Measurement.create(service, rate, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
+                new HashMap<String, String>());
     }
 }

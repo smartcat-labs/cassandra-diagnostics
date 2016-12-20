@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.Query.StatementType;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.AtomicCounter;
 import io.smartcat.cassandra.diagnostics.module.Module;
@@ -36,7 +37,7 @@ public class SlowQueryModule extends Module {
 
     private final SlowQueryLogDecider slowQueryLogDecider;
 
-    private final AtomicCounter slowQueryCount;
+    private final Map<StatementType, AtomicCounter> slowQueryCounts;
 
     private final Timer timer;
 
@@ -56,7 +57,13 @@ public class SlowQueryModule extends Module {
 
         slowQueryLogDecider = SlowQueryLogDecider.create(config);
 
-        slowQueryCount = new AtomicCounter();
+        slowQueryCounts = new HashMap<>();
+        for (StatementType statementType : StatementType.values()) {
+            if (statementType != StatementType.UNKNOWN) {
+                slowQueryCounts.put(statementType, new AtomicCounter());
+            }
+        }
+
         if (config.slowQueryCountReportEnabled()) {
             timer = new Timer();
             timer.schedule(new SlowQueryReportTask(), 0, config.slowQueryCountReportingRateInMillis());
@@ -80,7 +87,7 @@ public class SlowQueryModule extends Module {
             throw new IllegalArgumentException("Cannot log slow query because hostname is not resolved.");
         }
 
-        slowQueryCount.increment();
+        slowQueryCounts.get(query.statementType()).increment();
 
         final Map<String, String> tags = new HashMap<>(4);
         tags.put("id", UUID.randomUUID().toString());
@@ -110,19 +117,22 @@ public class SlowQueryModule extends Module {
     private class SlowQueryReportTask extends TimerTask {
         @Override
         public void run() {
-            double count = slowQueryCount.sumThenReset();
+            for (StatementType statementType : slowQueryCounts.keySet()) {
+                double count = slowQueryCounts.get(statementType).sumThenReset();
 
-            Measurement measurement = createSlowQueryCountMeasurement(count);
+                Measurement measurement = createSlowQueryCountMeasurement(count, statementType);
 
-            for (Reporter reporter : reporters) {
-                reporter.report(measurement);
+                for (Reporter reporter : reporters) {
+                    reporter.report(measurement);
+                }
             }
         }
     }
 
-    private Measurement createSlowQueryCountMeasurement(double count) {
+    private Measurement createSlowQueryCountMeasurement(double count, StatementType statementType) {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", hostname);
+        tags.put("statementType", statementType.toString());
         return Measurement
                 .create(slowQueryCountMeasurementName, count, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
                         new HashMap<String, String>());

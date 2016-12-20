@@ -117,7 +117,7 @@ public class SlowQueryModule extends Module {
     private class SlowQueryReportTask extends TimerTask {
         @Override
         public void run() {
-            for (StatementType statementType : StatementType.values()) {
+            for (StatementType statementType : slowQueryCounts.keySet()) {
                 double count = slowQueryCounts.get(statementType).sumThenReset();
 
                 Measurement measurement = createSlowQueryCountMeasurement(count, statementType);

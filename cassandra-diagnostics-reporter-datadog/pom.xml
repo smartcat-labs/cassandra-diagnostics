@@ -4,7 +4,7 @@
     <parent>
         <artifactId>cassandra-diagnostics</artifactId>
         <groupId>io.smartcat</groupId>
-        <version>1.3.3</version>
+        <version>1.3.4</version>
     </parent>
     <artifactId>cassandra-diagnostics-reporter-datadog</artifactId>
 

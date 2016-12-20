@@ -13,7 +13,7 @@ import io.smartcat.cassandra.diagnostics.config.Configuration;
 public class HttpHandler extends NanoHTTPD {
     private static final Logger logger = LoggerFactory.getLogger(HttpHandler.class);
 
-    private DiagnosticsApi mxBean;
+    private DiagnosticsApi diagnosticsApi;
 
     private final boolean apiAuthEnabled;
     private final String apiKey;
@@ -22,11 +22,11 @@ public class HttpHandler extends NanoHTTPD {
      * Constructor.
      *
      * @param config diagnostics configuration
-     * @param mxBean diagnostics control bean
+     * @param diagnosticsApi diagnostics api
      */
-    public HttpHandler(Configuration config, DiagnosticsApi mxBean) {
+    public HttpHandler(Configuration config, DiagnosticsApi diagnosticsApi) {
         super(config.httpApiHost, config.httpApiPort);
-        this.mxBean = mxBean;
+        this.diagnosticsApi = diagnosticsApi;
 
         apiAuthEnabled = config.httpApiAuthEnabled;
         apiKey = config.httpApiKey;
@@ -50,9 +50,9 @@ public class HttpHandler extends NanoHTTPD {
 
         logger.debug("Serving {} {} request.", method, uri);
         if (Method.GET.equals(method) && "/version".equalsIgnoreCase(uri)) {
-            return newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_PLAINTEXT, mxBean.getVersion());
+            return newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_PLAINTEXT, diagnosticsApi.getVersion());
         } else if (Method.POST.equals(method) && "/reload".equalsIgnoreCase(uri)) {
-            mxBean.reload();
+            diagnosticsApi.reload();
             return newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_PLAINTEXT,
                     "Configuration reloaded");
         } else {

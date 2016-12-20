@@ -89,6 +89,7 @@ public class RequestRateModule extends Module {
 
     @Override
     public void stop() {
+        logger.trace("Stopping request rate module.");
         timer.cancel();
     }
 

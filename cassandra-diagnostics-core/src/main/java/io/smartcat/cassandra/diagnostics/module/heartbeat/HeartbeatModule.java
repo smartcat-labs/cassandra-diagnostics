@@ -52,6 +52,7 @@ public class HeartbeatModule extends Module {
 
     @Override
     public void stop() {
+        logger.trace("Stopping heartbeat module.");
         timer.cancel();
     }
 

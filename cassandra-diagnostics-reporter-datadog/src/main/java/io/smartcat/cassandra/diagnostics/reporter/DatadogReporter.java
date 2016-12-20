@@ -94,4 +94,10 @@ public class DatadogReporter extends Reporter {
         return result;
     }
 
+    @Override
+    public void stop() {
+        logger.trace("Stopping DataDog reporter.");
+        client.stop();
+    }
+
 }

@@ -117,9 +117,11 @@ public class DiagnosticsProcessor {
      * Gracefully stop all modules and reporters.
      */
     public void shutdown() {
+        logger.info("Shutting down modules.");
         for (Module module : modules) {
             module.stop();
         }
+        logger.info("Shutting down reporters.");
         for (Reporter reporter : reporters.values()) {
             reporter.stop();
         }

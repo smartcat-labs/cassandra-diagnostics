@@ -63,9 +63,7 @@ public class RequestRateModule extends Module {
         logger.info("RequestRate module initialized with {} {} reporting period.", period, timeunit.name());
         requestRates = new HashMap<>();
         for (StatementType statementType : StatementType.values()) {
-            if (statementType != StatementType.UNKNOWN) {
-                requestRates.put(statementType, new AtomicCounter());
-            }
+            requestRates.put(statementType, new AtomicCounter());
         }
 
         timer = new Timer(REQUEST_RATE_THREAD_NAME);

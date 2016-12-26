@@ -30,7 +30,7 @@ public class SlowQueryModuleTest {
 
         Query query = Query
                 .create(1474741407205L, 234L, "/127.0.0.1:40042", Query.StatementType.SELECT, "keyspace", "table",
-                        "select count(*) from keyspace.table", null);
+                        "select count(*) from keyspace.table");
 
         module.process(query);
 

@@ -28,22 +28,9 @@ public class ITConnector {
     @BeforeClass
     public static void setUp() throws ConfigurationException, TTransportException, IOException, InterruptedException {
         queryIntercepted = false;
-        final Instrumentation inst = InstrumentationSavingAgent.getInstrumentation();
         ConnectorConfiguration configuration = new ConnectorConfiguration();
-        final Connector connector = new ConnectorImpl();
-        connector.init(inst, new QueryReporter() {
-            @Override
-            public void report(Query query) {
-                if (Query.StatementType.SELECT.equals(query.statementType()) &&
-                        "test_keyspace".equalsIgnoreCase(query.keyspace()) &&
-                        "test_table".equalsIgnoreCase(query.tableName())) {
-                    queryIntercepted = true;
-                    lock.countDown();
-                }
-            }
-        }, configuration);
+        //TODO: configure env sh of embedded Cassandra to use custome query handler
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-        connector.waitForSetupCompleted();
         cluster = Cluster.builder().addContactPoint("127.0.0.1").withPort(9142).build();
         session = cluster.connect();
     }

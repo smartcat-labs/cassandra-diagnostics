@@ -42,7 +42,7 @@ public class Connector30QueryReporterTest {
             }
         };
         ConnectorConfiguration configuration = new ConnectorConfiguration();
-        Connector30QueryReporter connector21QueryReporter = new Connector30QueryReporter(queryReporter, configuration);
+        Connector30QueryReporter connector30QueryReporter = new Connector30QueryReporter(queryReporter, configuration);
 
         SelectStatement statement = mock(SelectStatement.class);
         String selectStatement = "SELECT * FROM test_keyspace.test_table;";
@@ -57,7 +57,7 @@ public class Connector30QueryReporterTest {
                 new InetSocketAddress("172.31.0.1", 1000));
         when(queryState.getClientState()).thenReturn(clientState);
 
-        connector21QueryReporter.report(System.currentTimeMillis(), System.currentTimeMillis(), statement,
+        connector30QueryReporter.report(System.currentTimeMillis(), System.currentTimeMillis(), statement,
                 selectStatement, queryState);
         lock.await(1000, TimeUnit.MILLISECONDS);
 

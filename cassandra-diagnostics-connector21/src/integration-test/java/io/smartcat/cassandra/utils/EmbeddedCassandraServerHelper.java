@@ -112,6 +112,8 @@ public class EmbeddedCassandraServerHelper {
         log.debug("Initialization needed");
 
         System.setProperty("cassandra.config", "file:" + file.getAbsolutePath());
+        System.setProperty("cassandra.custom_query_handler_class",
+                "io.smartcat.cassandra.diagnostics.connector.DiagnosticsQueryHandler");
         System.setProperty("cassandra-foreground", "true");
         System.setProperty("cassandra.native.epoll.enabled", "false"); // JNA doesnt cope with relocated netty
 

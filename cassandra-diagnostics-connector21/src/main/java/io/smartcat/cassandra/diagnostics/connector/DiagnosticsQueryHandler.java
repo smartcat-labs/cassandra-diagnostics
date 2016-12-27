@@ -92,7 +92,7 @@ public class DiagnosticsQueryHandler implements QueryHandler {
 
     @Override
     public Prepared prepare(String query, QueryState state) throws RequestValidationException {
-        LOGGER.info("Intercepted prepare");
+        LOGGER.trace("Intercepted prepare");
         return queryProcessor.prepare(query, state);
     }
 

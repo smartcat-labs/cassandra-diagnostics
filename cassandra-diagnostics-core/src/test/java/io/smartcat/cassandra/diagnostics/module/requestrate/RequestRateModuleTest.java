@@ -69,7 +69,7 @@ public class RequestRateModuleTest {
         long requestRate = 0;
         while (requestRate < numberOfRequests) {
             requestRate = 0;
-            for (final Measurement measurement : latchTestReporter.reported) {
+            for (final Measurement measurement : latchTestReporter.getReported()) {
                 requestRate += measurement.value();
             }
             latch.await(1100, TimeUnit.MILLISECONDS);
@@ -78,7 +78,7 @@ public class RequestRateModuleTest {
         module.stop();
 
         long totalRequests = 0;
-        for (final Measurement measurement : latchTestReporter.reported) {
+        for (final Measurement measurement : latchTestReporter.getReported()) {
             totalRequests += measurement.value();
         }
 

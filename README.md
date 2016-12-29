@@ -8,7 +8,7 @@ Monitoring and audit power kit for Apache Cassandra.
 
 ## Introduction
 
-Cassandra Diagnostics is an extension for Apache Cassandra server node implemented as Java agent. It uses bytecode instrumentation to augment Cassandra node with additional functionalities. On one side it has connectors for different versions of Cassandra and on the other it has reporters to send measurement to different tools. In between lies core which is glue between those two. Reusable code goes to commons.
+Cassandra Diagnostics is an extension for Apache Cassandra server node implemented as custom QueryHandler implementation. It uses QueryHandler interface to define needed methods for each version of Cassandra and it hooks around query processing to measure execution time and report other useful stuff about queries. We use different QueryHandler implementations for different Cassandra versions in version specific connector modules. It has different reporters to send measurement to different tools. In between lies core which is glue between those two. Reusable code goes to commons.
 
 ![Architecture diagram](diagrams/architecture-diagram.png?raw=true)
 
@@ -18,7 +18,7 @@ Cassandra Diagnostics is an extension for Apache Cassandra server node implement
 
 ### Cassandra Connector
 
-Connector is a module which hooks into the query path and extract information for diagnostics. Bytecode instrumentation is used to augment existing Cassandra code with addition functionality. It uses low priority threads to execute the diagnostics information extraction with minimal performance impact to the target code (Cassandra node or application/driver).
+Connector is a module which hooks into the query path and extract information for diagnostics. Custom QueryHandler implementation is used to hook into query path and augment existing Cassandra code with addition functionality. It uses low priority threads to execute the diagnostics information extraction with minimal performance impact to the target code (Cassandra node or application/driver).
 
 Currently Cassandra Diagnostics implements the following connector implementation:
 
@@ -180,7 +180,7 @@ It implements the following endpoints for mapping HTTP requests to API operation
 
 - `GET /version` for `getVersion`
 - `POST /reload` for `reload`
-  
+
 ## Installation
 
 Cassandra Diagnostics consists of the following three components:
@@ -201,12 +201,13 @@ Create and place the configuration file `cassandra-diagnostics.yml` into Cassand
 Add the following line at the end of `conf/cassandra-env.sh`:
 
 ```
-JVM_OPTS="$JVM_OPTS -javaagent:$CASSANDRA_HOME/lib/cassandra-diagnostics-core-VERSION.jar -Dcassandra.diagnostics.config=cassandra-diagnostics.yml"
+JVM_OPTS="$JVM_OPTS -Dcassandra.custom_query_handler_class=io.smartcat.cassandra.diagnostics.connector.DiagnosticsQueryHandler"
+JVM_OPTS="$JVM_OPTS -Dcassandra.diagnostics.config=cassandra-diagnostics.yml"
 ```
 
 ## Usage
 
-Upon Cassandra node start, the Diagnostics agent kicks in and instrument necessary target classes to inject diagnostics additions.
+Upon Cassandra node start, custom QueryHandler will be picked up and it will initialize configuration and reporters for diagnostics.
 `LogReporter` repors slow queries in `logs/system.log` at `INFO` level.
 The dynamic configuration could be inspected/changed using `jconsole` and connecting to `org.apache.cassandra.service.CassandraDaemon`.
 

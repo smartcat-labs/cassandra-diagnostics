@@ -26,14 +26,9 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-            <version>${version.bytebuddy}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy-agent</artifactId>
-            <version>${version.bytebuddy}</version>
+            <groupId>io.smartcat</groupId>
+            <artifactId>cassandra-diagnostics-core</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

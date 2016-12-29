@@ -81,8 +81,7 @@ public class ExecuteStatementWrapper extends AbstractEventProcessor {
                 queryType,
                 statement.getKeyspace(),
                 "",
-                queryString,
-                "");
+                queryString);
     }
 
     private String statementQueryString(final Statement statement) {

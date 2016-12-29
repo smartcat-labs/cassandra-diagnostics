@@ -310,6 +310,6 @@ JVM_OPTS="$JVM_OPTS $MX4J_ADDRESS"
 JVM_OPTS="$JVM_OPTS $MX4J_PORT"
 JVM_OPTS="$JVM_OPTS $JVM_EXTRA_OPTS"
 
-JVM_OPTS="$JVM_OPTS -javaagent:/cassandra-diagnostics/cassandra-diagnostics-core.jar"
 JVM_OPTS="$JVM_OPTS -Dcassandra.diagnostics.config=/etc/cassandra/cassandra-diagnostics.yml"
 CLASSPATH="/cassandra-diagnostics/cassandra-diagnostics-connector.jar:$CLASSPATH"
+JVM_OPTS="$JVM_OPTS -Dcassandra.custom_query_handler_class=io.smartcat.cassandra.diagnostics.connector.DiagnosticsQueryHandler"

@@ -27,7 +27,6 @@ public class Query {
 
     private long startTimeInMilliseconds;
     private long executionTimeInMilliseconds;
-    private String executionErrorMessage;
     private String clientAddress;
     private StatementType statementType;
     private String keyspace;
@@ -51,15 +50,8 @@ public class Query {
     }
 
     /**
-     * Query's execution error message (if any).
-     * @return error message
-     */
-    public String executionErrorMessage() {
-        return executionErrorMessage;
-    }
-
-    /**
      * The originating client's socket address.
+     *
      * @return client's socket address
      */
     public String clientAddress() {
@@ -108,10 +100,9 @@ public class Query {
 
     private Query(final long startTimeInMilliseconds, final long executionTimeInMilliseconds,
             final String clientAddress, final StatementType statementType, final String keyspace,
-            final String tableName, final String statement, final String executionErrorMessage) {
+            final String tableName, final String statement) {
         this.startTimeInMilliseconds = startTimeInMilliseconds;
         this.executionTimeInMilliseconds = executionTimeInMilliseconds;
-        this.executionErrorMessage = executionErrorMessage;
         this.clientAddress = clientAddress;
         this.statementType = statementType;
         this.keyspace = keyspace;
@@ -129,14 +120,13 @@ public class Query {
      * @param keyspace query's key space
      * @param tableName query's table name
      * @param statement query's CQL statement
-     * @param executionErrorMessage query's execution error message
      * @return a new Query instance
      */
     public static Query create(final long startTimeInMilliseconds, final long executionTimeInMilliseconds,
             final String clientAddress, final StatementType statementType, final String keyspace,
-            final String tableName, final String statement, final String executionErrorMessage) {
+            final String tableName, final String statement) {
         return new Query(startTimeInMilliseconds, executionTimeInMilliseconds,
-                clientAddress, statementType, keyspace, tableName, statement, executionErrorMessage);
+                clientAddress, statementType, keyspace, tableName, statement);
     }
 
     @Override
@@ -149,7 +139,6 @@ public class Query {
                 ", statement=" + statement +
                 ", keyspace=" + keyspace +
                 ", tableName=" + tableName +
-                ", executionErrorMessage=" + executionErrorMessage +
                 " ]";
     }
 

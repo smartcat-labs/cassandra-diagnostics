@@ -1,62 +1,52 @@
 package io.smartcat.cassandra.diagnostics.connector;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.instrument.Instrumentation;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.io.PrintStream;
+import java.util.List;
 
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
-import org.junit.Assert;
+import org.assertj.core.api.Assertions;
 import org.junit.BeforeClass;
+import org.junit.AfterClass;
 import org.junit.Test;
-import org.springframework.instrument.InstrumentationSavingAgent;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
-import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.utils.EmbeddedCassandraServerHelper;
 
 public class ITConnector {
 
     private static Cluster cluster;
     private static Session session;
-    private static CountDownLatch lock = new CountDownLatch(1);
-    private static boolean queryIntercepted;
+    private static final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 
     @BeforeClass
     public static void setUp() throws ConfigurationException, TTransportException, IOException, InterruptedException {
-        queryIntercepted = false;
-        final Instrumentation inst = InstrumentationSavingAgent.getInstrumentation();
+        System.setOut(new PrintStream(outContent));
         ConnectorConfiguration configuration = new ConnectorConfiguration();
-        final Connector connector = new ConnectorImpl();
-        connector.init(inst, new QueryReporter() {
-            @Override
-            public void report(Query query) {
-                if (Query.StatementType.SELECT.equals(query.statementType()) &&
-                        "test_keyspace".equalsIgnoreCase(query.keyspace()) &&
-                        "test_table".equalsIgnoreCase(query.tableName())) {
-                    queryIntercepted = true;
-                    lock.countDown();
-                }
-            }
-        }, configuration);
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-        connector.waitForSetupCompleted();
         cluster = Cluster.builder().addContactPoint("127.0.0.1").withPort(9142).build();
         session = cluster.connect();
     }
 
     @Test
-    public void query_is_intercepted_when_connector_is_active() throws InterruptedException {
+    public void query_is_intercepted_when_connector_is_active() throws Exception {
         session.execute("CREATE KEYSPACE IF NOT EXISTS test_keyspace "
                 + "WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
         session.execute("CREATE TABLE IF NOT EXISTS test_keyspace.test_table (uid uuid PRIMARY KEY);");
         session.execute("SELECT * FROM test_keyspace.test_table");
+
+        Assertions.assertThat(outContent.toString())
+            .contains("statement=SELECT * FROM test_keyspace.test_table, keyspace=test_keyspace, tableName=test_table");
+    }
+
+    @AfterClass
+    public static void cleanUpStreams() {
+        System.setOut(null);
         cluster.close();
-        lock.await(2000, TimeUnit.MILLISECONDS);
-        Assert.assertTrue(queryIntercepted);
     }
 
 }

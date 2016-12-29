@@ -29,8 +29,6 @@ public class DiagnosticsQueryHandler implements QueryHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DiagnosticsQueryHandler.class);
 
-    private static final String INITIALIZATION_THREAD_NAME = "cassandra-diagnostics-agent";
-
     private final QueryProcessor queryProcessor = QueryProcessor.instance;
 
     private static Connector30QueryReporter queryReporter;
@@ -48,22 +46,8 @@ public class DiagnosticsQueryHandler implements QueryHandler {
     private void initDiagnostics() {
         LOGGER.info("Cassandra Diagnostics starting.");
         final Diagnostics diagnostics = new Diagnostics();
-        Thread th = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                diagnostics.activate();
-                LOGGER.info("Cassandra Diagnostics initialized.");
-            }
-        });
-        th.setName(INITIALIZATION_THREAD_NAME);
-        th.setDaemon(true);
-        th.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                LOGGER.error(e.getMessage(), e);
-            }
-        });
-        th.start();
+        diagnostics.activate();
+        LOGGER.info("Cassandra Diagnostics initialized.");
         queryReporter = new Connector30QueryReporter(diagnostics, diagnostics.getConfiguration().connector);
     }
 

@@ -80,7 +80,7 @@ public class DiagnosticsQueryHandler implements QueryHandler {
     @Override
     public Prepared prepare(String query, QueryState state, Map<String, ByteBuffer> customPayload)
             throws RequestValidationException {
-        LOGGER.info("Intercepted prepare");
+        LOGGER.trace("Intercepted prepare");
         return queryProcessor.prepare(query, state, customPayload);
     }
 
@@ -100,7 +100,13 @@ public class DiagnosticsQueryHandler implements QueryHandler {
     public ResultMessage processPrepared(CQLStatement statement, QueryState state, QueryOptions options,
             Map<String, ByteBuffer> customPayload) throws RequestExecutionException, RequestValidationException {
         LOGGER.trace("Intercepted processPrepared");
-        return queryProcessor.processPrepared(statement, state, options, customPayload);
+        final long startTime = System.currentTimeMillis();
+        ResultMessage result = queryProcessor.processPrepared(statement, state, options, customPayload);
+        final long execTime = System.currentTimeMillis() - startTime;
+
+        queryReporter.report(startTime, execTime, statement, "", state);
+
+        return result;
     }
 
     @Override

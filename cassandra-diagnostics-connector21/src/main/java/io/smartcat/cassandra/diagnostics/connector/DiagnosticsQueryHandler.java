@@ -96,7 +96,13 @@ public class DiagnosticsQueryHandler implements QueryHandler {
     public ResultMessage processPrepared(CQLStatement statement, QueryState state, QueryOptions options)
             throws RequestExecutionException, RequestValidationException {
         LOGGER.trace("Intercepted processPrepared");
-        return queryProcessor.processPrepared(statement, state, options);
+        final long startTime = System.currentTimeMillis();
+        ResultMessage result = queryProcessor.processPrepared(statement, state, options);
+        final long execTime = System.currentTimeMillis() - startTime;
+
+        queryReporter.report(startTime, execTime, statement, "", state);
+
+        return result;
     }
 
     @Override

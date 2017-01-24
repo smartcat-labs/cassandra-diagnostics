@@ -1,6 +1,7 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,7 +12,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.I0Itec.zkclient.ZkClient;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -20,39 +20,45 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.powermock.reflect.Whitebox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Measurement;
-import kafka.server.KafkaConfig;
-import kafka.server.KafkaServer;
-import kafka.utils.MockTime;
-import kafka.utils.TestUtils;
-import kafka.utils.ZKStringSerializer$;
-import kafka.zk.EmbeddedZookeeper;
 
 public class KafkaReporterTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(KafkaReporterTest.class);
+
     private static final String HOST = "127.0.0.1";
+    private static final String ZK_PORT = "21818";
     private static final String BROKER_PORT = "9092";
 
-    private EmbeddedZookeeper zkServer;
-    private ZkClient zkClient;
-    private KafkaServer kafkaServer;
+    private KafkaLocal kafka;
 
     @Before
-    public void initialise() throws InterruptedException, IOException {
-        zkServer = new EmbeddedZookeeper();
-
-        String zkConnect = HOST + ":" + zkServer.port();
+    public void initialize() throws IOException {
         int timeout = 30000;
-        zkClient = new ZkClient(zkConnect, timeout, timeout, ZKStringSerializer$.MODULE$);
+        String zkConnect = HOST + ":" + ZK_PORT;
 
-        Properties brokerProps = new Properties();
-        brokerProps.put("zookeeper.connect", zkConnect);
-        brokerProps.put("broker.id", "0");
-        brokerProps.put("log.dirs", Files.createTempDirectory("kafka-").toAbsolutePath().toString());
-        brokerProps.put("listeners", "PLAINTEXT://" + HOST + ":" + BROKER_PORT);
+        Properties zkProperties = new Properties();
+        zkProperties.put("minSessionTimeout", timeout);
+        zkProperties.put("maxSessionTimeout", timeout);
+        zkProperties.put("clientPortAddress", HOST);
+        zkProperties.put("clientPort", ZK_PORT);
+        zkProperties.put("dataDir", Files.createTempDirectory("zk-").toAbsolutePath().toString());
 
-        KafkaConfig config = new KafkaConfig(brokerProps);
-        kafkaServer = TestUtils.createServer(config, new MockTime());
+        Properties kafkaProperties = new Properties();
+        kafkaProperties.put("zookeeper.connect", zkConnect);
+        kafkaProperties.put("broker.id", "0");
+        kafkaProperties.put("log.dirs", Files.createTempDirectory("kafka-").toAbsolutePath().toString());
+        kafkaProperties.put("listeners", "PLAINTEXT://" + HOST + ":" + BROKER_PORT);
+
+        try {
+            kafka = new KafkaLocal(kafkaProperties, zkProperties);
+        } catch (Exception e){
+            e.printStackTrace(System.out);
+            fail("Error running local Kafka broker");
+        }
     }
 
     @Test
@@ -95,8 +101,6 @@ public class KafkaReporterTest {
 
     @After
     public void destroy() {
-        kafkaServer.shutdown();
-        zkClient.close();
-        zkServer.shutdown();
+        kafka.stop();
     }
 }

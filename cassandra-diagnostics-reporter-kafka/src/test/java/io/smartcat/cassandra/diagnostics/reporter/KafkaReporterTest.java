@@ -55,7 +55,7 @@ public class KafkaReporterTest {
 
         try {
             kafka = new KafkaLocal(kafkaProperties, zkProperties);
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace(System.out);
             fail("Error running local Kafka broker");
         }

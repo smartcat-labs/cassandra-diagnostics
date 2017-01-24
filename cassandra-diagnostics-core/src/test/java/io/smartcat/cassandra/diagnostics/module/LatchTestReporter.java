@@ -12,7 +12,7 @@ public class LatchTestReporter extends Reporter {
 
     private CountDownLatch latch;
 
-    public final List<Measurement> reported = new ArrayList<Measurement>();
+    private final List<Measurement> reported = new ArrayList<>();
 
     public LatchTestReporter(ReporterConfiguration configuration, CountDownLatch latch) {
         super(configuration);
@@ -24,6 +24,15 @@ public class LatchTestReporter extends Reporter {
         reported.add(measurement);
         System.out.println(measurement.toString());
         latch.countDown();
+    }
+
+    /**
+     * Prevent concurrency issues and return always copy of reported values.
+     *
+     * @return copy of all reported values.
+     */
+    public List<Measurement> getReported() {
+        return new ArrayList<>(reported);
     }
 
 }

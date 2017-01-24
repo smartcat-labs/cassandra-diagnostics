@@ -58,7 +58,7 @@ public class QueryProcessorWrapperTest {
 
         QueryOptions options = mock(QueryOptions.class);
 
-        wrapper.processStatement(statement, queryState, options, System.currentTimeMillis(), null, null);
+        wrapper.processStatement(statement, queryState, options, System.currentTimeMillis(), null);
 
         lock.await(1000, TimeUnit.MILLISECONDS);
 
@@ -66,6 +66,37 @@ public class QueryProcessorWrapperTest {
         assertThat(reportedQuery.statementType()).isEqualTo(Query.StatementType.SELECT);
         assertThat(reportedQuery.keyspace()).isEqualTo("test_keyspace");
         assertThat(reportedQuery.tableName()).isEqualTo("test_table");
+    }
+
+    @Test
+    public void connector_reporter_does_not_report_internal_query_with_all_data() throws Exception {
+        QueryReporter queryReporter = new QueryReporter() {
+            @Override
+            public void report(Query query) {
+                reportedQuery = query;
+                lock.countDown();
+            }
+        };
+
+        ConnectorConfiguration configuration = new ConnectorConfiguration();
+        QueryProcessorWrapper wrapper = new QueryProcessorWrapper(queryReporter, configuration);
+
+        SelectStatement statement = mock(SelectStatement.class);
+        when(statement.keyspace()).thenReturn("test_keyspace");
+        when(statement.columnFamily()).thenReturn("test_table");
+
+        QueryState queryState = mock(QueryState.class);
+        suppress(constructorsDeclaredIn(ClientState.class));
+        ClientState clientState = ClientState.forInternalCalls();
+        setFinal(clientState, clientState.getClass().getDeclaredField("isInternal"), true);
+        when(queryState.getClientState()).thenReturn(clientState);
+
+        QueryOptions options = mock(QueryOptions.class);
+
+        wrapper.processStatement(statement, queryState, options, System.currentTimeMillis(), null);
+        lock.await(1000, TimeUnit.MILLISECONDS);
+
+        assertThat(reportedQuery).isEqualTo(null);
     }
 
     private void setFinal(Object target, Field field, Object newValue) throws Exception {

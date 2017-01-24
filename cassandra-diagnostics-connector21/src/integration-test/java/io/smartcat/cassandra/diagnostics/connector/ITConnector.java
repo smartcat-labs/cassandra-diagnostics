@@ -34,9 +34,8 @@ public class ITConnector {
         connector.init(inst, new QueryReporter() {
             @Override
             public void report(Query query) {
-                if (Query.StatementType.SELECT.equals(query.statementType()) &&
-                        "test_keyspace".equalsIgnoreCase(query.keyspace()) &&
-                        "test_table".equalsIgnoreCase(query.tableName())) {
+                if (Query.StatementType.SELECT.equals(query.statementType()) && "test_keyspace"
+                        .equalsIgnoreCase(query.keyspace()) && "test_table".equalsIgnoreCase(query.tableName())) {
                     queryIntercepted = true;
                     lock.countDown();
                 }

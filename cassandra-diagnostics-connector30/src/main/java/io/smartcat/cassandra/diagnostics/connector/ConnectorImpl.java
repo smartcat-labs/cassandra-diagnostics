@@ -180,7 +180,7 @@ public class ConnectorImpl implements Connector {
                 @Advice.Argument(1) QueryState queryState, @Advice.Argument(2) QueryOptions options,
                 @Advice.Return ResultMessage result) {
             ConnectorImpl.queryProcessorWrapper()
-                .processStatement(statement, queryState, options, startTime, result, null);
+                .processStatement(statement, queryState, options, startTime, result);
         }
     }
 

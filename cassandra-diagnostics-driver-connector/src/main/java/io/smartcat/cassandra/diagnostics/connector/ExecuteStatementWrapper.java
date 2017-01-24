@@ -40,7 +40,7 @@ public class ExecuteStatementWrapper extends AbstractEventProcessor {
      *
      * @param statement Statement
      * @param startTime execution start time
-     * @param result execution's result future
+     * @param result    execution's result future
      */
     public void processStatement(final Statement statement, long startTime, ResultSetFuture result) {
         report(startTime, statement, result);
@@ -49,40 +49,32 @@ public class ExecuteStatementWrapper extends AbstractEventProcessor {
     /**
      * Submits a query reports asynchronously.
      *
-     * @param startTime    execution start time, in milliseconds
-     * @param statement    CQL statement
-     * @param result   ResultSetFuture
+     * @param startTime execution start time, in milliseconds
+     * @param statement CQL statement
+     * @param result    ResultSetFuture
      */
     private void report(final long startTime, final Statement statement, final ResultSetFuture result) {
         report(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        // wait for the statement to be executed
-                        result.getUninterruptibly();
-                        final long execTime = System.currentTimeMillis() - startTime;
-                        Query query = extractQuery(startTime, execTime, statement);
-                        logger.trace("Reporting query: {}.", query);
-                        queryReporter.report(query);
-                    } catch (Exception e) {
-                        logger.warn("An error occured while reporting query", e);
-                    }
+            @Override
+            public void run() {
+                try {
+                    // wait for the statement to be executed
+                    result.getUninterruptibly();
+                    final long execTime = System.currentTimeMillis() - startTime;
+                    Query query = extractQuery(startTime, execTime, statement);
+                    logger.trace("Reporting query: {}.", query);
+                    queryReporter.report(query);
+                } catch (Exception e) {
+                    logger.warn("An error occured while reporting query", e);
                 }
-            });
+            }
+        });
     }
 
     private Query extractQuery(final long startTime, final long execTime, final Statement statement) {
         final String queryString = statementQueryString(statement);
         final Query.StatementType queryType = queryType(queryString);
-        return Query.create(
-                startTime,
-                execTime,
-                host,
-                queryType,
-                statement.getKeyspace(),
-                "",
-                queryString,
-                "");
+        return Query.create(startTime, execTime, host, queryType, statement.getKeyspace(), "", queryString);
     }
 
     private String statementQueryString(final Statement statement) {
@@ -122,8 +114,8 @@ public class ExecuteStatementWrapper extends AbstractEventProcessor {
         final String normalizedQuery = query.toUpperCase();
         if (normalizedQuery.toUpperCase().startsWith("SELECT")) {
             type = Query.StatementType.SELECT;
-        } else if (normalizedQuery.startsWith("INSERT") || normalizedQuery.startsWith("UPDATE")
-                || normalizedQuery.startsWith("BEGIN")) {
+        } else if (normalizedQuery.startsWith("INSERT") || normalizedQuery.startsWith("UPDATE") || normalizedQuery
+                .startsWith("BEGIN")) {
             type = Query.StatementType.UPDATE;
         } else {
             type = Query.StatementType.UNKNOWN;

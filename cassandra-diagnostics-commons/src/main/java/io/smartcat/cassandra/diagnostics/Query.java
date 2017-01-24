@@ -27,7 +27,6 @@ public class Query {
 
     private long startTimeInMilliseconds;
     private long executionTimeInMilliseconds;
-    private String executionErrorMessage;
     private String clientAddress;
     private StatementType statementType;
     private String keyspace;
@@ -36,6 +35,7 @@ public class Query {
 
     /**
      * Query's execution start time.
+     *
      * @return execution start timestamp
      */
     public long startTimeInMilliseconds() {
@@ -44,6 +44,7 @@ public class Query {
 
     /**
      * Query's execution time.
+     *
      * @return execution time
      */
     public long executionTimeInMilliseconds() {
@@ -51,15 +52,8 @@ public class Query {
     }
 
     /**
-     * Query's execution error message (if any).
-     * @return error message
-     */
-    public String executionErrorMessage() {
-        return executionErrorMessage;
-    }
-
-    /**
      * The originating client's socket address.
+     *
      * @return client's socket address
      */
     public String clientAddress() {
@@ -68,6 +62,7 @@ public class Query {
 
     /**
      * CQL statement type.
+     *
      * @return CQL statement type
      */
     public StatementType statementType() {
@@ -76,6 +71,7 @@ public class Query {
 
     /**
      * Query's key-space name.
+     *
      * @return key space name
      */
     public String keyspace() {
@@ -84,6 +80,7 @@ public class Query {
 
     /**
      * Query's table name (if applicable).
+     *
      * @return table name
      */
     public String tableName() {
@@ -92,6 +89,7 @@ public class Query {
 
     /**
      * Query's key-space and table name (if applicable).
+     *
      * @return full table name (keyspace.tableName)
      */
     public String fullTableName() {
@@ -100,6 +98,7 @@ public class Query {
 
     /**
      * CQL statement.
+     *
      * @return CQL statement
      */
     public String statement() {
@@ -108,10 +107,9 @@ public class Query {
 
     private Query(final long startTimeInMilliseconds, final long executionTimeInMilliseconds,
             final String clientAddress, final StatementType statementType, final String keyspace,
-            final String tableName, final String statement, final String executionErrorMessage) {
+            final String tableName, final String statement) {
         this.startTimeInMilliseconds = startTimeInMilliseconds;
         this.executionTimeInMilliseconds = executionTimeInMilliseconds;
-        this.executionErrorMessage = executionErrorMessage;
         this.clientAddress = clientAddress;
         this.statementType = statementType;
         this.keyspace = keyspace;
@@ -122,35 +120,27 @@ public class Query {
     /**
      * Returns a new instance of Query.
      *
-     * @param startTimeInMilliseconds query execution's start time, given as epoch timestamp in milliseconds
+     * @param startTimeInMilliseconds     query execution's start time, given as epoch timestamp in milliseconds
      * @param executionTimeInMilliseconds query execution time in milliseconds
-     * @param clientAddress query's client socket address
-     * @param statementType type of query's statement
-     * @param keyspace query's key space
-     * @param tableName query's table name
-     * @param statement query's CQL statement
-     * @param executionErrorMessage query's execution error message
+     * @param clientAddress               query's client socket address
+     * @param statementType               type of query's statement
+     * @param keyspace                    query's key space
+     * @param tableName                   query's table name
+     * @param statement                   query's CQL statement
      * @return a new Query instance
      */
     public static Query create(final long startTimeInMilliseconds, final long executionTimeInMilliseconds,
             final String clientAddress, final StatementType statementType, final String keyspace,
-            final String tableName, final String statement, final String executionErrorMessage) {
-        return new Query(startTimeInMilliseconds, executionTimeInMilliseconds,
-                clientAddress, statementType, keyspace, tableName, statement, executionErrorMessage);
+            final String tableName, final String statement) {
+        return new Query(startTimeInMilliseconds, executionTimeInMilliseconds, clientAddress, statementType, keyspace,
+                tableName, statement);
     }
 
     @Override
     public String toString() {
-        return "Query [ " +
-                "startTimeInMilliseconds=" + startTimeInMilliseconds +
-                ", executionTimeInMilliseconds=" + executionTimeInMilliseconds +
-                ", clientAddress=" + clientAddress +
-                ", statementType=" + statementType.name() +
-                ", statement=" + statement +
-                ", keyspace=" + keyspace +
-                ", tableName=" + tableName +
-                ", executionErrorMessage=" + executionErrorMessage +
-                " ]";
+        return "Query [ " + "startTimeInMilliseconds=" + startTimeInMilliseconds + ", executionTimeInMilliseconds="
+                + executionTimeInMilliseconds + ", clientAddress=" + clientAddress + ", statementType=" + statementType
+                .name() + ", statement=" + statement + ", keyspace=" + keyspace + ", tableName=" + tableName + " ]";
     }
 
 }

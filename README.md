@@ -180,7 +180,7 @@ It implements the following endpoints for mapping HTTP requests to API operation
 
 - `GET /version` for `getVersion`
 - `POST /reload` for `reload`
-  
+
 ## Installation
 
 Cassandra Diagnostics consists of the following three components:
@@ -189,7 +189,7 @@ Cassandra Diagnostics consists of the following three components:
 - Cassandra Diagnostics Connector
 - Cassandra Diagnostics Reporter
 
-Every of these components is packaged into its own JAR file (accompanied with necessary dependencies). These JAR files need to be present on the classpath.
+Every of these components is packaged into its own JAR file (accompanied with necessary dependencies). These JAR files are available for download on [Maven Central](https://mvnrepository.com/artifact/io.smartcat) and need to be present on the classpath.
 
 Pay attention to the fact that Cassandra Diagnostics Connector has to be aligned with the used Cassandra version. For example, `cassandra-diagnostics-connector21` should be used with Cassandra 2.1.
 

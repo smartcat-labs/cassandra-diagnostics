@@ -91,7 +91,7 @@ public class SlowQueryLogDeciderTest {
     }
 
     private Query buildQuery(long executionTime, StatementType type, String keyspace, String table) {
-        return Query.create(1, executionTime, "clientAddress", type, keyspace, table, "statement", "error");
+        return Query.create(1, executionTime, "clientAddress", type, keyspace, table, "statement");
     }
 
     private SlowQueryLogDecider buildSlowLogDecider(final Map<String, Object> options) throws Exception {

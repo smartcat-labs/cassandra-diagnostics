@@ -41,9 +41,9 @@ public class ConnectorImplTest {
         QueryOptions options = mock(QueryOptions.class);
         queryProcessor.processStatement(statement, queryState, options);
 
-        verify(queryProcessorWrapper).processStatement(
-                same(statement), same(queryState), same(options),
-                any(Long.class), any(ResultMessage.class), any(Throwable.class));
+        verify(queryProcessorWrapper)
+                .processStatement(same(statement), same(queryState), same(options), any(Long.class),
+                        any(ResultMessage.class));
     }
 
     private void setStatic(Field field, Object newValue) throws Exception {

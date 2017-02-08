@@ -20,7 +20,7 @@ public class MetricsModule extends Module {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsModule.class);
 
-    private static final String METRICS_THREAD_NAME = "metrics-module";
+    private static final String METRICS_THREAD_NAME = "metrics-timer";
 
     private final MetricsConfiguration config;
 

@@ -45,7 +45,7 @@ public class SlowQueryModuleTest {
         assertThat(measurement.fields().get("client")).isEqualTo("/127.0.0.1:40042");
         assertThat(measurement.value()).isEqualTo(234);
 
-        assertThat(measurement.tags().keySet()).isEqualTo(Sets.newSet("host", "id", "statementType"));
+        assertThat(measurement.tags().keySet()).isEqualTo(Sets.newSet("host", "statementType"));
         assertThat(measurement.tags().get("statementType")).isEqualTo("SELECT");
     }
 

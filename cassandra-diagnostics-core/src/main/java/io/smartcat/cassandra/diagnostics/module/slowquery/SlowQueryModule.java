@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -30,6 +29,8 @@ public class SlowQueryModule extends Module {
     private static final String DEFAULT_MEASUREMENT_NAME = "slow_query";
 
     private static final String SLOW_QUERY_COUNT_SUFFIX = "_count";
+
+    private static final String SLOW_QUERY_COUNT_THREAD_NAME = "slow-query-count-timer";
 
     private final String service;
 
@@ -63,7 +64,7 @@ public class SlowQueryModule extends Module {
         }
 
         if (config.slowQueryCountReportEnabled()) {
-            timer = new Timer();
+            timer = new Timer(SLOW_QUERY_COUNT_THREAD_NAME);
             timer.schedule(new SlowQueryReportTask(), 0, config.slowQueryCountReportingRateInMillis());
         } else {
             timer = null;
@@ -88,7 +89,6 @@ public class SlowQueryModule extends Module {
         slowQueryCounts.get(query.statementType()).increment();
 
         final Map<String, String> tags = new HashMap<>(4);
-        tags.put("id", UUID.randomUUID().toString());
         tags.put("host", hostname);
         tags.put("statementType", query.statementType().toString());
 

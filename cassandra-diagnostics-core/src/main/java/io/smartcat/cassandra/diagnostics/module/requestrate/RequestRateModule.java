@@ -29,7 +29,7 @@ public class RequestRateModule extends Module {
 
     private static final String DEFAULT_MEASUREMENT_NAME = "request_rate";
 
-    private static final String REQUEST_RATE_THREAD_NAME = "request-rate-module";
+    private static final String REQUEST_RATE_THREAD_NAME = "request-rate-timer";
 
     private final Map<StatementType, AtomicCounter> requestRates;
 

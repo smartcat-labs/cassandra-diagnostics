@@ -25,7 +25,7 @@ public class HeartbeatModule extends Module {
 
     private static final String DEFAULT_MEASUREMENT_NAME = "heartbeat";
 
-    private static final String HEARTBEAT_THREAD_NAME = "heartbeat-module";
+    private static final String HEARTBEAT_THREAD_NAME = "heartbeat-timer";
 
     private final String service;
 

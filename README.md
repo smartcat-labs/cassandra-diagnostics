@@ -8,7 +8,11 @@ Monitoring and audit power kit for Apache Cassandra.
 
 ## Introduction
 
-Cassandra Diagnostics is an extension for Apache Cassandra server node implemented as Java agent. It uses bytecode instrumentation to augment Cassandra node with additional functionalities. On one side it has connectors for different versions of Cassandra and on the other it has reporters to send measurement to different tools. In between lies core which is glue between those two. Reusable code goes to commons.
+Cassandra Diagnostics is an extension for Apache Cassandra server node implemented as Java agent. It uses bytecode instrumentation to augment Cassandra node with additional functionalities. The following images depicts the position of Cassandra Diagnostics in a Apache Cassandra based system.
+
+![Placement diagram](diagrams/cassandra-diagnostics.png?raw=true)
+
+Cassandra Diagnostics has a modular architecture. On one side it has connectors for different versions of Apache Cassandra nodes or Cassandra Java Driver and on the other it has various reporters to send measurement to different collecting/monitoring tools. In between lies the core with a set of metrics processing modules. Reusable code goes to commons.
 
 ![Architecture diagram](diagrams/architecture-diagram.png?raw=true)
 

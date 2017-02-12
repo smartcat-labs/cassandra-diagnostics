@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.connector.Connector;
+import io.smartcat.cassandra.diagnostics.info.InfoProvider;
 
 /**
  * {@code DiagnosticAgent} acts as a Java agent used to instrument original Cassandra classes in order to extend them
@@ -16,6 +17,10 @@ public class DiagnosticsAgent {
     private static final Logger logger = LoggerFactory.getLogger(DiagnosticsAgent.class);
 
     private static final String INITIALIZATION_THREAD_NAME = "cassandra-diagnostics-agent";
+
+    private static Diagnostics diagnostics;
+
+    private static Connector connector;
 
     /**
      * Prevents class instantiation.
@@ -31,8 +36,8 @@ public class DiagnosticsAgent {
      */
     public static void premain(final String args, final Instrumentation inst) {
         logger.info("Cassandra Diagnostics starting.");
-        final Diagnostics diagnostics = new Diagnostics();
-        final Connector connector = ConnectorFactory.getImplementation();
+        diagnostics = new Diagnostics();
+        connector = ConnectorFactory.getImplementation();
         connector.init(inst, diagnostics, diagnostics.getConfiguration().connector);
         Thread th = new Thread(new Runnable() {
             @Override
@@ -51,5 +56,14 @@ public class DiagnosticsAgent {
             }
         });
         th.start();
+    }
+
+    /**
+     * Get connector instance.
+     *
+     * @return Connector instance
+     */
+    public static InfoProvider getInfoProvider() {
+        return connector.getInfoProvider();
     }
 }

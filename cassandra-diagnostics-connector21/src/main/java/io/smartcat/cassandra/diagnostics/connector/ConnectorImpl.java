@@ -4,9 +4,11 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Modifier;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.cassandra.cql3.CQLStatement;
 import org.apache.cassandra.cql3.QueryOptions;
@@ -15,6 +17,7 @@ import org.apache.cassandra.transport.messages.ResultMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.smartcat.cassandra.diagnostics.info.InfoProvider;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -43,6 +46,10 @@ public class ConnectorImpl implements Connector {
 
     private static CountDownLatch lock = new CountDownLatch(1);
 
+    private static AtomicBoolean initialized = new AtomicBoolean(false);
+
+    private static InfoProvider infoProvider;
+
     /**
      * {@link org.apache.cassandra.cql3.QueryProcessor} diagnostics wrapper getter.
      * @return QueryProcessorWrapper instance
@@ -57,6 +64,13 @@ public class ConnectorImpl implements Connector {
      */
     public static void cassandraSetupComplete() {
         lock.countDown();
+
+        try {
+            infoProvider = new NodeProbeWrapper("127.0.0.1", 7199);
+            initialized.set(true);
+        } catch (IOException e) {
+            logger.error("Failed to initialize info provider implementation");
+        }
     }
 
     /**
@@ -71,6 +85,19 @@ public class ConnectorImpl implements Connector {
             // This should never happen
             throw new IllegalStateException();
         }
+    }
+
+    /**
+     * Get an InfoProvider implementation providing cassandra status information.
+     *
+     * @return {@code io.smartcat.cassandra.diagnostics.info.InfoProvider} implementation.
+     */
+    public InfoProvider getInfoProvider() {
+        if (!initialized.get()) {
+            return null;
+        }
+
+        return infoProvider;
     }
 
     /**

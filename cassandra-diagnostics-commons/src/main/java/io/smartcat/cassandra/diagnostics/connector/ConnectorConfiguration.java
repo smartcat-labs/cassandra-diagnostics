@@ -14,7 +14,7 @@ public class ConnectorConfiguration {
     /**
      * The number of diagnostics events waiting to be processed that
      * once reached, new events are being dropped until the number of queued events
-     * dropped to <code>queuedEventsRelaxThrashold</code>.
+     * dropped to <code>queuedEventsRelaxThreshold</code>.
      */
     public int queuedEventsOverflowThreshold = 1000;
 
@@ -23,7 +23,7 @@ public class ConnectorConfiguration {
      * once reached, after the queue previously was in the overflow state, new events are being queued again,
      * until the number of queued events dropped to <code>queuedEventsOverflowThreshold</code>.
      */
-    public int queuedEventsRelaxThrashold = 700;
+    public int queuedEventsRelaxThreshold = 700;
 
     /**
      * Returns the default configuration.

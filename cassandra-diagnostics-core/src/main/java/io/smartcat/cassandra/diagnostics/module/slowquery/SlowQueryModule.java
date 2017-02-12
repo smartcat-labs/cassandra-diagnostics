@@ -128,7 +128,7 @@ public class SlowQueryModule extends Module {
     }
 
     private Measurement createSlowQueryCountMeasurement(double count, StatementType statementType) {
-        final Map<String, String> tags = new HashMap<>(1);
+        final Map<String, String> tags = new HashMap<>(2);
         tags.put("host", hostname);
         tags.put("statementType", statementType.toString());
         return Measurement

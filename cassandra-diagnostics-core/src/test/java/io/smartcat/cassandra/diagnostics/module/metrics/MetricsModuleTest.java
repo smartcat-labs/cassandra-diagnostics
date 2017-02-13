@@ -10,38 +10,44 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
+import javax.management.StandardMBean;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.LatchTestReporter;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.module.TestMXBean;
+import io.smartcat.cassandra.diagnostics.module.TestMXBeanImpl;
 import io.smartcat.cassandra.diagnostics.module.TestReporter;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 
-@Ignore
 public class MetricsModuleTest {
 
     @Test
     public void should_load_default_configuration_and_initialize() throws ConfigurationException, InterruptedException {
-        final MetricsModule module = new MetricsModule(testConfiguration(), testReporters());
+        final ModuleConfiguration config = testConfiguration();
+        initializeTestMBean(config);
+
+        final MetricsModule module = new MetricsModule(config, testReporters());
+
         module.stop();
+
+        deinitializeTestMBean();
     }
 
     @Test
-    public void should_report_request_rate_when_started() throws ConfigurationException, InterruptedException {
+    public void should_report_metrics_when_started() throws ConfigurationException, InterruptedException {
         final ModuleConfiguration config = testConfiguration();
-        // Run test mxbean to test jmx connection for metrics module
-        initializeTestMBean(config);
+        TestMXBeanImpl bean = (TestMXBeanImpl) initializeTestMBean(config);
 
-        final CountDownLatch latch = new CountDownLatch(2);
+        final CountDownLatch latch = new CountDownLatch(1);
         final LatchTestReporter testReporter = new LatchTestReporter(null, latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
@@ -50,9 +56,12 @@ public class MetricsModuleTest {
         };
 
         final MetricsModule module = new MetricsModule(config, reporters);
-        boolean wait = latch.await(100, TimeUnit.MILLISECONDS);
+        boolean wait = latch.await(2000, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
+        assertThat(bean.called).isEqualTo(true);
+
+        deinitializeTestMBean();
     }
 
     private ModuleConfiguration testConfiguration() {
@@ -63,7 +72,9 @@ public class MetricsModuleTest {
         configuration.options.put("timeunit", "SECONDS");
         configuration.options.put("jmxHost", "127.0.0.1");
         configuration.options.put("jmxPort", 7199);
-        configuration.options.put("metricsPatterns", Arrays.asList("^org.apache.cassandra.metrics.+"));
+        configuration.options.put("metricsPackageName", "io.smartcat.cassandra.diagnostics.module");
+        configuration.options
+                .put("metricsPatterns", Arrays.asList("^io.smartcat.cassandra.diagnostics.module.TestMXBean+"));
         return configuration;
     }
 
@@ -75,15 +86,31 @@ public class MetricsModuleTest {
         };
     }
 
-    private void initializeTestMBean(ModuleConfiguration config) {
+    private TestMXBean initializeTestMBean(ModuleConfiguration config) {
         final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+        final TestMXBean bean = new TestMXBeanImpl(config);
         try {
-            ObjectName objectName = new ObjectName(
-                    TestMXBean.class.getPackage() + ":type=" + TestMXBean.class.getSimpleName());
-            final TestMXBean mbean = new TestMXBean(config);
-            server.registerMBean(mbean, objectName);
+            final StandardMBean mbean = new StandardMBean(bean, TestMXBean.class);
+            final ObjectName mbeanName = new ObjectName(
+                    TestMXBean.class.getPackage().getName() + ":type=" + TestMXBean.class.getSimpleName());
+            server.registerMBean(mbean, mbeanName);
+
+            return bean;
         } catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException |
                 NotCompliantMBeanException e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
+    private void deinitializeTestMBean() {
+        final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+        try {
+            final ObjectName mbeanName = new ObjectName(
+                    TestMXBean.class.getPackage().getName() + ":type=" + TestMXBean.class.getSimpleName());
+            server.unregisterMBean(mbeanName);
+        } catch (MalformedObjectNameException | InstanceNotFoundException | MBeanRegistrationException e) {
+
         }
     }
 

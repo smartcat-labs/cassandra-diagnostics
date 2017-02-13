@@ -97,7 +97,7 @@ public class Diagnostics implements QueryReporter {
         try {
             final StandardMBean smbean = new StandardMBean(mbean, DiagnosticsApi.class);
             mxbeanName = new ObjectName(
-                    DiagnosticsApi.class.getPackage() + ":type=" + DiagnosticsApi.class.getSimpleName());
+                    DiagnosticsApi.class.getPackage().getName() + ":type=" + DiagnosticsApi.class.getSimpleName());
             server.registerMBean(smbean, mxbeanName);
         } catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException |
                 NotCompliantMBeanException e) {

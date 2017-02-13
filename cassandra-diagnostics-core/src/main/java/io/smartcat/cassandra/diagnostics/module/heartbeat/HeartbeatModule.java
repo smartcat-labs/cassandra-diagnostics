@@ -63,10 +63,7 @@ public class HeartbeatModule extends Module {
         @Override
         public void run() {
             logger.info("Heartbeat signal.");
-            Measurement signal = createMeasurement();
-            for (Reporter reporter : reporters) {
-                reporter.report(signal);
-            }
+            report(createMeasurement());
         }
     }
 

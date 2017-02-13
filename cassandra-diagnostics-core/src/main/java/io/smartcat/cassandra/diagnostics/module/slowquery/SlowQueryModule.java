@@ -118,11 +118,7 @@ public class SlowQueryModule extends Module {
             for (StatementType statementType : slowQueryCounts.keySet()) {
                 double count = slowQueryCounts.get(statementType).sumThenReset();
 
-                Measurement measurement = createSlowQueryCountMeasurement(count, statementType);
-
-                for (Reporter reporter : reporters) {
-                    reporter.report(measurement);
-                }
+                report(createSlowQueryCountMeasurement(count, statementType));
             }
         }
     }

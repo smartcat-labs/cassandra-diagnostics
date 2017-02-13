@@ -32,4 +32,30 @@ public class ConnectorConfiguration {
     public static ConnectorConfiguration getDefault() {
         return new ConnectorConfiguration();
     }
+
+    /**
+     * Node JMX host.
+     */
+    public String jmxHost = "127.0.0.1";
+
+    /**
+     * Node JMX port.
+     */
+    public Integer jmxPort = 7199;
+
+    /**
+     * Node JMX authentication enabled.
+     */
+    public Boolean jmxAuthEnabled = false;
+
+    /**
+     * Node JMX authentication username.
+     */
+    public String jmxUsername = null;
+
+    /**
+     * Node JMX authentication password.
+     */
+    public String jmxPassword = null;
+
 }

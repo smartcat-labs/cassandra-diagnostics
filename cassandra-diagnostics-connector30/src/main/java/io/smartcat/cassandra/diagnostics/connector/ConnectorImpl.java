@@ -50,8 +50,11 @@ public class ConnectorImpl implements Connector {
 
     private static InfoProvider infoProvider;
 
+    private static ConnectorConfiguration configuration;
+
     /**
      * {@link org.apache.cassandra.cql3.QueryProcessor} diagnostics wrapper getter.
+     *
      * @return QueryProcessorWrapper instance
      */
     public static QueryProcessorWrapper queryProcessorWrapper() {
@@ -66,7 +69,12 @@ public class ConnectorImpl implements Connector {
         lock.countDown();
 
         try {
-            infoProvider = new NodeProbeWrapper("127.0.0.1", 7199);
+            if (configuration.jmxAuthEnabled) {
+                infoProvider = new NodeProbeWrapper(configuration.jmxHost, configuration.jmxPort,
+                        configuration.jmxUsername, configuration.jmxPassword);
+            } else {
+                infoProvider = new NodeProbeWrapper(configuration.jmxHost, configuration.jmxPort);
+            }
             initialized.set(true);
         } catch (IOException e) {
             logger.error("Failed to initialize info provider implementation");
@@ -103,11 +111,12 @@ public class ConnectorImpl implements Connector {
     /**
      * Initialize connector instance using the provided instrumentation.
      *
-     * @param inst an Instrumentation reference
+     * @param inst          an Instrumentation reference
      * @param queryReporter QueryReporter implementation reference
      * @param configuration connector specific configuration
      */
     public void init(Instrumentation inst, QueryReporter queryReporter, ConnectorConfiguration configuration) {
+        ConnectorImpl.configuration = configuration;
         queryProcessorWrapper = new QueryProcessorWrapper(queryReporter, configuration);
         setQueryProcessorIntercepter(inst);
         setCassandraDaemonIntercepter(inst);
@@ -127,24 +136,18 @@ public class ConnectorImpl implements Connector {
 
         // Transformer for QueryProcessor
         final ByteBuddy byteBuddy = new ByteBuddy().with(Implementation.Context.Disabled.Factory.INSTANCE);
-        new AgentBuilder.Default().with(byteBuddy)
-                .with(RedefinitionStrategy.RETRANSFORMATION)
-                .with(InitializationStrategy.NoOp.INSTANCE)
-                .with(TypeStrategy.Default.REDEFINE)
-                .type(type)
+        new AgentBuilder.Default().with(byteBuddy).with(RedefinitionStrategy.RETRANSFORMATION)
+                .with(InitializationStrategy.NoOp.INSTANCE).with(TypeStrategy.Default.REDEFINE).type(type)
                 .transform(new Transformer() {
                     @Override
                     public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription,
                             ClassLoader classLoader) {
-                        return builder.visit(Advice.to(ProcessStatementAdvice.class)
-                                        .on(named("processStatement")
-                                            .and(takesArguments(cqlStatementDescription(),
-                                                    queryStateDescription(), queryOptionsDescription()))
-                                            .and(returns(
-                                                    named("org.apache.cassandra.transport.messages.ResultMessage")))));
+                        return builder.visit(Advice.to(ProcessStatementAdvice.class).on(named("processStatement")
+                                .and(takesArguments(cqlStatementDescription(), queryStateDescription(),
+                                        queryOptionsDescription()))
+                                .and(returns(named("org.apache.cassandra.transport.messages.ResultMessage")))));
                     }
-                })
-                .installOn(inst);
+                }).installOn(inst);
     }
 
     /**
@@ -154,28 +157,23 @@ public class ConnectorImpl implements Connector {
      */
     private static void setCassandraDaemonIntercepter(Instrumentation inst) {
 
-        logger.info("Cassandra Diagnostics Connector: " +
-                "injecting org.apache.cassandra.service.CassandraDaemon interceptor");
+        logger.info("Cassandra Diagnostics Connector: "
+                + "injecting org.apache.cassandra.service.CassandraDaemon interceptor");
 
         final ElementMatcher.Junction<NamedElement> type = ElementMatchers
                 .named("org.apache.cassandra.service.CassandraDaemon");
 
         // Transformer for QueryProcessor
         final ByteBuddy byteBuddy = new ByteBuddy().with(Implementation.Context.Disabled.Factory.INSTANCE);
-        new AgentBuilder.Default().with(byteBuddy)
-                .with(RedefinitionStrategy.RETRANSFORMATION)
-                .with(InitializationStrategy.NoOp.INSTANCE)
-                .with(TypeStrategy.Default.REDEFINE)
-                .type(type)
+        new AgentBuilder.Default().with(byteBuddy).with(RedefinitionStrategy.RETRANSFORMATION)
+                .with(InitializationStrategy.NoOp.INSTANCE).with(TypeStrategy.Default.REDEFINE).type(type)
                 .transform(new Transformer() {
                     @Override
                     public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription,
                             ClassLoader classLoader) {
-                        return builder.visit(Advice.to(CassandraDaemonAdvice.class)
-                                        .on(named("completeSetup")));
+                        return builder.visit(Advice.to(CassandraDaemonAdvice.class).on(named("completeSetup")));
                     }
-                })
-                .installOn(inst);
+                }).installOn(inst);
     }
 
     /**
@@ -185,6 +183,7 @@ public class ConnectorImpl implements Connector {
 
         /**
          * Code executed before the intercepted method.
+         *
          * @return execution start time
          */
         @Advice.OnMethodEnter
@@ -196,32 +195,40 @@ public class ConnectorImpl implements Connector {
         /**
          * Code executed after the intercepted method.
          *
-         * @param startTime execution start time recorded by the enter method.
-         * @param statement CQL statement to be executed
+         * @param startTime  execution start time recorded by the enter method.
+         * @param statement  CQL statement to be executed
          * @param queryState query state information
-         * @param options query options
-         * @param result intercepted method's execution result
+         * @param options    query options
+         * @param result     intercepted method's execution result
          */
         @Advice.OnMethodExit
-        public static void exit(@Advice.Enter long startTime, @Advice.Argument(0) CQLStatement statement,
-                @Advice.Argument(1) QueryState queryState, @Advice.Argument(2) QueryOptions options,
-                @Advice.Return ResultMessage result) {
-            ConnectorImpl.queryProcessorWrapper()
-                .processStatement(statement, queryState, options, startTime, result);
+        public static void exit(
+                @Advice.Enter
+                        long startTime,
+                @Advice.Argument(0)
+                        CQLStatement statement,
+                @Advice.Argument(1)
+                        QueryState queryState,
+                @Advice.Argument(2)
+                        QueryOptions options,
+                @Advice.Return
+                        ResultMessage result) {
+            ConnectorImpl.queryProcessorWrapper().processStatement(statement, queryState, options, startTime, result);
         }
     }
 
     /**
      * Statement class type description helper.
+     *
      * @return CQLStatement class type description
      */
     private static TypeDescription cqlStatementDescription() {
-        return new TypeDescription.Latent("org.apache.cassandra.cql3.CQLStatement",
-                Modifier.INTERFACE, null, null);
+        return new TypeDescription.Latent("org.apache.cassandra.cql3.CQLStatement", Modifier.INTERFACE, null, null);
     }
 
     /**
      * QueryState class type description helper.
+     *
      * @return QueryState class type description
      */
     private static TypeDescription queryStateDescription() {
@@ -231,11 +238,11 @@ public class ConnectorImpl implements Connector {
 
     /**
      * QueryOptions class type description helper.
+     *
      * @return QueryOptions class type description
      */
     private static TypeDescription queryOptionsDescription() {
-        return new TypeDescription.Latent("org.apache.cassandra.cql3.QueryOptions",
-                Modifier.PUBLIC, null, null);
+        return new TypeDescription.Latent("org.apache.cassandra.cql3.QueryOptions", Modifier.PUBLIC, null, null);
     }
 
     /**

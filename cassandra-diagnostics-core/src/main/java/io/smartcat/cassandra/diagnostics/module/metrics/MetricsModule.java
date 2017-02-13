@@ -64,9 +64,7 @@ public class MetricsModule extends Module {
         @Override
         public void run() {
             for (Measurement measurement : metricsCollector.collectMeasurements()) {
-                for (Reporter reporter : reporters) {
-                    reporter.report(measurement);
-                }
+                report(measurement);
             }
         }
     }

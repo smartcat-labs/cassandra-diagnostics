@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.DiagnosticsAgent;
 import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
 import io.smartcat.cassandra.diagnostics.module.Module;
@@ -29,6 +30,10 @@ public class StatusModule extends Module {
 
     private static final String DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME = "compaction_info";
 
+    private final int period;
+
+    private final TimeUnit timeunit;
+
     private final Timer timer;
 
     private final InfoProvider infoProvider;
@@ -38,14 +43,19 @@ public class StatusModule extends Module {
      *
      * @param configuration Module configuration
      * @param reporters     Reporter list
+     * @throws ConfigurationException configuration parsing exception
      */
-    public StatusModule(ModuleConfiguration configuration, List<Reporter> reporters) {
+    public StatusModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
         super(configuration, reporters);
+
+        StatusConfiguration config = StatusConfiguration.create(configuration.options);
+        period = config.period();
+        timeunit = config.timeunit();
 
         infoProvider = DiagnosticsAgent.getInfoProvider();
 
         timer = new Timer(STATUS_THREAD_NAME);
-        timer.scheduleAtFixedRate(new StatusTask(), 0, 60000);
+        timer.scheduleAtFixedRate(new StatusTask(), 0, config.reportingRateInMillis());
     }
 
     @Override
@@ -69,12 +79,12 @@ public class StatusModule extends Module {
     private Measurement createMeasurement(CompactionInfo compactionInfo) {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", hostname);
+        tags.put("keyspace", compactionInfo.keyspace);
+        tags.put("columnfamily", compactionInfo.columnFamily);
+        tags.put("taskType", compactionInfo.taskType);
 
         final Map<String, String> fields = new HashMap<>();
         fields.put("compactionId", compactionInfo.id);
-        fields.put("keyspace", compactionInfo.keyspace);
-        fields.put("columnfamily", compactionInfo.columnFamily);
-        fields.put("taskType", compactionInfo.taskType);
         fields.put("unit", compactionInfo.unit);
         fields.put("total", Long.toString(compactionInfo.total));
         fields.put("completed", Long.toString(compactionInfo.completed));

@@ -96,11 +96,7 @@ public class RequestRateModule extends Module {
 
                 logger.debug("{} request rate: {}/{}", statementType, requestRate, timeunit.name());
 
-                Measurement measurement = createMeasurement(service, statementType, requestRate);
-
-                for (Reporter reporter : reporters) {
-                    reporter.report(measurement);
-                }
+                report(createMeasurement(service, statementType, requestRate));
             }
         }
     }

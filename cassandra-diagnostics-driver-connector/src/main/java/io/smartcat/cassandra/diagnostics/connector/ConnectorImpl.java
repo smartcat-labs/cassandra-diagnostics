@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Statement;
 
+import io.smartcat.cassandra.diagnostics.info.InfoProvider;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy;
@@ -63,6 +64,15 @@ public class ConnectorImpl implements Connector {
     public void waitForSetupCompleted() {
         logger.info("Waiting for the driver setup process to complete.");
         logger.info("The driver setup process completed.");
+    }
+
+    /**
+     * Get an InfoProvider implementation providing cassandra status information.
+     *
+     * @return {@code io.smartcat.cassandra.diagnostics.info.InfoProvider} implementation.
+     */
+    public InfoProvider getInfoProvider() {
+        return null;
     }
 
     /**

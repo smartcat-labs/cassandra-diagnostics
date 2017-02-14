@@ -34,6 +34,8 @@ public class StatusModule extends Module {
 
     private final TimeUnit timeunit;
 
+    private final boolean compactionsEnabled;
+
     private final Timer timer;
 
     private final InfoProvider infoProvider;
@@ -51,11 +53,16 @@ public class StatusModule extends Module {
         StatusConfiguration config = StatusConfiguration.create(configuration.options);
         period = config.period();
         timeunit = config.timeunit();
+        compactionsEnabled = config.compactionsEnabled();
 
         infoProvider = DiagnosticsAgent.getInfoProvider();
-
-        timer = new Timer(STATUS_THREAD_NAME);
-        timer.scheduleAtFixedRate(new StatusTask(), 0, config.reportingRateInMillis());
+        if (infoProvider == null) {
+            logger.warn("Failed to initialize StatusModule. Info provider is null");
+            timer = null;
+        } else {
+            timer = new Timer(STATUS_THREAD_NAME);
+            timer.scheduleAtFixedRate(new StatusTask(), 0, config.reportingRateInMillis());
+        }
     }
 
     @Override
@@ -70,8 +77,10 @@ public class StatusModule extends Module {
     private class StatusTask extends TimerTask {
         @Override
         public void run() {
-            for (CompactionInfo compactionInfo : infoProvider.getCompactions()) {
-                report(createMeasurement(compactionInfo));
+            if (compactionsEnabled) {
+                for (CompactionInfo compactionInfo : infoProvider.getCompactions()) {
+                    report(createMeasurement(compactionInfo));
+                }
             }
         }
     }

@@ -18,6 +18,7 @@ public class StatusConfiguration {
     public static class Values {
         private static final int DEFAULT_PERIOD = 1;
         private static final String DEFAULT_TIMEUNIT = "MINUTES";
+        private static final boolean DEFAULT_COMPACTIONS_ENABLED = true;
 
         /**
          * Status reporting period.
@@ -28,6 +29,11 @@ public class StatusConfiguration {
          * Status reporting time unit.
          */
         public TimeUnit timeunit = TimeUnit.valueOf(DEFAULT_TIMEUNIT);
+
+        /**
+         * Status of compactions.
+         */
+        public boolean compactionsEnabled = DEFAULT_COMPACTIONS_ENABLED;
     }
 
     private Values values = new Values();
@@ -76,6 +82,15 @@ public class StatusConfiguration {
      */
     public long reportingRateInMillis() {
         return timeunit().toMillis(period());
+    }
+
+    /**
+     * Status of compactions is being reported.
+     *
+     * @return report status of compactions
+     */
+    public boolean compactionsEnabled() {
+        return values.compactionsEnabled;
     }
 
 }

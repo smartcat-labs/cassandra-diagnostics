@@ -45,21 +45,27 @@ There are default module implementations which serve as core features. Modules u
 #### Heartbeat Module
 
 Heartbeat module produces messages to provide feedback that the diagnostics agent is loaded and working. Typical usage is with Log Reporter where it produces INFO message in configured intervals.
-Default interval is 15 minutes.
+Default reporting interval is 15 minutes.
 
 #### Slow Query Module
 
 Slow Query module is monitoring execution time of each query and if it is above configured threshold it reports the value and query type using configured reporters.
-Default is 25 milliseconds.
+Default query execution time threshold is 25 milliseconds.
 
 #### Request Rate Module
 
 Request Rate Module uses codahale metrics library to create rate measurement of executed queries. Rates are reported for select and upsert statements using configured reporters in configured periods.
-Default is 1 second.
+Default reporting interval is 1 second.
 
 #### Metrics Module
 
-Cassandra internal metrics are exposed over JMX. This module collects JMX metrics and ships them using predefined reporters. Metrics package names configuration is the same as a default metrics config reporter uses. Module specific configuration looks like this:
+Cassandra internal metrics are exposed over JMX. This module collects JMX metrics and ships them using predefined reporters. Metrics package names configuration is the same as a default metrics config reporter uses.
+Default reporting interval is 1 second.
+
+#### Status Module
+
+Status module is used to report Cassandra information exposed over JMX. It reports compaction information as a single measurement.
+Default reporting interval is 1 minute.
 
 ### Reporters
 

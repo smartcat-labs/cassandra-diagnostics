@@ -1,11 +1,10 @@
 package io.smartcat.cassandra.diagnostics.module;
 
-public class TestMXBean {
+/**
+ * TestMXBean interface.
+ */
+public interface TestMXBean {
 
-    private final ModuleConfiguration config;
-
-    public TestMXBean(ModuleConfiguration config) {
-        this.config = config;
-    }
+    int getValue();
 
 }

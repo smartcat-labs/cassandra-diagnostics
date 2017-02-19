@@ -102,11 +102,12 @@ Minimal configuration requires specifying `metricsPatterns` with required metric
 
 ## Status Module
 
-Status module is used to report Cassandra information exposed over JMX. It reports compaction information as a single measurement.
+Status module is used to report Cassandra information exposed over JMX. It reports all values in a context as a single measurement. For example compaction information is reported as a single measurement where all compaction stats are field values. This reduces the amount of measurement being sent but also provides easier graphing of a measurement.
 
 #### Configuration
 
-Compaction info measurement name is by default `compaction_info`.
+Compaction info measurement name is by default `compaction_info`.   
+Thread pool info measurement name is by default `tpstats_info`.   
 Reporting period is by default 1 minute and more frequent updates should be considered heavy on the node.
 
 ```
@@ -114,5 +115,6 @@ Reporting period is by default 1 minute and more frequent updates should be cons
   options:
     period: 1 #optional
     timeunit: MINUTES #optional
-    compactionsEnabled: true #optional
+    compactionsEnabled: false #optional
+    tpStatsEnabled: false #optional
 ```

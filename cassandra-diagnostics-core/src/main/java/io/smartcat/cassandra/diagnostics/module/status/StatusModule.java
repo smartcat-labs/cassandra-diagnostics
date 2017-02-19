@@ -15,6 +15,7 @@ import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
+import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
 import io.smartcat.cassandra.diagnostics.module.Module;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
@@ -30,11 +31,15 @@ public class StatusModule extends Module {
 
     private static final String DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME = "compaction_info";
 
+    private static final String DEFAULT_TPSTATS_INFO_MEASUREMENT_NAME = "tpstats_info";
+
     private final int period;
 
     private final TimeUnit timeunit;
 
     private final boolean compactionsEnabled;
+
+    private final boolean tpStatsEnabled;
 
     private final Timer timer;
 
@@ -54,6 +59,7 @@ public class StatusModule extends Module {
         period = config.period();
         timeunit = config.timeunit();
         compactionsEnabled = config.compactionsEnabled();
+        tpStatsEnabled = config.tpStatsEnabled();
 
         infoProvider = DiagnosticsAgent.getInfoProvider();
         if (infoProvider == null) {
@@ -82,26 +88,46 @@ public class StatusModule extends Module {
                     report(createMeasurement(compactionInfo));
                 }
             }
+            if (tpStatsEnabled) {
+                for (TPStatsInfo tpStatsInfo : infoProvider.getTPStats()) {
+                    report(createMeasurement(tpStatsInfo));
+                }
+            }
         }
     }
 
     private Measurement createMeasurement(CompactionInfo compactionInfo) {
-        final Map<String, String> tags = new HashMap<>(1);
+        final Map<String, String> tags = new HashMap<>(4);
         tags.put("host", hostname);
         tags.put("keyspace", compactionInfo.keyspace);
         tags.put("columnfamily", compactionInfo.columnFamily);
         tags.put("taskType", compactionInfo.taskType);
 
         final Map<String, String> fields = new HashMap<>();
-        fields.put("compactionId", compactionInfo.id);
+        fields.put("compactionId", compactionInfo.compactionId);
         fields.put("unit", compactionInfo.unit);
         fields.put("total", Long.toString(compactionInfo.total));
         fields.put("completed", Long.toString(compactionInfo.completed));
         fields.put("completedPercentage", Double.toString(compactionInfo.completedPercentage));
 
-        return Measurement
-                .create(DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME, 0, System.currentTimeMillis(), TimeUnit.MILLISECONDS,
-                        tags, fields);
+        return Measurement.create(DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME, 0, System.currentTimeMillis(),
+                TimeUnit.MILLISECONDS, tags, fields);
+    }
+
+    private Measurement createMeasurement(TPStatsInfo tpStatsInfo) {
+        final Map<String, String> tags = new HashMap<>();
+        tags.put("host", hostname);
+        tags.put("threadPool", tpStatsInfo.threadPool);
+
+        final Map<String, String> fields = new HashMap<>();
+        fields.put("activeTasks", Long.toString(tpStatsInfo.activeTasks));
+        fields.put("pendingTasks", Long.toString(tpStatsInfo.pendingTasks));
+        fields.put("completedTasks", Long.toString(tpStatsInfo.completedTasks));
+        fields.put("currentlyBlockedTasks", Long.toString(tpStatsInfo.currentlyBlockedTasks));
+        fields.put("totalBlockedTasks", Long.toString(tpStatsInfo.totalBlockedTasks));
+
+        return Measurement.create(DEFAULT_TPSTATS_INFO_MEASUREMENT_NAME, 0, System.currentTimeMillis(),
+                TimeUnit.MILLISECONDS, tags, fields);
     }
 
 }

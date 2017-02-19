@@ -16,7 +16,7 @@ import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
 public class ConfigurationTest {
 
     @Test
-    public void deafult_connector_configuration() {
+    public void default_connector_configuration() {
         Configuration conf = Configuration.getDefaultConfiguration();
         assertThat(conf.connector.numWorkerThreads).isEqualTo(2);
         assertThat(conf.connector.queuedEventsOverflowThreshold).isEqualTo(1000);

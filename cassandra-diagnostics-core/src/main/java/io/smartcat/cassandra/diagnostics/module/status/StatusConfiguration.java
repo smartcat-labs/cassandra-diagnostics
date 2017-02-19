@@ -18,7 +18,8 @@ public class StatusConfiguration {
     public static class Values {
         private static final int DEFAULT_PERIOD = 1;
         private static final String DEFAULT_TIMEUNIT = "MINUTES";
-        private static final boolean DEFAULT_COMPACTIONS_ENABLED = true;
+        private static final boolean DEFAULT_COMPACTIONS_ENABLED = false;
+        private static final boolean DEFAULT_TPSTATS_ENABLED = false;
 
         /**
          * Status reporting period.
@@ -34,6 +35,11 @@ public class StatusConfiguration {
          * Status of compactions.
          */
         public boolean compactionsEnabled = DEFAULT_COMPACTIONS_ENABLED;
+
+        /**
+         * Status of threadpools.
+         */
+        public boolean tpStatsEnabled = DEFAULT_TPSTATS_ENABLED;
     }
 
     private Values values = new Values();
@@ -91,6 +97,15 @@ public class StatusConfiguration {
      */
     public boolean compactionsEnabled() {
         return values.compactionsEnabled;
+    }
+
+    /**
+     * Status of thread pools is being reported.
+     *
+     * @return report status of thread pools
+     */
+    public boolean tpStatsEnabled() {
+        return values.tpStatsEnabled;
     }
 
 }

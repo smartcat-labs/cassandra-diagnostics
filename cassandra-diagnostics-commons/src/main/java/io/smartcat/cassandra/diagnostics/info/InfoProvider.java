@@ -14,4 +14,11 @@ public interface InfoProvider {
      */
     List<CompactionInfo> getCompactions();
 
+    /**
+     * Get the status of all thread pools.
+     *
+     * @return thread pools info list
+     */
+    List<TPStatsInfo> getTPStats();
+
 }

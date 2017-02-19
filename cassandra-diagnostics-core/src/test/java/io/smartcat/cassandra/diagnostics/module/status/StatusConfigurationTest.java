@@ -20,7 +20,8 @@ public class StatusConfigurationTest {
         StatusConfiguration conf = StatusConfiguration.create(options);
         assertThat(conf.period()).isEqualTo(1);
         assertThat(conf.timeunit()).isEqualTo(TimeUnit.MINUTES);
-        assertThat(conf.compactionsEnabled()).isTrue();
+        assertThat(conf.compactionsEnabled()).isFalse();
+        assertThat(conf.tpStatsEnabled()).isFalse();
     }
 
     @Test
@@ -28,11 +29,13 @@ public class StatusConfigurationTest {
         Map<String, Object> options = new HashMap<>();
         options.put("period", 2);
         options.put("timeunit", "HOURS");
-        options.put("compactionsEnabled", false);
+        options.put("compactionsEnabled", true);
+        options.put("tpStatsEnabled", true);
         StatusConfiguration conf = StatusConfiguration.create(options);
         assertThat(conf.period()).isEqualTo(2);
         assertThat(conf.timeunit()).isEqualTo(TimeUnit.HOURS);
-        assertThat(conf.compactionsEnabled()).isFalse();
+        assertThat(conf.compactionsEnabled()).isTrue();
+        assertThat(conf.tpStatsEnabled()).isTrue();
     }
 
     @Test

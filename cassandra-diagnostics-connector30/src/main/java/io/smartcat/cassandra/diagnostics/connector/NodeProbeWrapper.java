@@ -7,8 +7,11 @@ import java.util.Map;
 
 import org.apache.cassandra.tools.NodeProbe;
 
+import com.google.common.collect.Multimap;
+
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
+import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
 
 /**
  * NodeProbe class wrapper that exposes data and action functions.
@@ -49,9 +52,30 @@ public class NodeProbeWrapper implements InfoProvider {
     public List<CompactionInfo> getCompactions() {
         List<CompactionInfo> compactions = new ArrayList<>();
         for (Map<String, String> compaction : this.nodeProbe.getCompactionManagerProxy().getCompactions()) {
-            compactions.add(new CompactionInfo(compaction));
+            compactions.add(new CompactionInfo(Long.parseLong(compaction.get("total")),
+                    Long.parseLong(compaction.get("completed")), compaction.get("unit"), compaction.get("taskType"),
+                    compaction.get("keyspace"), compaction.get("columnfamily"), compaction.get("compactionId")));
         }
         return compactions;
+    }
+
+    /**
+     * Get the status of all thread pools.
+     *
+     * @return thread pools info list
+     */
+    public List<TPStatsInfo> getTPStats() {
+        List<TPStatsInfo> tpstats = new ArrayList<>();
+        Multimap<String, String> threadPools = nodeProbe.getThreadPools();
+        for (Map.Entry<String, String> tpool : threadPools.entries()) {
+            tpstats.add(new TPStatsInfo(tpool.getValue(),
+                    (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "ActiveTasks"),
+                    (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "PendingTasks"),
+                    (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "CompletedTasks"),
+                    (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "CurrentlyBlockedTasks"),
+                    (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "TotalBlockedTasks")));
+        }
+        return tpstats;
     }
 
 }

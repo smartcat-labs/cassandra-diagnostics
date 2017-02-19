@@ -118,7 +118,7 @@ public class StatusModule extends Module {
         fields.put("completed", Long.toString(compactionInfo.completed));
         fields.put("completedPercentage", Double.toString(compactionInfo.completedPercentage));
 
-        return Measurement.create(DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME, 0, System.currentTimeMillis(),
+        return Measurement.create(DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME, null, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, fields);
     }
 
@@ -134,7 +134,7 @@ public class StatusModule extends Module {
         fields.put("currentlyBlockedTasks", Long.toString(tpStatsInfo.currentlyBlockedTasks));
         fields.put("totalBlockedTasks", Long.toString(tpStatsInfo.totalBlockedTasks));
 
-        return Measurement.create(DEFAULT_TPSTATS_INFO_MEASUREMENT_NAME, 0, System.currentTimeMillis(),
+        return Measurement.create(DEFAULT_TPSTATS_INFO_MEASUREMENT_NAME, null, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, fields);
     }
 

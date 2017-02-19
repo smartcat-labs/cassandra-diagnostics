@@ -79,7 +79,7 @@ public class DatadogReporterTest {
         Map<String, String> fields = new HashMap<>();
         fields.put("v2", "abc");
 
-        final Measurement measurement = Measurement.create("test-metric", 909, System.currentTimeMillis(),
+        final Measurement measurement = Measurement.create("test-metric", 909.0, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, fields);
 
         reporter.report(measurement);

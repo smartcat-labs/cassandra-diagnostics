@@ -68,15 +68,23 @@ public class DatadogReporter extends Reporter {
     @Override
     public void report(Measurement measurement) {
         if (client == null) {
-            logger.warn("Datadog client is not initialized. Skipping measurement {} with value {}.",
-                    measurement.name(), measurement.value());
+            logger.warn("Datadog client is not initialized. Skipping measurement {} with value {}.", measurement.name(),
+                    measurement.getOrDefault(null));
             return;
         }
 
         try {
-            client.recordGaugeValue(measurement.name(), measurement.value(), convertTagsMap(measurement.tags()));
-            logger.debug("Reporting measurement {}, value {} and tags {}", measurement.name(), measurement.value(),
-                    convertTagsMap(measurement.tags()));
+            if (measurement.hasValue()) {
+                client.recordGaugeValue(measurement.name(), measurement.getValue(), convertTagsMap(measurement.tags()));
+                logger.debug("Reporting measurement {}, value {} and tags {}", measurement.name(),
+                        measurement.getValue(), convertTagsMap(measurement.tags()));
+            } else {
+                for (String key : measurement.fields().keySet()) {
+                    client.recordGaugeValue(measurement.name() + "." + key,
+                            Double.parseDouble(measurement.fields().get(key)), convertTagsMap(measurement.tags()));
+                }
+            }
+
         } catch (Exception e) {
             logger.warn("Sending measurement failed: execTime={}, exception: {}", measurement.time(), e.getMessage());
         }

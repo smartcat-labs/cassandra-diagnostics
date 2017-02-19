@@ -40,8 +40,8 @@ public class TelegrafReporter extends Reporter {
         logger.debug("Initializing Telegraf reporter with config: {}", configuration.toString());
 
         if (!configuration.options.containsKey(HOST_PROP)) {
-            logger.warn("Telegraf reporter initialization failed. Missing required property " +
-                    HOST_PROP + ". Aborting initialization.");
+            logger.warn("Telegraf reporter initialization failed. Missing required property " + HOST_PROP
+                    + ". Aborting initialization.");
             return;
         }
 
@@ -69,18 +69,17 @@ public class TelegrafReporter extends Reporter {
     @Override
     public void report(Measurement measurement) {
         if (telegrafClient == null || !telegrafClient.isConnected()) {
-            logger.warn("Telegraf client is not connected. Skipping measurement {} with value {}.",
-                    measurement.name(), measurement.value());
+            logger.warn("Telegraf client is not connected. Skipping measurement {} with value {}.", measurement.name(),
+                    measurement.getOrDefault(0d));
             return;
         }
 
-        logger.debug("Sending Measurement: name={}, value={}, time={}", measurement.name(), measurement.value(),
-                measurement.time());
+        logger.debug("Sending Measurement: name={}, value={}, time={}", measurement.name(),
+                measurement.getOrDefault(0d), measurement.time());
         try {
             sendEvent(measurement);
         } catch (Exception e) {
-            logger.debug("Sending measurement failed: execTime={}, exception: {}", measurement.time(),
-                    e.getMessage());
+            logger.debug("Sending measurement failed: execTime={}, exception: {}", measurement.time(), e.getMessage());
         }
     }
 
@@ -116,14 +115,16 @@ public class TelegrafReporter extends Reporter {
 
             builder.tag(measurement.tags());
 
-            builder.addField("value", measurement.value());
+            if (measurement.hasValue()) {
+                builder.addField("value", measurement.getValue());
+            }
+
             for (Map.Entry<String, String> field : measurement.fields().entrySet()) {
                 builder.addField(field.getKey(), field.getValue());
             }
             Charset charset = StandardCharsets.UTF_8;
             CharsetEncoder encoder = charset.newEncoder();
-            return encoder.encode(
-                    CharBuffer.wrap(builder.build().lineProtocol().concat("\r\n").toCharArray()));
+            return encoder.encode(CharBuffer.wrap(builder.build().lineProtocol().concat("\r\n").toCharArray()));
         } catch (Exception e) {
             logger.warn("Failed to send report to influx", e);
             return null;

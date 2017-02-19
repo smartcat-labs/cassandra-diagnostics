@@ -19,7 +19,6 @@ import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
 import io.smartcat.cassandra.diagnostics.module.Module;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
-import io.smartcat.cassandra.diagnostics.utils.Option;
 
 /**
  * Status module collecting node status information.
@@ -33,8 +32,6 @@ public class StatusModule extends Module {
     private static final String DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME = "compaction_info";
 
     private static final String DEFAULT_TPSTATS_INFO_MEASUREMENT_NAME = "tpstats_info";
-
-    private final Option<Double> emptyOption = Option.empty();
 
     private final int period;
 
@@ -113,7 +110,7 @@ public class StatusModule extends Module {
         fields.put("completed", Long.toString(compactionInfo.completed));
         fields.put("completedPercentage", Double.toString(compactionInfo.completedPercentage));
 
-        return Measurement.create(DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME, null, System.currentTimeMillis(),
+        return Measurement.create(DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME, 0, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, fields);
     }
 
@@ -129,7 +126,7 @@ public class StatusModule extends Module {
         fields.put("currentlyBlockedTasks", Long.toString(tpStatsInfo.currentlyBlockedTasks));
         fields.put("totalBlockedTasks", Long.toString(tpStatsInfo.totalBlockedTasks));
 
-        return Measurement.create(DEFAULT_TPSTATS_INFO_MEASUREMENT_NAME, null, System.currentTimeMillis(),
+        return Measurement.create(DEFAULT_TPSTATS_INFO_MEASUREMENT_NAME, 0, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, fields);
     }
 

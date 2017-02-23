@@ -33,7 +33,7 @@ public class StatusModule extends Module {
 
     private static final String DEFAULT_TPSTATS_INFO_MEASUREMENT_NAME = "tpstats_info";
 
-    private static final String DEFAULT_REPAIR_INFO_MEASUREMENT_NAME = "repair_info";
+    private static final String DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME = "repair_sessions";
 
     private final int period;
 
@@ -142,10 +142,9 @@ public class StatusModule extends Module {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", hostname);
 
-        final Map<String, String> fields = new HashMap<>(1);
-        fields.put("repairSessionsPending", Long.toString(repairSessions));
+        final Map<String, String> fields = new HashMap<>();
 
-        return Measurement.create(DEFAULT_REPAIR_INFO_MEASUREMENT_NAME, 0, System.currentTimeMillis(),
+        return Measurement.create(DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME, repairSessions, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, fields);
     }
 

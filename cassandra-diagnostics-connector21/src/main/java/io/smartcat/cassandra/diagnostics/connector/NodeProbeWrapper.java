@@ -20,6 +20,8 @@ public class NodeProbeWrapper implements InfoProvider {
 
     private final NodeProbe nodeProbe;
 
+    private static final String REPAIR_THREAD_POOL_NAME = "AntiEntropySessions";
+
     /**
      * NodeProbe constructor.
      *
@@ -75,6 +77,28 @@ public class NodeProbeWrapper implements InfoProvider {
                     threadPoolProxy.getCurrentlyBlockedTasks(), threadPoolProxy.getTotalBlockedTasks()));
         }
         return tpstats;
+    }
+
+    /**
+     * Gets number of repair sessions pending (repair on node has multiple repair sessions and by monitoring number of
+     * pending repair sessions and active repair sessions we can monitor progress of repair).
+     *
+     * @return repair session info
+     */
+    public long getRepairSessions() {
+        long repairSessions = 0;
+
+        Iterator<Map.Entry<String, JMXEnabledThreadPoolExecutorMBean>> threads = nodeProbe.getThreadPoolMBeanProxies();
+        while (threads.hasNext()) {
+            Map.Entry<String, JMXEnabledThreadPoolExecutorMBean> thread = threads.next();
+
+            if (thread.getKey().equals(REPAIR_THREAD_POOL_NAME)) {
+                JMXEnabledThreadPoolExecutorMBean threadPoolProxy = thread.getValue();
+                repairSessions = threadPoolProxy.getPendingTasks() + threadPoolProxy.getActiveCount();
+            }
+        }
+
+        return repairSessions;
     }
 
 }

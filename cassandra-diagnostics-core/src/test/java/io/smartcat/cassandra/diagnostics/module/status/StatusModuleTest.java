@@ -39,7 +39,7 @@ public class StatusModuleTest {
         PowerMockito.mockStatic(DiagnosticsAgent.class);
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
 
-        final StatusModule module = new StatusModule(testConfiguration(1, true, true), testReporters());
+        final StatusModule module = new StatusModule(testConfiguration(1, true, true, true), testReporters());
         module.stop();
 
         PowerMockito.verifyStatic();
@@ -60,7 +60,7 @@ public class StatusModuleTest {
             }
         };
 
-        final StatusModule module = new StatusModule(testConfiguration(1, true, false), reporters);
+        final StatusModule module = new StatusModule(testConfiguration(1, true, false, false), reporters);
         boolean wait = latch.await(1000, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
@@ -82,11 +82,33 @@ public class StatusModuleTest {
             }
         };
 
-        final StatusModule module = new StatusModule(testConfiguration(1, false, true), reporters);
+        final StatusModule module = new StatusModule(testConfiguration(1, false, true, false), reporters);
         boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
         assertThat(testReporter.getReported().size()).isEqualTo(3);
+    }
+
+    @Test
+    public void should_report_repair_info_when_started() throws ConfigurationException, InterruptedException {
+        InfoProvider infoProvider = mock(InfoProvider.class);
+        when(infoProvider.getRepairSessions()).thenReturn(getRepairSessions());
+        PowerMockito.mockStatic(DiagnosticsAgent.class);
+        PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final LatchTestReporter testReporter = new LatchTestReporter(null, latch);
+        final List<Reporter> reporters = new ArrayList<Reporter>() {
+            {
+                add(testReporter);
+            }
+        };
+
+        final StatusModule module = new StatusModule(testConfiguration(1, false, false, true), reporters);
+        boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
+        module.stop();
+        assertThat(wait).isTrue();
+        assertThat(testReporter.getReported().size()).isEqualTo(1);
     }
 
     @Test
@@ -104,7 +126,7 @@ public class StatusModuleTest {
             }
         };
 
-        final StatusModule module = new StatusModule(testConfiguration(1, false, false), reporters);
+        final StatusModule module = new StatusModule(testConfiguration(1, false, false, false), reporters);
         boolean wait = latch.await(100, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isFalse();
@@ -112,7 +134,7 @@ public class StatusModuleTest {
     }
 
     private ModuleConfiguration testConfiguration(final int period, final boolean compactionsEnabled,
-            final boolean tpStatsEnabled) {
+            final boolean tpStatsEnabled, final boolean repairsEnabled) {
         final ModuleConfiguration configuration = new ModuleConfiguration();
         configuration.measurement = "test_measurement";
         configuration.module = "io.smartcat.cassandra.diagnostics.module.status.StatusModule";
@@ -120,6 +142,7 @@ public class StatusModuleTest {
         configuration.options.put("timeunit", "MINUTES");
         configuration.options.put("compactionsEnabled", compactionsEnabled);
         configuration.options.put("tpStatsEnabled", tpStatsEnabled);
+        configuration.options.put("repairsEnabled", repairsEnabled);
         return configuration;
     }
 
@@ -149,6 +172,10 @@ public class StatusModuleTest {
                 add(new TPStatsInfo("test3", 3, 3, 3, 3, 3));
             }
         };
+    }
+
+    private long getRepairSessions() {
+        return 39;
     }
 
 }

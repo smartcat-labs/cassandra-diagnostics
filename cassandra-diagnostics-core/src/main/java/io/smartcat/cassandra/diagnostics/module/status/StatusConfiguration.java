@@ -20,6 +20,7 @@ public class StatusConfiguration {
         private static final String DEFAULT_TIMEUNIT = "MINUTES";
         private static final boolean DEFAULT_COMPACTIONS_ENABLED = false;
         private static final boolean DEFAULT_TPSTATS_ENABLED = false;
+        private static final boolean DEFAULT_REPAIRS_ENABLED = false;
 
         /**
          * Status reporting period.
@@ -40,6 +41,11 @@ public class StatusConfiguration {
          * Status of threadpools.
          */
         public boolean tpStatsEnabled = DEFAULT_TPSTATS_ENABLED;
+
+        /**
+         * Status of repairs.
+         */
+        public boolean repairsEnabled = DEFAULT_REPAIRS_ENABLED;
     }
 
     private Values values = new Values();
@@ -106,6 +112,15 @@ public class StatusConfiguration {
      */
     public boolean tpStatsEnabled() {
         return values.tpStatsEnabled;
+    }
+
+    /**
+     * Status of repairs is being reported.
+     *
+     * @return report status of repairs
+     */
+    public boolean repairsEnabled() {
+        return values.repairsEnabled;
     }
 
 }

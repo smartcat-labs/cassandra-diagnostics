@@ -20,6 +20,8 @@ public class NodeProbeWrapper implements InfoProvider {
 
     private final NodeProbe nodeProbe;
 
+    private static final String REPAIR_THREAD_POOL_PREFIX = "Repair#";
+
     /**
      * NodeProbe constructor.
      *
@@ -76,6 +78,29 @@ public class NodeProbeWrapper implements InfoProvider {
                     (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "TotalBlockedTasks")));
         }
         return tpstats;
+    }
+
+    /**
+     * Gets number of repair sessions (repair on node has multiple repair sessions and by monitoring number of pending
+     * repair sessions and number of active repair sessions we can monitor progress of repair).
+     *
+     * @return repair sessions info
+     */
+    public long getRepairSessions() {
+        long repairSessions = 0;
+
+        Multimap<String, String> threadPools = nodeProbe.getThreadPools();
+        for (Map.Entry<String, String> tpool : threadPools.entries()) {
+            if (tpool.getValue().startsWith(REPAIR_THREAD_POOL_PREFIX)) {
+                long activeRepairSessions = (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(),
+                        "ActiveTasks");
+                long pendingRepairSessions = (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(),
+                        "PendingTasks");
+                repairSessions = activeRepairSessions + pendingRepairSessions;
+            }
+        }
+
+        return repairSessions;
     }
 
 }

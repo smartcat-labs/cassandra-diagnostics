@@ -22,6 +22,7 @@ public class StatusConfigurationTest {
         assertThat(conf.timeunit()).isEqualTo(TimeUnit.MINUTES);
         assertThat(conf.compactionsEnabled()).isFalse();
         assertThat(conf.tpStatsEnabled()).isFalse();
+        assertThat(conf.repairsEnabled()).isFalse();
     }
 
     @Test
@@ -31,11 +32,13 @@ public class StatusConfigurationTest {
         options.put("timeunit", "HOURS");
         options.put("compactionsEnabled", true);
         options.put("tpStatsEnabled", true);
+        options.put("repairsEnabled", true);
         StatusConfiguration conf = StatusConfiguration.create(options);
         assertThat(conf.period()).isEqualTo(2);
         assertThat(conf.timeunit()).isEqualTo(TimeUnit.HOURS);
         assertThat(conf.compactionsEnabled()).isTrue();
         assertThat(conf.tpStatsEnabled()).isTrue();
+        assertThat(conf.repairsEnabled()).isTrue();
     }
 
     @Test

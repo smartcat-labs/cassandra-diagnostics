@@ -33,6 +33,8 @@ public class StatusModule extends Module {
 
     private static final String DEFAULT_TPSTATS_INFO_MEASUREMENT_NAME = "tpstats_info";
 
+    private static final String DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME = "repair_sessions";
+
     private final int period;
 
     private final TimeUnit timeunit;
@@ -40,6 +42,8 @@ public class StatusModule extends Module {
     private final boolean compactionsEnabled;
 
     private final boolean tpStatsEnabled;
+
+    private final boolean repairsEnabled;
 
     private final Timer timer;
 
@@ -60,6 +64,7 @@ public class StatusModule extends Module {
         timeunit = config.timeunit();
         compactionsEnabled = config.compactionsEnabled();
         tpStatsEnabled = config.tpStatsEnabled();
+        repairsEnabled = config.repairsEnabled();
 
         infoProvider = DiagnosticsAgent.getInfoProvider();
         if (infoProvider == null) {
@@ -93,6 +98,9 @@ public class StatusModule extends Module {
                     report(createMeasurement(tpStatsInfo));
                 }
             }
+            if (repairsEnabled) {
+                report(createMeasurement(infoProvider.getRepairSessions()));
+            }
         }
     }
 
@@ -115,7 +123,7 @@ public class StatusModule extends Module {
     }
 
     private Measurement createMeasurement(TPStatsInfo tpStatsInfo) {
-        final Map<String, String> tags = new HashMap<>();
+        final Map<String, String> tags = new HashMap<>(2);
         tags.put("host", hostname);
         tags.put("threadPool", tpStatsInfo.threadPool);
 
@@ -127,6 +135,16 @@ public class StatusModule extends Module {
         fields.put("totalBlockedTasks", Long.toString(tpStatsInfo.totalBlockedTasks));
 
         return Measurement.create(DEFAULT_TPSTATS_INFO_MEASUREMENT_NAME, 0, System.currentTimeMillis(),
+                TimeUnit.MILLISECONDS, tags, fields);
+    }
+
+    private Measurement createMeasurement(long repairSessions) {
+        final Map<String, String> tags = new HashMap<>(1);
+        tags.put("host", hostname);
+
+        final Map<String, String> fields = new HashMap<>();
+
+        return Measurement.create(DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME, repairSessions, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, fields);
     }
 

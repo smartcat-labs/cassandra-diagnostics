@@ -21,4 +21,10 @@ public interface InfoProvider {
      */
     List<TPStatsInfo> getTPStats();
 
+    /**
+     * Get the number of repair sessions.
+     *
+     * @return repair sessions
+     */
+    long getRepairSessions();
 }

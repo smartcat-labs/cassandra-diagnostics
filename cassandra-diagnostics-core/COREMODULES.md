@@ -106,8 +106,9 @@ Status module is used to report Cassandra information exposed over JMX. It repor
 
 #### Configuration
 
-Compaction info measurement name is by default `compaction_info`.   
-Thread pool info measurement name is by default `tpstats_info`.   
+Compaction info measurement name is by default `compaction_info`.
+Thread pool info measurement name is by default `tpstats_info`.
+Repair info measurement name is by default `repair_info`.
 Reporting period is by default 1 minute and more frequent updates should be considered heavy on the node.
 
 ```
@@ -117,4 +118,5 @@ Reporting period is by default 1 minute and more frequent updates should be cons
     timeunit: MINUTES #optional
     compactionsEnabled: false #optional
     tpStatsEnabled: false #optional
+    repairsEnabled: false #optional
 ```

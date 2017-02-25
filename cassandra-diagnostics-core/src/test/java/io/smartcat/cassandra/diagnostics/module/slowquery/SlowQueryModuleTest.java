@@ -43,7 +43,8 @@ public class SlowQueryModuleTest {
         assertThat(measurement.fields().keySet()).isEqualTo(Sets.newSet("statement", "client"));
         assertThat(measurement.fields().get("statement")).isEqualTo("select count(*) from keyspace.table");
         assertThat(measurement.fields().get("client")).isEqualTo("/127.0.0.1:40042");
-        assertThat(measurement.value()).isEqualTo(234);
+        assertThat(measurement.hasValue()).isTrue();
+        assertThat(measurement.getValue()).isEqualTo(234);
 
         assertThat(measurement.tags().keySet()).isEqualTo(Sets.newSet("host", "statementType"));
         assertThat(measurement.tags().get("statementType")).isEqualTo("SELECT");
@@ -88,7 +89,7 @@ public class SlowQueryModuleTest {
         long slowQueryCounts = 0;
         for (final Measurement measurement : latchTestReporter.getReported()) {
             if (measurement.name().equals(SLOW_QUERY_MESUREMENT_NAME + SLOW_QUERY_COUNT_SUFIX)) {
-                slowQueryCounts += measurement.value();
+                slowQueryCounts += measurement.getValue();
             }
         }
 

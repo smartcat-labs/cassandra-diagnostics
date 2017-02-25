@@ -71,7 +71,7 @@ public class RequestRateModuleTest {
         while (requestRate < numberOfRequests) {
             requestRate = 0;
             for (final Measurement measurement : latchTestReporter.getReported()) {
-                requestRate += measurement.value();
+                requestRate += measurement.getValue();
             }
             latch.await(1100, TimeUnit.MILLISECONDS);
         }
@@ -80,7 +80,7 @@ public class RequestRateModuleTest {
 
         long totalRequests = 0;
         for (final Measurement measurement : latchTestReporter.getReported()) {
-            totalRequests += measurement.value();
+            totalRequests += measurement.getValue();
         }
 
         assertThat(totalRequests).isEqualTo(numberOfRequests);
@@ -127,7 +127,7 @@ public class RequestRateModuleTest {
         while (requestRate < numberOfRequests / 2) {
             requestRate = 0;
             for (final Measurement measurement : latchTestReporter.getReported()) {
-                requestRate += measurement.value();
+                requestRate += measurement.getValue();
             }
             latch.await(1100, TimeUnit.MILLISECONDS);
         }
@@ -136,7 +136,7 @@ public class RequestRateModuleTest {
 
         double totalRequests = 0;
         for (final Measurement measurement : latchTestReporter.getReported()) {
-            totalRequests += measurement.value();
+            totalRequests += measurement.getValue();
         }
 
         assertThat(totalRequests).isEqualTo(numberOfRequests / 2);

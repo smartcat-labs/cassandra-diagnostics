@@ -97,7 +97,7 @@ public class SlowQueryModule extends Module {
         fields.put("statement", query.statement());
 
         final Measurement measurement = Measurement
-                .create(service, query.executionTimeInMilliseconds(), query.startTimeInMilliseconds(),
+                .create(service, (double) query.executionTimeInMilliseconds(), query.startTimeInMilliseconds(),
                         TimeUnit.MILLISECONDS, tags, fields);
 
         logger.trace("Measurement transformed: {}", measurement);

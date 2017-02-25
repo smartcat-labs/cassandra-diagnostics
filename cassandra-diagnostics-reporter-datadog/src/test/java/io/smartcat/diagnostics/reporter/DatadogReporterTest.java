@@ -61,7 +61,7 @@ public class DatadogReporterTest {
 
     @Test
     public void should_send_measurement() throws SocketException, InterruptedException, UnknownHostException {
-        final TestUDPServer testUDPServer = new TestUDPServer();
+        final TestUDPServer testUDPServer = new TestUDPServer(1);
         Thread runner = new Thread(testUDPServer);
         runner.start();
 
@@ -79,16 +79,62 @@ public class DatadogReporterTest {
         Map<String, String> fields = new HashMap<>();
         fields.put("v2", "abc");
 
-        final Measurement measurement = Measurement.create("test-metric", 909.0, System.currentTimeMillis(),
-                TimeUnit.MILLISECONDS, tags, fields);
+        final Measurement measurement = Measurement
+                .create("test-metric", 909.0, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
 
         reporter.report(measurement);
 
-        runner.join();
+        runner.join(500);
 
         assertThat(testUDPServer.receivedMessages.size()).isEqualTo(1);
         assertThat(testUDPServer.receivedMessages.get(0))
                 .contains("test-metric:909|g|#host:somehost,tag2:two,tag3:three,tag2:tv2,tag1:tv1");
+
+        testUDPServer.stop();
+    }
+
+    @Test
+    public void should_send_measurement_for_each_field_in_complex_measurement()
+            throws SocketException, InterruptedException, UnknownHostException {
+        final TestUDPServer testUDPServer = new TestUDPServer(4);
+        Thread runner = new Thread(testUDPServer);
+        runner.start();
+
+        final ReporterConfiguration config = new ReporterConfiguration();
+        config.options.put("statsDHost", "localhost");
+        config.options.put("statsDPort", 9876);
+        config.options.put("keysPrefix", "prefix");
+        config.options.put("fixedTags", Arrays.asList("host:somehost,tag2:two,tag3:three"));
+        final DatadogReporter reporter = new DatadogReporter(config);
+
+        Map<String, String> tags = new HashMap<>();
+        tags.put("tag1", "tv1");
+        tags.put("tag2", "tv2");
+
+        Map<String, String> fields = new HashMap<>();
+        fields.put("v1", "15.0");
+        fields.put("v2", "26.0");
+        fields.put("v3", "50.0");
+        fields.put("v4", "1234.0");
+
+        final Measurement measurement = Measurement
+                .create("test-metric", null, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+
+        reporter.report(measurement);
+        runner.join(500);
+
+        assertThat(testUDPServer.receivedMessages.size()).isEqualTo(4);
+
+        assertThat(testUDPServer.receivedMessages.get(0))
+                .isEqualTo("prefix.test-metric.v1:15|g|#host:somehost,tag2:two,tag3:three,tag2:tv2,tag1:tv1");
+        assertThat(testUDPServer.receivedMessages.get(1))
+                .isEqualTo("prefix.test-metric.v2:26|g|#host:somehost,tag2:two,tag3:three,tag2:tv2,tag1:tv1");
+        assertThat(testUDPServer.receivedMessages.get(2))
+                .isEqualTo("prefix.test-metric.v3:50|g|#host:somehost,tag2:two,tag3:three,tag2:tv2,tag1:tv1");
+        assertThat(testUDPServer.receivedMessages.get(3))
+                .isEqualTo("prefix.test-metric.v4:1234|g|#host:somehost,tag2:two,tag3:three,tag2:tv2,tag1:tv1");
+
+        testUDPServer.stop();
     }
 
     private class TestUDPServer implements Runnable {
@@ -97,22 +143,36 @@ public class DatadogReporterTest {
 
         private byte[] receiveData = new byte[1024];
 
-        private TestUDPServer() throws SocketException, UnknownHostException {
+        private DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 
+        private final int expectedMessages;
+
+        private TestUDPServer(int expectedMessages) throws SocketException, UnknownHostException {
+            this.expectedMessages = expectedMessages;
         }
 
         public List<String> receivedMessages = new ArrayList<>();
 
         public void run() {
             try {
-                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-                serverSocket.receive(receivePacket);
-                String message = new String(receivePacket.getData());
-
-                receivedMessages.add(message);
+                while (true) {
+                    serverSocket.receive(receivePacket);
+                    String[] messages = new String(receivePacket.getData()).split("\n");
+                    for (String message : messages) {
+                        receivedMessages.add(message.trim());
+                    }
+                    if (receivedMessages.size() == this.expectedMessages) {
+                        break;
+                    }
+                }
             } catch (IOException e) {
                 assert false;
             }
+        }
+
+        public void stop() {
+            serverSocket.close();
+            serverSocket = null;
         }
     }
 

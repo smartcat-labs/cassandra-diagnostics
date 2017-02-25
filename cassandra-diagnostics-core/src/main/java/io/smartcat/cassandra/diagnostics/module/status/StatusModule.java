@@ -134,8 +134,9 @@ public class StatusModule extends Module {
         fields.put("currentlyBlockedTasks", Long.toString(tpStatsInfo.currentlyBlockedTasks));
         fields.put("totalBlockedTasks", Long.toString(tpStatsInfo.totalBlockedTasks));
 
-        return Measurement.create(DEFAULT_TPSTATS_INFO_MEASUREMENT_NAME, null, System.currentTimeMillis(),
-                TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement
+                .create(DEFAULT_TPSTATS_INFO_MEASUREMENT_NAME, null, System.currentTimeMillis(), TimeUnit.MILLISECONDS,
+                        tags, fields);
     }
 
     private Measurement createMeasurement(long repairSessions) {
@@ -144,8 +145,9 @@ public class StatusModule extends Module {
 
         final Map<String, String> fields = new HashMap<>();
 
-        return Measurement.create(DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME, repairSessions, System.currentTimeMillis(),
-                TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement
+                .create(DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME, (double) repairSessions, System.currentTimeMillis(),
+                        TimeUnit.MILLISECONDS, tags, fields);
     }
 
 }

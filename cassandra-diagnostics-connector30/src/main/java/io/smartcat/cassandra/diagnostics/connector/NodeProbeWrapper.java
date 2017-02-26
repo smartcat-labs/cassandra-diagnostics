@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.cassandra.tools.NodeProbe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Multimap;
 
@@ -17,6 +19,8 @@ import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
  * NodeProbe class wrapper that exposes data and action functions.
  */
 public class NodeProbeWrapper implements InfoProvider {
+
+    private static final Logger logger = LoggerFactory.getLogger(NodeProbeWrapper.class);
 
     private final NodeProbe nodeProbe;
 
@@ -71,7 +75,7 @@ public class NodeProbeWrapper implements InfoProvider {
         Multimap<String, String> threadPools = nodeProbe.getThreadPools();
         for (Map.Entry<String, String> tpool : threadPools.entries()) {
             tpstats.add(new TPStatsInfo(tpool.getValue(),
-                    (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "ActiveTasks"),
+                    (int) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "ActiveTasks"),
                     (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "PendingTasks"),
                     (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "CompletedTasks"),
                     (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "CurrentlyBlockedTasks"),
@@ -92,10 +96,10 @@ public class NodeProbeWrapper implements InfoProvider {
         Multimap<String, String> threadPools = nodeProbe.getThreadPools();
         for (Map.Entry<String, String> tpool : threadPools.entries()) {
             if (tpool.getValue().startsWith(REPAIR_THREAD_POOL_PREFIX)) {
-                long activeRepairSessions = (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(),
-                        "ActiveTasks");
-                long pendingRepairSessions = (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(),
-                        "PendingTasks");
+                long activeRepairSessions = (long) nodeProbe
+                        .getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "ActiveTasks");
+                long pendingRepairSessions = (long) nodeProbe
+                        .getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "PendingTasks");
                 repairSessions = activeRepairSessions + pendingRepairSessions;
             }
         }

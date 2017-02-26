@@ -67,7 +67,24 @@ public class ConnectorImpl implements Connector {
      */
     public static void cassandraSetupComplete() {
         lock.countDown();
+    }
 
+    /**
+     * {@link io.smartcat.cassandra.diagnostics.connector.Connector#waitForSetupCompleted()}.
+     */
+    public void waitForSetupCompleted() {
+        logger.info("Waiting for Cassandra setup process to complete.");
+        try {
+            lock.await();
+            setupInfoProvider();
+            logger.info("Cassandra setup process completed.");
+        } catch (InterruptedException e) {
+            // This should never happen
+            throw new IllegalStateException();
+        }
+    }
+
+    private void setupInfoProvider() {
         try {
             if (configuration.jmxAuthEnabled) {
                 infoProvider = new NodeProbeWrapper(configuration.jmxHost, configuration.jmxPort,
@@ -82,26 +99,13 @@ public class ConnectorImpl implements Connector {
     }
 
     /**
-     * {@link io.smartcat.cassandra.diagnostics.connector.Connector#waitForSetupCompleted()}.
-     */
-    public void waitForSetupCompleted() {
-        logger.info("Waiting for Cassandra setup process to complete.");
-        try {
-            lock.await();
-            logger.info("Cassandra setup process completed.");
-        } catch (InterruptedException e) {
-            // This should never happen
-            throw new IllegalStateException();
-        }
-    }
-
-    /**
      * Get an InfoProvider implementation providing cassandra status information.
      *
      * @return {@code io.smartcat.cassandra.diagnostics.info.InfoProvider} implementation.
      */
     public InfoProvider getInfoProvider() {
         if (!initialized.get()) {
+            logger.warn("getInfoProvider() called before initialization completed");
             return null;
         }
 

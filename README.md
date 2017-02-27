@@ -156,6 +156,20 @@ reporters:
 etc...
 ```
 
+## Information provider
+
+Being deployed on the node itself, diagnostics connector should provide a connection to the node over JMX by wrapping the Cassandra's NodeProbe class with provides access to all actions and metrics exposed over JMX. This is configured in the `connector` part of the configuration which sits in the root of diagnostics config.
+
+```
+connector:
+  jmxHost: 127.0.0.1
+  jmxPort: 7199
+  jmxAuthEnabled: false #Optional
+  jmxUsername: username #Optional
+  jmxPassword: password #Optional
+```
+Status module uses information provided by connector in order to collect info data.
+
 ## Control and Configuration API
 
 Cassandra Diagnostics exposes a control and configuration API. This API currently offers the following operations:

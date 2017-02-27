@@ -96,7 +96,7 @@ public class NodeProbeWrapper implements InfoProvider {
         Multimap<String, String> threadPools = nodeProbe.getThreadPools();
         for (Map.Entry<String, String> tpool : threadPools.entries()) {
             if (tpool.getValue().startsWith(REPAIR_THREAD_POOL_PREFIX)) {
-                long activeRepairSessions = (long) nodeProbe
+                int activeRepairSessions = (int) nodeProbe
                         .getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "ActiveTasks");
                 long pendingRepairSessions = (long) nodeProbe
                         .getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "PendingTasks");

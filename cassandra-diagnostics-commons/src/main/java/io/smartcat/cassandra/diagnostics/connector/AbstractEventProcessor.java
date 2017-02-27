@@ -76,7 +76,7 @@ public abstract class AbstractEventProcessor {
                 logger.warn("Event queue overflown. Until relaxed, further events will be dropped.");
             }
         } else {
-            if (numQueuedEvents <= configuration.queuedEventsRelaxThrashold) {
+            if (numQueuedEvents <= configuration.queuedEventsRelaxThreshold) {
                 queueOverflow = false;
                 logger.info("Event queue relaxed. Further events will be accepted and processed.");
             } else {

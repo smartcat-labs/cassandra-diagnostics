@@ -58,7 +58,7 @@ public class RequestRateModule extends Module {
         service = configuration.getMeasurementOrDefault(DEFAULT_MEASUREMENT_NAME);
         period = config.period();
         timeunit = config.timeunit();
-        rateFactor = timeunit.toSeconds(1);
+        rateFactor = timeunit.toSeconds(period);
 
         logger.info("RequestRate module initialized with {} {} reporting period.", period, timeunit.name());
         requestRates = new HashMap<>();
@@ -82,7 +82,7 @@ public class RequestRateModule extends Module {
     }
 
     private double convertRate(double rate) {
-        return rate * rateFactor;
+        return rate / rateFactor;
     }
 
     /**
@@ -96,11 +96,7 @@ public class RequestRateModule extends Module {
 
                 logger.debug("{} request rate: {}/{}", statementType, requestRate, timeunit.name());
 
-                Measurement measurement = createMeasurement(service, statementType, requestRate);
-
-                for (Reporter reporter : reporters) {
-                    reporter.report(measurement);
-                }
+                report(createMeasurement(service, statementType, requestRate));
             }
         }
     }

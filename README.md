@@ -8,7 +8,11 @@ Monitoring and audit power kit for Apache Cassandra.
 
 ## Introduction
 
-Cassandra Diagnostics is an extension for Apache Cassandra server node implemented as Java agent. It uses bytecode instrumentation to augment Cassandra node with additional functionalities. On one side it has connectors for different versions of Cassandra and on the other it has reporters to send measurement to different tools. In between lies core which is glue between those two. Reusable code goes to commons.
+Cassandra Diagnostics is an extension for Apache Cassandra server node implemented as Java agent. It uses bytecode instrumentation to augment Cassandra node with additional functionalities. The following images depicts the position of Cassandra Diagnostics in a Apache Cassandra based system.
+
+![Placement diagram](diagrams/cassandra-diagnostics.png?raw=true)
+
+Cassandra Diagnostics has a modular architecture. On one side it has connectors for different versions of Apache Cassandra nodes or Cassandra Java Driver and on the other it has various reporters to send measurement to different collecting/monitoring tools. In between lies the core with a set of metrics processing modules. Reusable code goes to commons.
 
 ![Architecture diagram](diagrams/architecture-diagram.png?raw=true)
 
@@ -41,21 +45,27 @@ There are default module implementations which serve as core features. Modules u
 #### Heartbeat Module
 
 Heartbeat module produces messages to provide feedback that the diagnostics agent is loaded and working. Typical usage is with Log Reporter where it produces INFO message in configured intervals.
-Default interval is 15 minutes.
+Default reporting interval is 15 minutes.
 
 #### Slow Query Module
 
 Slow Query module is monitoring execution time of each query and if it is above configured threshold it reports the value and query type using configured reporters.
-Default is 25 milliseconds.
+Default query execution time threshold is 25 milliseconds.
 
 #### Request Rate Module
 
 Request Rate Module uses codahale metrics library to create rate measurement of executed queries. Rates are reported for select and upsert statements using configured reporters in configured periods.
-Default is 1 second.
+Default reporting interval is 1 second.
 
 #### Metrics Module
 
-Cassandra internal metrics are exposed over JMX. This module collects JMX metrics and ships them using predefined reporters. Metrics package names configuration is the same as a default metrics config reporter uses. Module specific configuration looks like this:
+Cassandra internal metrics are exposed over JMX. This module collects JMX metrics and ships them using predefined reporters. Metrics package names configuration is the same as a default metrics config reporter uses.
+Default reporting interval is 1 second.
+
+#### Status Module
+
+Status module is used to report Cassandra information exposed over JMX. It reports compaction information as a single measurement.
+Default reporting interval is 1 minute.
 
 ### Reporters
 

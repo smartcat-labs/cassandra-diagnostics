@@ -58,6 +58,7 @@ public class RequestRateModuleTest {
         when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+
         final RequestRateModule module = new RequestRateModule(testConfiguration(1), reporters);
 
         final long numberOfRequests = 1000;
@@ -70,7 +71,7 @@ public class RequestRateModuleTest {
         while (requestRate < numberOfRequests) {
             requestRate = 0;
             for (final Measurement measurement : latchTestReporter.getReported()) {
-                requestRate += measurement.value();
+                requestRate += measurement.getValue();
             }
             latch.await(1100, TimeUnit.MILLISECONDS);
         }
@@ -79,7 +80,7 @@ public class RequestRateModuleTest {
 
         long totalRequests = 0;
         for (final Measurement measurement : latchTestReporter.getReported()) {
-            totalRequests += measurement.value();
+            totalRequests += measurement.getValue();
         }
 
         assertThat(totalRequests).isEqualTo(numberOfRequests);
@@ -100,6 +101,45 @@ public class RequestRateModuleTest {
         boolean wait = latch.await(200, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
+    }
+
+    @Test
+    public void should_report_average_request_rate_for_period() throws ConfigurationException, InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(6);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final List<Reporter> reporters = new ArrayList<Reporter>() {
+            {
+                add(latchTestReporter);
+            }
+        };
+
+        final Query selectQuery = mock(Query.class);
+        when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+
+        final RequestRateModule module = new RequestRateModule(testConfiguration(2), reporters);
+
+        final long numberOfRequests = 1000;
+        for (int i = 0; i < numberOfRequests; i++) {
+            module.process(selectQuery);
+        }
+
+        double requestRate = 0;
+        while (requestRate < numberOfRequests / 2) {
+            requestRate = 0;
+            for (final Measurement measurement : latchTestReporter.getReported()) {
+                requestRate += measurement.getValue();
+            }
+            latch.await(1100, TimeUnit.MILLISECONDS);
+        }
+
+        module.stop();
+
+        double totalRequests = 0;
+        for (final Measurement measurement : latchTestReporter.getReported()) {
+            totalRequests += measurement.getValue();
+        }
+
+        assertThat(totalRequests).isEqualTo(numberOfRequests / 2);
     }
 
     private ModuleConfiguration testConfiguration(final int period) {

@@ -1,8 +1,15 @@
 hostname: "test-hostname"
 
-httpApiEnabled: false
+httpApiEnabled: true
 httpApiHost: 10.0.0.1
 httpApiPort: 8001
+
+connector:
+  jmxHost: 10.0.0.1
+  jmxPort: 8888
+  jmxAuthEnabled: true
+  jmxUsername: username #Optional
+  jmxPassword: password #Optional
 
 # Reporters
 reporters:

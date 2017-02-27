@@ -78,13 +78,13 @@ public class RiemannReporter extends Reporter {
                 riemannClient.reconnect();
             } catch (IOException e) {
                 logger.warn("Cannot reconnect, skipping measurement {} with value {}.", measurement.name(),
-                        measurement.value());
+                        measurement.getOrDefault(0d));
                 return;
             }
         }
 
-        logger.debug("Sending Measurement: name={}, value={}, time={}", measurement.name(), measurement.value(),
-                measurement.time());
+        logger.debug("Sending Measurement: name={}, value={}, time={}", measurement.name(),
+                measurement.getOrDefault(0d), measurement.time());
         try {
             sendEvent(measurement);
         } catch (Exception e) {
@@ -103,7 +103,9 @@ public class RiemannReporter extends Reporter {
         final EventDSL event = riemannClient.event();
         event.service(measurement.name());
         event.state("ok");
-        event.metric(measurement.value());
+        if (measurement.hasValue()) {
+            event.metric(measurement.getValue());
+        }
         event.time(measurement.time());
         event.ttl(30);
         for (Map.Entry<String, String> tag : measurement.tags().entrySet()) {

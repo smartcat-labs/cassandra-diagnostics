@@ -89,8 +89,8 @@ public class InfluxReporter extends Reporter {
         influx.createDatabase(dbName);
 
         final int pointsInBatch = configuration.getDefaultOption(POINTS_IN_BATCH_PROP, DEFAULT_POINTS_IN_BATCH);
-        final int flushPeriodInSeconds = configuration.getDefaultOption(FLUSH_PERIOD_IN_SECONDS_PROP,
-                DEFAULT_FLUSH_PERIOD_IN_SECONDS);
+        final int flushPeriodInSeconds = configuration
+                .getDefaultOption(FLUSH_PERIOD_IN_SECONDS_PROP, DEFAULT_FLUSH_PERIOD_IN_SECONDS);
 
         influx.enableBatch(pointsInBatch, flushPeriodInSeconds, TimeUnit.SECONDS);
     }
@@ -112,7 +112,9 @@ public class InfluxReporter extends Reporter {
             for (Map.Entry<String, String> field : measurement.fields().entrySet()) {
                 builder.addField(field.getKey(), field.getValue());
             }
-            builder.addField("value", measurement.value());
+            if (measurement.hasValue()) {
+                builder.addField("value", measurement.getValue());
+            }
 
             influx.write(dbName, retentionPolicy, builder.build());
         } catch (Exception e) {

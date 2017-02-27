@@ -50,7 +50,7 @@ Request Rate Module counts request rate of executed queries. Rates are reported 
 
 #### Configuration
 
-Measurement name is by default `request_rate` with `_update` and `_select` suffixes for upsert and select statements respectively. Reporting period is by default 1 second but changing the reporting period does not affect reported value which represents requests/second measurement. 
+Measurement name is by default `request_rate` with `_update` and `_select` suffixes for upsert and select statements respectively. For precise measurements use a default reporting period of 1 second. If higher reporting period is used reported value represents average requests/second for the reporting period.
 
 ```
 - module: io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateModule
@@ -64,7 +64,7 @@ Measurement name is by default `request_rate` with `_update` and `_select` suffi
 
 ## Metrics Module
 
-Cassandra internal metrics are exposed over JMX. This module collects JMX metrics and ships them using predefined reporters. Metrics package names configuration is the same as a default metrics config reporter uses. Module specific configuration looks like this:
+Cassandra internal metrics are exposed over JMX. This module collects JMX metrics and ships them using predefined reporters. Metrics package names configuration is the same as a default metrics config reporter uses.
 
 #### Configuration
 
@@ -98,4 +98,25 @@ Minimal configuration requires specifying `metricsPatterns` with required metric
       - "^org.apache.cassandra.metrics.ThreadPools.+"
   reporters:
     - io.smartcat.cassandra.diagnostics.reporter.LogReporter
+```
+
+## Status Module
+
+Status module is used to report Cassandra information exposed over JMX. It reports all values in a context as a single measurement. For example compaction information is reported as a single measurement where all compaction stats are field values. This reduces the amount of measurement being sent but also provides easier graphing of a measurement.
+
+#### Configuration
+
+Compaction info measurement name is by default `compaction_info`.
+Thread pool info measurement name is by default `tpstats_info`.
+Repair info measurement name is by default `repair_info`.
+Reporting period is by default 1 minute and more frequent updates should be considered heavy on the node.
+
+```
+- module: io.smartcat.cassandra.diagnostics.module.status.StatusModule
+  options:
+    period: 1 #optional
+    timeunit: MINUTES #optional
+    compactionsEnabled: false #optional
+    tpStatsEnabled: false #optional
+    repairsEnabled: false #optional
 ```

@@ -97,7 +97,7 @@ public class SlowQueryModule extends Module {
         fields.put("statement", query.statement());
 
         final Measurement measurement = Measurement
-                .create(service, query.executionTimeInMilliseconds(), query.startTimeInMilliseconds(),
+                .create(service, (double) query.executionTimeInMilliseconds(), query.startTimeInMilliseconds(),
                         TimeUnit.MILLISECONDS, tags, fields);
 
         logger.trace("Measurement transformed: {}", measurement);
@@ -118,17 +118,13 @@ public class SlowQueryModule extends Module {
             for (StatementType statementType : slowQueryCounts.keySet()) {
                 double count = slowQueryCounts.get(statementType).sumThenReset();
 
-                Measurement measurement = createSlowQueryCountMeasurement(count, statementType);
-
-                for (Reporter reporter : reporters) {
-                    reporter.report(measurement);
-                }
+                report(createSlowQueryCountMeasurement(count, statementType));
             }
         }
     }
 
     private Measurement createSlowQueryCountMeasurement(double count, StatementType statementType) {
-        final Map<String, String> tags = new HashMap<>(1);
+        final Map<String, String> tags = new HashMap<>(2);
         tags.put("host", hostname);
         tags.put("statementType", statementType.toString());
         return Measurement

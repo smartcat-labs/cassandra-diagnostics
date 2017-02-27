@@ -80,6 +80,10 @@ public class DatadogReporter extends Reporter {
                         measurement.getValue(), convertTagsMap(measurement.tags()));
             } else {
                 for (String key : measurement.fields().keySet()) {
+                    if (!isNumeric(measurement.fields().get(key))) {
+                        continue;
+                    }
+
                     client.recordGaugeValue(measurement.name() + "." + key,
                             Double.parseDouble(measurement.fields().get(key)), convertTagsMap(measurement.tags()));
                 }
@@ -100,6 +104,10 @@ public class DatadogReporter extends Reporter {
         }
 
         return result;
+    }
+
+    private static boolean isNumeric(String string) {
+        return string.matches("-?\\d+(\\.\\d+)?");
     }
 
     @Override

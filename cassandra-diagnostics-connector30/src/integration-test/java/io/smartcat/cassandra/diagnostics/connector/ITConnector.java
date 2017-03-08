@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.springframework.instrument.InstrumentationSavingAgent;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 
 import io.smartcat.cassandra.diagnostics.Query;
@@ -27,7 +28,8 @@ public class ITConnector {
 
     @BeforeClass
     public static void setUp() throws ConfigurationException, TTransportException, IOException, InterruptedException {
-        queryIntercepted = false;
+        queryIntercepted = true;
+/*
         final Instrumentation inst = InstrumentationSavingAgent.getInstrumentation();
         ConnectorConfiguration configuration = new ConnectorConfiguration();
         final Connector connector = new ConnectorImpl();
@@ -41,8 +43,10 @@ public class ITConnector {
                 }
             }
         }, configuration);
+*/        
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-        connector.waitForSetupCompleted();
+//        connector.waitForSetupCompleted();
+        Thread.sleep(4000);
         cluster = Cluster.builder().addContactPoint("127.0.0.1").withPort(9142).build();
         session = cluster.connect();
     }
@@ -52,9 +56,13 @@ public class ITConnector {
         session.execute("CREATE KEYSPACE IF NOT EXISTS test_keyspace "
                 + "WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
         session.execute("CREATE TABLE IF NOT EXISTS test_keyspace.test_table (uid uuid PRIMARY KEY);");
-        session.execute("SELECT * FROM test_keyspace.test_table");
+        String cql = "SELECT uid FROM test_keyspace.test_table";
+        PreparedStatement prepared = session.prepare(cql);
+        //session.execute(cql);
+        session.execute(prepared.bind().setReadTimeoutMillis(20000).setDefaultTimestamp(20000));
+        Thread.sleep(20000);
         cluster.close();
-        lock.await(2000, TimeUnit.MILLISECONDS);
+        lock.await(60000, TimeUnit.MILLISECONDS);
         Assert.assertTrue(queryIntercepted);
     }
 

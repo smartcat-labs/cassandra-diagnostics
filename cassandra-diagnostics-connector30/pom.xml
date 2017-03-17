@@ -29,6 +29,7 @@
             <groupId>io.smartcat</groupId>
             <artifactId>cassandra-diagnostics-embedded-cassandra</artifactId>
             <version>${project.parent.version}</version>
+            <scope>integration-test</scope>
         </dependency>
         <dependency>
             <groupId>net.bytebuddy</groupId>

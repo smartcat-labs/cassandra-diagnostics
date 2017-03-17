@@ -14,9 +14,9 @@
 
     <properties>
         <version.bytebuddy>1.4.9</version.bytebuddy>
-        <version.cassandra>2.1.14</version.cassandra>
+        <version.cassandra>2.1.17</version.cassandra>
         <version.spring_instrument>4.2.6.RELEASE</version.spring_instrument>
-        <version.cassandra.driver>3.0.2</version.cassandra.driver>
+        <version.cassandra.driver>3.1.4</version.cassandra.driver>
         <version.powermock>1.6.5</version.powermock>
     </properties>
 

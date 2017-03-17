@@ -20,8 +20,8 @@ public class SlowQueryConfiguration {
      */
     public static class Values {
         private static final int DEFAULT_SLOW_QUERY_THRESHOLD = 25;
-        private static final boolean DEFAULT_SLOW_QUERY_REPORT_ENABLED = true;
-        private static final boolean DEFAULT_SLOW_QUERY_COUNT_REPORT_ENABLED = false;
+        private static final boolean DEFAULT_SLOW_QUERY_REPORT_ENABLED = false;
+        private static final boolean DEFAULT_SLOW_QUERY_COUNT_REPORT_ENABLED = true;
         private static final int DEFAULT_SLOW_QUERY_COUNT_REPORT_PERIOD = 1;
         private static final String DEFAULT_SLOW_QUERY_COUNT_REPORT_TIMEUNIT = "MINUTES";
 

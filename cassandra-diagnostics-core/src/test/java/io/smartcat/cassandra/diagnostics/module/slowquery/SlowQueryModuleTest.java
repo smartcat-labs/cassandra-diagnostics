@@ -29,6 +29,8 @@ public class SlowQueryModuleTest {
     @Test
     public void should_transform() throws ConfigurationException {
         ModuleConfiguration conf = new ModuleConfiguration();
+        conf.options.put("slowQueryReportEnabled", true);
+        conf.options.put("slowQueryCountReportEnabled", false);
         TestReporter reporter = new TestReporter(null);
         SlowQueryModule module = new SlowQueryModule(conf, testReporters(reporter));
 
@@ -37,6 +39,7 @@ public class SlowQueryModuleTest {
                         "select count(*) from keyspace.table");
 
         module.process(query);
+        module.stop();
 
         Measurement measurement = reporter.reported.get(0);
 
@@ -154,6 +157,7 @@ public class SlowQueryModuleTest {
         configuration.measurement = SLOW_QUERY_MESUREMENT_NAME;
         configuration.module = "io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule";
         configuration.options.put("slowQueryThresholdInMilliseconds", 0);
+        configuration.options.put("slowQueryReportEnabled", true);
         configuration.options.put("slowQueryCountReportEnabled", true);
         configuration.options.put("slowQueryCountReportPeriod", period);
         configuration.options.put("slowQueryCountReportTimeunit", "SECONDS");

@@ -135,12 +135,24 @@ public class Diagnostics implements QueryReporter {
      * Reloads configuration and reinitialize modules and reporters.
      */
     public void reload() {
+        Configuration newConfig;
+        try {
+            newConfig = loadConfiguration();
+            if (newConfig == null) {
+                logger.error("Reload operation unsuccessful. Fix configuration and reload again");
+                return;
+            }
+        } catch (IllegalStateException ex) {
+            logger.error("Reload operation failed. Fix configuration and reload again");
+            return;
+        }
+
         isRunning.set(false);
         logger.info("Reloading diagnostics configuation.");
         diagnosticsProcessor.shutdown();
         unregisterMXBean();
 
-        config = loadConfiguration();
+        config = newConfig;
         diagnosticsProcessor = new DiagnosticsProcessor(config);
         initMXBean();
         logger.info("Configuration realoaded");

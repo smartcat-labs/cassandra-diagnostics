@@ -19,6 +19,8 @@ public class SlowQueryConfigurationTest {
         SlowQueryConfiguration conf = SlowQueryConfiguration.create(options);
         assertThat(conf.slowQueryThreshold()).isEqualTo(25);
         assertThat(conf.tablesForLogging()).isEmpty();
+        assertThat(conf.slowQueryReportEnabled()).isTrue();
+        assertThat(conf.slowQueryCountReportEnabled()).isFalse();
     }
 
     @Test
@@ -26,12 +28,14 @@ public class SlowQueryConfigurationTest {
         Map<String, Object> options = new HashMap<>();
         options.put("slowQueryThresholdInMilliseconds", 10);
         options.put("tablesForLogging", Arrays.asList("keyspace1.table1", "keyspace2.table2"));
+        options.put("slowQueryCountReportEnabled", true);
 
         SlowQueryConfiguration conf = SlowQueryConfiguration.create(options);
         assertThat(conf.slowQueryThreshold()).isEqualTo(10);
         assertThat(conf.tablesForLogging().size()).isEqualTo(2);
         assertThat(conf.tablesForLogging()).contains("keyspace1.table1");
         assertThat(conf.tablesForLogging()).contains("keyspace2.table2");
+        assertThat(conf.slowQueryCountReportEnabled()).isTrue();
     }
 
     @Test

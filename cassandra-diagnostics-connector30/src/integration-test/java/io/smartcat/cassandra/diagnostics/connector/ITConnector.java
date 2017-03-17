@@ -16,7 +16,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
 import io.smartcat.cassandra.diagnostics.Query;
-import io.smartcat.cassandra.utils.EmbeddedCassandraServerHelper;
+import io.smartcat.cassandra.diagnostics.utils.EmbeddedCassandraServerHelper;
 
 public class ITConnector {
 

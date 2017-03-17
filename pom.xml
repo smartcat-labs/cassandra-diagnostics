@@ -18,6 +18,7 @@
     <modules>
         <module>cassandra-diagnostics-commons</module>
         <module>cassandra-diagnostics-core</module>
+        <module>cassandra-diagnostics-embedded-cassandra</module>
         <module>cassandra-diagnostics-connector21</module>
         <module>cassandra-diagnostics-connector30</module>
         <module>cassandra-diagnostics-ft</module>

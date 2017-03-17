@@ -1,4 +1,23 @@
-package io.smartcat.cassandra.utils;
+package io.smartcat.cassandra.diagnostics.utils;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.commitlog.CommitLog;
@@ -10,18 +29,6 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.reader.UnicodeReader;
-
-import java.io.*;
-import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * @author Jeremy Sevellec
@@ -270,7 +277,7 @@ public class EmbeddedCassandraServerHelper {
         mkdirs();
         CommitLog commitLog = CommitLog.instance;
         commitLog.getContext(); // wait for commit log allocator instantiation to avoid hanging on a race condition
-        commitLog.resetUnsafe(true); // cleanup screws w/ CommitLog, this brings it back to safe state
+//        commitLog.resetUnsafe(); // cleanup screws w/ CommitLog, this brings it back to safe state
     }
 
     private static void cleanup() throws IOException {

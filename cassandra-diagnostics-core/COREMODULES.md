@@ -124,3 +124,19 @@ Reporting period is by default 1 minute and more frequent updates should be cons
     tpStatsEnabled: false #optional
     repairsEnabled: false #optional
 ```
+
+## Cluster Health Module
+
+Cluster health module reports information about the health of the cluster exposed over JMX. For examples, it reports if nodes see other node(s) as DOWN. It is used to detect short network partitions or node unavailability.
+Default reporting interval is set to 10s in order to detect these short outages.
+
+#### Configuration
+
+```
+- module: io.smartcat.cassandra.diagnostics.module.unreachable.ClusterHealthModule
+  options:
+    period: 10 #optional
+    timeunit: SECONDS #optional
+    numberOfUnreachableNodesEnabled: true #optional
+```
+

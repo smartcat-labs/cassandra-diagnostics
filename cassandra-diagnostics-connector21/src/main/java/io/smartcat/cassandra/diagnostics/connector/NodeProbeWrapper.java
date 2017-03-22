@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.apache.cassandra.concurrent.JMXEnabledThreadPoolExecutorMBean;
 import org.apache.cassandra.tools.NodeProbe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
@@ -17,6 +19,8 @@ import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
  * NodeProbe class wrapper that exposes data and action functions.
  */
 public class NodeProbeWrapper implements InfoProvider {
+
+    private static final Logger logger = LoggerFactory.getLogger(InfoProvider.class);
 
     private final NodeProbe nodeProbe;
 
@@ -36,8 +40,8 @@ public class NodeProbeWrapper implements InfoProvider {
     /**
      * NodeProbe constructor.
      *
-     * @param host     cassandra jmx host
-     * @param port     cassandra jmx port
+     * @param host cassandra jmx host
+     * @param port cassandra jmx port
      * @param username cassandra jmx username (optional)
      * @param password cassandra jmx password (optional)
      * @throws IOException JMX connection exception
@@ -101,4 +105,14 @@ public class NodeProbeWrapper implements InfoProvider {
         return repairSessions;
     }
 
+    /**
+     * Get unreachable nodes from the node's point of view (using the node's failure detection mechanism).
+     *
+     * @return unreachable nodes list
+     */
+    @Override
+    public List<String> getUnreachableNodes() {
+        List<String> unreachableNodes = this.nodeProbe.getUnreachableNodes();
+        return unreachableNodes;
+    }
 }

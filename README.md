@@ -67,6 +67,11 @@ Default reporting interval is 1 second.
 Status module is used to report Cassandra information exposed over JMX. It reports compaction information as a single measurement.
 Default reporting interval is 1 minute.
 
+#### Cluster Health Module
+
+Cluster health module is used to report the health status of the nodes such as which nodes are marked as DOWN by gossiper. It uses the information exposed over JMX.
+Default reporting interval is 10 seconds.
+
 ### Reporters
 
 Reporters take measurement from core and wrap them up in implementation specific format so it can be sent to reporters target (i.e. Influx reporter transforms measurement to influx query and stores it to InfluxDB).

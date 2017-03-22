@@ -17,6 +17,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.instrument.InstrumentationSavingAgent;
 
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+
 public class ConnectorImplTest {
 
     private static Instrumentation instrumentation;
@@ -42,8 +44,8 @@ public class ConnectorImplTest {
         queryProcessor.processStatement(statement, queryState, options);
 
         verify(queryProcessorWrapper)
-                .processStatement(same(statement), same(queryState), same(options), any(Long.class),
-                        any(ResultMessage.class));
+                .processPrepared(same(statement), same(queryState), same(options), any(Long.class),
+                        any(ResultMessage.class), any(ConcurrentLinkedHashMap.class));
     }
 
     private void setStatic(Field field, Object newValue) throws Exception {

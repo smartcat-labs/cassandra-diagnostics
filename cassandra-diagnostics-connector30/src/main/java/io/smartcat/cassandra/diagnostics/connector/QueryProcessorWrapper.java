@@ -28,6 +28,8 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
 
     private static final ConcurrentMap<MD5Digest, String> preparedStatementQueries = new ConcurrentHashMap<>();
 
+    private boolean slowQueryTracingEnabled = false;
+
     /**
      * Constructor.
      *
@@ -36,6 +38,7 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
      */
     public QueryProcessorWrapper(QueryReporter queryReporter, ConnectorConfiguration configuration) {
         super(queryReporter, configuration);
+        slowQueryTracingEnabled = configuration.enableTracing;
     }
 
     /**
@@ -113,8 +116,8 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
             public void run() {
                 try {
                     CQLStatement cqlStatement;
-                    String cqlQuery;
-                    
+                    String cqlQuery = "";
+
                     if (statement == null && queryString == null) {
                         throw new IllegalStateException("Both prepared statement and query string are missing.");
                     } else if (statement == null) {
@@ -122,17 +125,20 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
                         cqlQuery = queryString;
                     } else {
                         cqlStatement = statement;
-                        MD5Digest preparedStatementKey = null;
-                        for (MD5Digest digest : preparedStatements.keySet()) {
-                            ParsedStatement.Prepared prepared = preparedStatements.get(digest);
-                            if (prepared.statement == statement) {
-                                preparedStatementKey = digest;
+
+                        if (slowQueryTracingEnabled) {
+                            MD5Digest preparedStatementKey = null;
+                            for (MD5Digest digest : preparedStatements.keySet()) {
+                                ParsedStatement.Prepared prepared = preparedStatements.get(digest);
+                                if (prepared.statement == statement) {
+                                    preparedStatementKey = digest;
+                                }
                             }
-                        }                       
-                        cqlQuery = preparedStatementQueries.get(preparedStatementKey);
+                            cqlQuery = preparedStatementQueries.get(preparedStatementKey);
+                        }
                     }
-                    
-                    Query query = extractQuery(startTime, execTime, cqlQuery, cqlStatement, queryState, options);
+
+                    Query query = createQuery(startTime, execTime, cqlQuery, cqlStatement, queryState, options);
                     logger.trace("Reporting query: {}.", query);
                     queryReporter.report(query);
                 } catch (Exception e) {
@@ -142,35 +148,34 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
         });
     }
 
-    private Query extractQuery(final long startTime, final long execTime, final String queryString, 
+    private Query createQuery(final long startTime, final long execTime, final String queryString,
             final CQLStatement statement, final QueryState queryState, final QueryOptions options) {
-        Query query;        
+        Query query;
         if (statement instanceof SelectStatement) {
-            query = extractQuery(startTime, execTime, queryString, (SelectStatement) statement, 
+            query = createQuery(startTime, execTime, queryString, (SelectStatement) statement,
                     queryState, options);
         } else if (statement instanceof ModificationStatement) {
-            query = extractQuery(startTime, execTime, queryString, (ModificationStatement) statement, 
+            query = createQuery(startTime, execTime, queryString, (ModificationStatement) statement,
                     queryState, options);
         } else {
-            query = extractGenericQuery(startTime, execTime, queryString, statement, queryState, options);
+            query = createGenericQuery(startTime, execTime, queryString, statement, queryState, options);
         }
         return query;
     }
 
-    private Query extractQuery(final long startTime, final long execTime, final String queryString,
+    private Query createQuery(final long startTime, final long execTime, final String queryString,
             final SelectStatement statement, final QueryState queryState, final QueryOptions options) {
-        //statement.getSelection().getColumnMapping().
         return Query.create(startTime, execTime, queryState.getClientState().getRemoteAddress().toString(),
                 Query.StatementType.SELECT, statement.keyspace(), statement.columnFamily(), queryString);
     }
 
-    private Query extractQuery(final long startTime, final long execTime, final String queryString,
+    private Query createQuery(final long startTime, final long execTime, final String queryString,
             final ModificationStatement statement, final QueryState queryState, final QueryOptions options) {
         return Query.create(startTime, execTime, queryState.getClientState().getRemoteAddress().toString(),
                 Query.StatementType.UPDATE, statement.keyspace(), statement.columnFamily(), queryString);
     }
 
-    private Query extractGenericQuery(final long startTime, final long execTime, final String queryString,
+    private Query createGenericQuery(final long startTime, final long execTime, final String queryString,
             final CQLStatement statement, final QueryState queryState, final QueryOptions options) {
         return Query.create(startTime, execTime, queryState.getClientState().getRemoteAddress().toString(),
                 Query.StatementType.UNKNOWN, "", "", queryString);

@@ -127,7 +127,7 @@ public class StatusModuleTest {
         };
 
         final StatusModule module = new StatusModule(testConfiguration(1, false, false, false), reporters);
-        boolean wait = latch.await(100, TimeUnit.MILLISECONDS);
+        boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isFalse();
         assertThat(testReporter.getReported().size()).isEqualTo(0);

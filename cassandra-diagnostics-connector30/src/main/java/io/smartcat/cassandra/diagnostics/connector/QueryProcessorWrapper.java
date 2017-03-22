@@ -26,7 +26,7 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(QueryProcessorWrapper.class);
 
-    private static final ConcurrentMap<MD5Digest, String> preparedStatementQueries = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<MD5Digest, String> PREPARED_STATEMENT_QUERIES = new ConcurrentHashMap<>();
 
     private boolean slowQueryTracingEnabled = false;
 
@@ -50,6 +50,8 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
      * @param queryState QueryProcessor#processPrepared(CQLStatement, QueryState, QueryOptions)
      * @param options    QueryProcessor#processPrepared(CQLStatement, QueryState, QueryOptions)
      * @param startTime  query execution start time
+     * @param result statement execution result
+     * @param preparedStatements QueryProcessor's internal list of prepared statements
      */
     public void processPrepared(CQLStatement statement, QueryState queryState, QueryOptions options, long startTime,
             ResultMessage result, ConcurrentLinkedHashMap<MD5Digest, ParsedStatement.Prepared> preparedStatements) {
@@ -66,6 +68,7 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
      * @param queryState QueryProcessor#process(String, QueryState, QueryOptions)
      * @param options    QueryProcessor#process(String, QueryState, QueryOptions)
      * @param startTime  query execution start time
+     * @param result statement execution result
      */
     public void process(String queryString, QueryState queryState, QueryOptions options, long startTime,
             ResultMessage result) {
@@ -91,7 +94,7 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
         for (MD5Digest digest : preparedStatements.keySet()) {
             ParsedStatement.Prepared existingPrepared = preparedStatements.get(digest);
             if (prepared == existingPrepared) {
-                preparedStatementQueries.put(digest, queryString);
+                PREPARED_STATEMENT_QUERIES.put(digest, queryString);
             }
         }
     }
@@ -134,7 +137,7 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
                                     preparedStatementKey = digest;
                                 }
                             }
-                            cqlQuery = preparedStatementQueries.get(preparedStatementKey);
+                            cqlQuery = PREPARED_STATEMENT_QUERIES.get(preparedStatementKey);
                         }
                     }
 

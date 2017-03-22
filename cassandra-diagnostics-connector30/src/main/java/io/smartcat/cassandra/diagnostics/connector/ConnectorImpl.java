@@ -169,7 +169,7 @@ public class ConnectorImpl implements Connector {
                                             .and(returns(
                                                     named("org.apache.cassandra.transport.messages.ResultMessage")))));
                     }
-                })                
+                })
                 .transform(new Transformer() {
                     @Override
                     public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription,
@@ -177,17 +177,8 @@ public class ConnectorImpl implements Connector {
                         return builder.visit(Advice.to(StorePreparedAdvice.class)
                                         .on(named("storePreparedStatement")));
                     }
-                })                
+                })
                 .installOn(inst);
-        
-//        public ResultMessage process(String queryString, QueryState queryState, QueryOptions options)
-//                throws RequestExecutionException, RequestValidationException        
-        
-//        public ResultMessage processPrepared(CQLStatement statement, QueryState queryState, QueryOptions options)
-//                throws RequestExecutionException, RequestValidationException
-
-//        private static ResultMessage.Prepared storePreparedStatement(String queryString, String keyspace, ParsedStatement.Prepared prepared, boolean forThrift)
-//                throws InvalidRequestException
     }
 
     /**
@@ -240,6 +231,7 @@ public class ConnectorImpl implements Connector {
          * @param queryState query state information
          * @param options    query options
          * @param result     intercepted method's execution result
+         * @param preparedStatements QueryProcessor's internal list of prepared statements
          */
         @Advice.OnMethodExit
         public static void exit(@Advice.Enter long startTime, @Advice.Argument(0) CQLStatement statement,
@@ -270,7 +262,7 @@ public class ConnectorImpl implements Connector {
          * Code executed after the intercepted method.
          *
          * @param startTime execution start time recorded by the enter method.
-         * @param statement CQL statement to be executed
+         * @param queryString CQL query string
          * @param queryState query state information
          * @param options query options
          * @param result intercepted method's execution result
@@ -303,10 +295,11 @@ public class ConnectorImpl implements Connector {
          * Code executed after the intercepted method.
          *
          * @param startTime execution start time recorded by the enter method.
-         * @param statement CQL statement to be executed
-         * @param queryState query state information
-         * @param options query options
-         * @param result intercepted method's execution result
+         * @param queryString CQL statement string
+         * @param keyspace query's keyspace
+         * @param prepared prepared statement
+         * @param forThrift is it a Thrift statement
+         * @param preparedStatements QueryProcessor's internal list of prepared statements
          */
         @Advice.OnMethodExit
         public static void exit(@Advice.Enter long startTime, @Advice.Argument(0) String queryString,
@@ -315,7 +308,7 @@ public class ConnectorImpl implements Connector {
                 ConcurrentLinkedHashMap<MD5Digest, ParsedStatement.Prepared> preparedStatements) {
             ConnectorImpl.queryProcessorWrapper()
                 .storePrepared(queryString, keyspace, forThrift, prepared, preparedStatements);
-        }      
+        }
     }
 
     /**
@@ -335,7 +328,7 @@ public class ConnectorImpl implements Connector {
     private static TypeDescription cqlStatementDescription() {
         return new TypeDescription.Latent("org.apache.cassandra.cql3.CQLStatement", Modifier.INTERFACE, null, null);
     }
-    
+
     /**
      * QueryState class type description helper.
      *

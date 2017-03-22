@@ -27,4 +27,11 @@ public interface InfoProvider {
      * @return repair sessions
      */
     long getRepairSessions();
+
+    /**
+     * Get the list of unreachable nodes.
+     * @return unreachable nodes list
+     */
+    List<String> getUnreachableNodes();
+
 }

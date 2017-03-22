@@ -40,8 +40,8 @@ public class NodeProbeWrapper implements InfoProvider {
     /**
      * NodeProbe constructor.
      *
-     * @param host     cassandra jmx host
-     * @param port     cassandra jmx port
+     * @param host cassandra jmx host
+     * @param port cassandra jmx port
      * @param username cassandra jmx username (optional)
      * @param password cassandra jmx password (optional)
      * @throws IOException JMX connection exception
@@ -96,15 +96,26 @@ public class NodeProbeWrapper implements InfoProvider {
         Multimap<String, String> threadPools = nodeProbe.getThreadPools();
         for (Map.Entry<String, String> tpool : threadPools.entries()) {
             if (tpool.getValue().startsWith(REPAIR_THREAD_POOL_PREFIX)) {
-                int activeRepairSessions = (int) nodeProbe
-                        .getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "ActiveTasks");
-                long pendingRepairSessions = (long) nodeProbe
-                        .getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "PendingTasks");
+                int activeRepairSessions = (int) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(),
+                        "ActiveTasks");
+                long pendingRepairSessions = (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(),
+                        "PendingTasks");
                 repairSessions = activeRepairSessions + pendingRepairSessions;
             }
         }
 
         return repairSessions;
+    }
+
+    /**
+     * Get unreachable nodes from the node's point of view (using the node's failure detection mechanism).
+     *
+     * @return unreachable nodes list. If no nodes are unreachable, returns the empty list.
+     */
+    @Override
+    public List<String> getUnreachableNodes() {
+        List<String> unreachableNodes = this.nodeProbe.getUnreachableNodes();
+        return unreachableNodes;
     }
 
 }

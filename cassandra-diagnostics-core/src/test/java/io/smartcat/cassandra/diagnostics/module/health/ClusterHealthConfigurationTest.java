@@ -18,8 +18,8 @@ public class ClusterHealthConfigurationTest {
     public void loads_default_configuration() throws Exception {
         Map<String, Object> options = new HashMap<>();
         ClusterHealthConfiguration conf = ClusterHealthConfiguration.create(options);
-        assertThat(conf.period()).isEqualTo(1);
-        assertThat(conf.timeunit()).isEqualTo(TimeUnit.MINUTES);
+        assertThat(conf.period()).isEqualTo(10);
+        assertThat(conf.timeunit()).isEqualTo(TimeUnit.SECONDS);
         assertThat(conf.numberOfUnreachableNodesEnabled()).isFalse();
     }
 

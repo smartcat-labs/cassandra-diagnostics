@@ -133,7 +133,7 @@ Default reporting interval is set to 10s in order to detect these short outages.
 #### Configuration
 
 ```
-- module: io.smartcat.cassandra.diagnostics.module.unreachable.ClusterHealthModule
+- module: io.smartcat.cassandra.diagnostics.module.health.ClusterHealthModule
   options:
     period: 10 #optional
     timeunit: SECONDS #optional

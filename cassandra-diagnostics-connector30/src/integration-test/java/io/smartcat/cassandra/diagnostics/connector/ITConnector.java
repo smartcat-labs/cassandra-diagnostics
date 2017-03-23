@@ -61,7 +61,7 @@ public class ITConnector {
         String cql = "SELECT uid FROM test_keyspace.test_table";
         PreparedStatement prepared = session.prepare(cql);
         session.execute(cql);
-        session.execute(prepared.bind().setReadTimeoutMillis(20000).setDefaultTimestamp(20000));
+        session.execute(prepared.bind());
         Thread.sleep(2000);
         cluster.close();
         lock.await(60000, TimeUnit.MILLISECONDS);

@@ -23,29 +23,31 @@ public class ITConnector {
 
     private static Cluster cluster;
     private static Session session;
-    private static CountDownLatch lock = new CountDownLatch(1);
-    private static boolean queryIntercepted;
+    private static CountDownLatch lock = new CountDownLatch(2);
+    private static int queryInterceptedCnt;
 
     @BeforeClass
     public static void setUp() throws ConfigurationException, TTransportException, IOException, InterruptedException {
-        queryIntercepted = true;
-/*
+        queryInterceptedCnt = 0;
+
         final Instrumentation inst = InstrumentationSavingAgent.getInstrumentation();
         ConnectorConfiguration configuration = new ConnectorConfiguration();
+        configuration.enableTracing = true;
         final Connector connector = new ConnectorImpl();
         connector.init(inst, new QueryReporter() {
             @Override
             public void report(Query query) {
                 if (Query.StatementType.SELECT.equals(query.statementType()) && "test_keyspace"
-                        .equalsIgnoreCase(query.keyspace()) && "test_table".equalsIgnoreCase(query.tableName())) {
-                    queryIntercepted = true;
+                        .equalsIgnoreCase(query.keyspace()) && "test_table".equalsIgnoreCase(query.tableName()) &&
+                        query.statement().equalsIgnoreCase("SELECT uid FROM test_keyspace.test_table")) {
+                    queryInterceptedCnt++;
                     lock.countDown();
                 }
             }
         }, configuration);
-*/        
+        
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-//        connector.waitForSetupCompleted();
+        connector.waitForSetupCompleted();
         Thread.sleep(4000);
         cluster = Cluster.builder().addContactPoint("127.0.0.1").withPort(9142).build();
         session = cluster.connect();
@@ -58,12 +60,12 @@ public class ITConnector {
         session.execute("CREATE TABLE IF NOT EXISTS test_keyspace.test_table (uid uuid PRIMARY KEY);");
         String cql = "SELECT uid FROM test_keyspace.test_table";
         PreparedStatement prepared = session.prepare(cql);
-        //session.execute(cql);
+        session.execute(cql);
         session.execute(prepared.bind().setReadTimeoutMillis(20000).setDefaultTimestamp(20000));
-        Thread.sleep(20000);
+        Thread.sleep(2000);
         cluster.close();
         lock.await(60000, TimeUnit.MILLISECONDS);
-        Assert.assertTrue(queryIntercepted);
+        Assert.assertEquals(2, queryInterceptedCnt);
     }
 
 }

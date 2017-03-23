@@ -29,7 +29,8 @@ public class ConnectorImplTest {
     }
 
     @Test
-    public void invokes_wrapper_when_query_processor_activates() throws Exception {
+    @SuppressWarnings("unchecked")
+    public void invokes_wrapper_when_query_processor_process_prepared_activates() throws Exception {
         ConnectorConfiguration configuration = new ConnectorConfiguration();
         Connector connector = new ConnectorImpl();
         connector.init(instrumentation, mock(QueryReporter.class), configuration);
@@ -41,7 +42,7 @@ public class ConnectorImplTest {
         CQLStatement statement = mock(CQLStatement.class);
         QueryState queryState = mock(QueryState.class);
         QueryOptions options = mock(QueryOptions.class);
-        queryProcessor.processStatement(statement, queryState, options);
+        queryProcessor.processPrepared(statement, queryState, options);
 
         verify(queryProcessorWrapper)
                 .processPrepared(same(statement), same(queryState), same(options), any(Long.class),

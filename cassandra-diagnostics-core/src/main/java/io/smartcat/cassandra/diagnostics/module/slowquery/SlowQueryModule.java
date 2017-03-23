@@ -32,6 +32,8 @@ public class SlowQueryModule extends Module {
 
     private static final String SLOW_QUERY_COUNT_THREAD_NAME = "slow-query-count-timer";
 
+    private final SlowQueryConfiguration config;
+
     private final String service;
 
     private final String slowQueryCountMeasurementName;
@@ -51,7 +53,7 @@ public class SlowQueryModule extends Module {
      */
     public SlowQueryModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
         super(configuration, reporters);
-        SlowQueryConfiguration config = SlowQueryConfiguration.create(configuration.options);
+        config = SlowQueryConfiguration.create(configuration.options);
 
         service = configuration.getMeasurementOrDefault(DEFAULT_MEASUREMENT_NAME);
         slowQueryCountMeasurementName = service + SLOW_QUERY_COUNT_SUFFIX;
@@ -86,27 +88,33 @@ public class SlowQueryModule extends Module {
             throw new IllegalArgumentException("Cannot log slow query because hostname is not resolved.");
         }
 
-        slowQueryCounts.get(query.statementType()).increment();
+        if (config.slowQueryCountReportEnabled()) {
+            slowQueryCounts.get(query.statementType()).increment();
+        }
 
-        final Map<String, String> tags = new HashMap<>(4);
-        tags.put("host", hostname);
-        tags.put("statementType", query.statementType().toString());
+        if (config.slowQueryReportEnabled()) {
+            final Map<String, String> tags = new HashMap<>(4);
+            tags.put("host", hostname);
+            tags.put("statementType", query.statementType().toString());
 
-        final Map<String, String> fields = new HashMap<>(4);
-        fields.put("client", query.clientAddress());
-        fields.put("statement", query.statement());
+            final Map<String, String> fields = new HashMap<>(4);
+            fields.put("client", query.clientAddress());
+            fields.put("statement", query.statement());
 
-        final Measurement measurement = Measurement
-                .create(service, (double) query.executionTimeInMilliseconds(), query.startTimeInMilliseconds(),
-                        TimeUnit.MILLISECONDS, tags, fields);
+            final Measurement measurement = Measurement
+                    .create(service, (double) query.executionTimeInMilliseconds(), query.startTimeInMilliseconds(),
+                            TimeUnit.MILLISECONDS, tags, fields);
 
-        logger.trace("Measurement transformed: {}", measurement);
-        report(measurement);
+            logger.trace("Measurement transformed: {}", measurement);
+            report(measurement);
+        }
     }
 
     @Override
     public void stop() {
-        timer.cancel();
+        if (timer != null) {
+            timer.cancel();
+        }
     }
 
     /**

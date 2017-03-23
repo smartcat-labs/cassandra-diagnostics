@@ -29,6 +29,8 @@ public class SlowQueryModuleTest {
     @Test
     public void should_transform() throws ConfigurationException {
         ModuleConfiguration conf = new ModuleConfiguration();
+        conf.options.put("slowQueryReportEnabled", true);
+        conf.options.put("slowQueryCountReportEnabled", false);
         TestReporter reporter = new TestReporter(null);
         SlowQueryModule module = new SlowQueryModule(conf, testReporters(reporter));
 
@@ -37,6 +39,7 @@ public class SlowQueryModuleTest {
                         "select count(*) from keyspace.table");
 
         module.process(query);
+        module.stop();
 
         Measurement measurement = reporter.reported.get(0);
 
@@ -97,11 +100,64 @@ public class SlowQueryModuleTest {
         assertThat(numberOfSlowQueries).isEqualTo(slowQueryCounts);
     }
 
+    @Test
+    public void should_not_report_any_slow_queries() throws InterruptedException, ConfigurationException {
+        final ModuleConfiguration configuration = new ModuleConfiguration();
+        configuration.measurement = SLOW_QUERY_MESUREMENT_NAME;
+        configuration.module = "io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule";
+        configuration.options.put("slowQueryThresholdInMilliseconds", 0);
+        configuration.options.put("slowQueryReportEnabled", false);
+        configuration.options.put("slowQueryCountReportEnabled", false);
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final List<Reporter> reporters = new ArrayList<Reporter>() {
+            {
+                add(latchTestReporter);
+            }
+        };
+
+        final Query selectQuery = mock(Query.class);
+        when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+        final Query updateQuery = mock(Query.class);
+        when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+
+        final SlowQueryModule module = new SlowQueryModule(configuration, reporters);
+
+        final long numberOfSlowQueries = 100;
+        for (int i = 0; i < numberOfSlowQueries / 2; i++) {
+            module.process(selectQuery);
+            module.process(updateQuery);
+        }
+
+        boolean waited = latch.await(100, TimeUnit.MILLISECONDS);
+        module.stop();
+
+        long reportedMeasurementCount = 0;
+        for (final Measurement measurement : latchTestReporter.getReported()) {
+            if (measurement.name().equals(SLOW_QUERY_MESUREMENT_NAME)) {
+                reportedMeasurementCount++;
+            }
+        }
+
+        long slowQueryCounts = 0;
+        for (final Measurement measurement : latchTestReporter.getReported()) {
+            if (measurement.name().equals(SLOW_QUERY_MESUREMENT_NAME + SLOW_QUERY_COUNT_SUFIX)) {
+                slowQueryCounts += measurement.getValue();
+            }
+        }
+
+        assertThat(waited).isFalse();
+        assertThat(reportedMeasurementCount).isEqualTo(0);
+        assertThat(slowQueryCounts).isEqualTo(0);
+    }
+
     private ModuleConfiguration testConfiguration(final int period) {
         final ModuleConfiguration configuration = new ModuleConfiguration();
         configuration.measurement = SLOW_QUERY_MESUREMENT_NAME;
         configuration.module = "io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule";
         configuration.options.put("slowQueryThresholdInMilliseconds", 0);
+        configuration.options.put("slowQueryReportEnabled", true);
         configuration.options.put("slowQueryCountReportEnabled", true);
         configuration.options.put("slowQueryCountReportPeriod", period);
         configuration.options.put("slowQueryCountReportTimeunit", "SECONDS");

@@ -5,7 +5,7 @@
 
     <groupId>io.smartcat</groupId>
     <artifactId>cassandra-diagnostics</artifactId>
-    <version>1.3.8</version>
+    <version>1.3.9</version>
     <packaging>pom</packaging>
 
     <name>Cassandra Diagnostics</name>
@@ -18,6 +18,7 @@
     <modules>
         <module>cassandra-diagnostics-commons</module>
         <module>cassandra-diagnostics-core</module>
+        <module>cassandra-diagnostics-embedded-cassandra</module>
         <module>cassandra-diagnostics-connector21</module>
         <module>cassandra-diagnostics-connector30</module>
         <module>cassandra-diagnostics-ft</module>

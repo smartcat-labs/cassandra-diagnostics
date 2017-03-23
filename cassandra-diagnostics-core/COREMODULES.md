@@ -28,14 +28,18 @@ Slow Query module is monitoring execution time of each query and if it is above 
 #### Configuration
 
 You can specify slow query threshold (in ms) and list of keyspace.table_name for logging. All options are optional with default threshold of 25ms and all table logging.
-There is a slow query counter available that periodically reports the count of slow queries over the configured period.
+There is a slow query counter available that periodically reports the count of slow queries over the configured period.   
+Two main options that impact reporting are:
+* `slowQueryReportEnabled:` Defines is each slow query will be reported (false by default)
+* `slowQueryCountReportEnabled:` Defines if slow query periodic count will be reported (true by default)
 
 ```
 - module: io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule
   measurement: slow_query #optional
   options:
     slowQueryThresholdInMilliseconds: 25 #optional
-    slowQueryCountReportEnabled: false #optional
+    slowQueryReportEnabled: false #optional
+    slowQueryCountReportEnabled: true #optional
     slowQueryCountReportPeriod: 1 #optional
     slowQueryCountReportTimeunit: MINUTES #optional
     tablesForLogging: #optional
@@ -120,3 +124,19 @@ Reporting period is by default 1 minute and more frequent updates should be cons
     tpStatsEnabled: false #optional
     repairsEnabled: false #optional
 ```
+
+## Cluster Health Module
+
+Cluster health module reports information about the health of the cluster exposed over JMX. For examples, it reports if nodes see other node(s) as DOWN. It is used to detect short network partitions or node unavailability.
+Default reporting interval is set to 10s in order to detect these short outages.
+
+#### Configuration
+
+```
+- module: io.smartcat.cassandra.diagnostics.module.unreachable.ClusterHealthModule
+  options:
+    period: 10 #optional
+    timeunit: SECONDS #optional
+    numberOfUnreachableNodesEnabled: true #optional
+```
+

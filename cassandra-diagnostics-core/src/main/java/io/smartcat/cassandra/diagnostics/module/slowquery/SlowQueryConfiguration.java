@@ -12,7 +12,6 @@ import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 
 /**
  * Typed configuration class with reasonable defaults for this module.
- *
  */
 public class SlowQueryConfiguration {
 
@@ -21,7 +20,8 @@ public class SlowQueryConfiguration {
      */
     public static class Values {
         private static final int DEFAULT_SLOW_QUERY_THRESHOLD = 25;
-        private static final boolean DEFAULT_SLOW_QUERY_COUNT_REPORT_ENABLED = false;
+        private static final boolean DEFAULT_SLOW_QUERY_REPORT_ENABLED = false;
+        private static final boolean DEFAULT_SLOW_QUERY_COUNT_REPORT_ENABLED = true;
         private static final int DEFAULT_SLOW_QUERY_COUNT_REPORT_PERIOD = 1;
         private static final String DEFAULT_SLOW_QUERY_COUNT_REPORT_TIMEUNIT = "MINUTES";
 
@@ -33,6 +33,11 @@ public class SlowQueryConfiguration {
          * Table names to filter queries.
          */
         public List<String> tablesForLogging = new ArrayList<String>();
+
+        /**
+         * Slow query reporting enabled.
+         */
+        public boolean slowQueryReportEnabled = DEFAULT_SLOW_QUERY_REPORT_ENABLED;
 
         /**
          * Slow query count reporting enabled.
@@ -57,6 +62,7 @@ public class SlowQueryConfiguration {
 
     /**
      * Creates typed configuration for slow query module out of generic module configuration.
+     *
      * @param options Module configuration options.
      * @return typed slow query module configuration from a generic one.
      * @throws ConfigurationException in case the provided module configuration is not valid
@@ -75,6 +81,7 @@ public class SlowQueryConfiguration {
 
     /**
      * Threshold for reporting slow queries.
+     *
      * @return threshold for slow queries.
      */
     public int slowQueryThreshold() {
@@ -83,10 +90,20 @@ public class SlowQueryConfiguration {
 
     /**
      * List of tables to log slow queries on.
+     *
      * @return list of full table names (keyspace.table) to use when logging slow queries.
      */
     public List<String> tablesForLogging() {
         return Collections.unmodifiableList(values.tablesForLogging);
+    }
+
+    /**
+     * Should report each slow query.
+     *
+     * @return should report each slow query
+     */
+    public boolean slowQueryReportEnabled() {
+        return values.slowQueryReportEnabled;
     }
 
     /**

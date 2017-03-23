@@ -26,6 +26,11 @@ public class ConnectorConfiguration {
     public int queuedEventsRelaxThreshold = 700;
 
     /**
+     * Whether to enable tracing or not. It is useful for various modules when debugging.
+     */
+    public boolean enableTracing = false;
+
+    /**
      * Returns the default configuration.
      * @return default configuration
      */

@@ -1,4 +1,23 @@
-package io.smartcat.cassandra.utils;
+package io.smartcat.cassandra.diagnostics.utils;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.commitlog.CommitLog;
@@ -11,32 +30,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.reader.UnicodeReader;
 
-import java.io.*;
-import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
+//CHECKSTYLE:OFF
 /**
+ * Embedded cassandra server helper class that creates a cassandra server instance for unit testing.
+ *
  * @author Jeremy Sevellec
  */
 public class EmbeddedCassandraServerHelper {
 
     private static Logger log = LoggerFactory.getLogger(EmbeddedCassandraServerHelper.class);
 
-    public static final long DEFAULT_STARTUP_TIMEOUT = 10000;
-    public static final String DEFAULT_TMP_DIR = "target/embeddedCassandra";
+    private static final long DEFAULT_STARTUP_TIMEOUT = 10000;
+    private static final String DEFAULT_TMP_DIR = "target/embeddedCassandra";
     /** Default configuration file. Starts embedded cassandra under the well known ports */
-    public static final String DEFAULT_CASSANDRA_YML_FILE = "cu-cassandra.yaml";
+    private static final String DEFAULT_CASSANDRA_YML_FILE = "cu-cassandra.yaml";
     /** Configuration file which starts the embedded cassandra on a random free port. */
-    public static final String CASSANDRA_RNDPORT_YML_FILE = "cu-cassandra-rndport.yaml";
-    public static final String DEFAULT_LOG4J_CONFIG_FILE = "/log4j-embedded-cassandra.properties";
+    private static final String CASSANDRA_RNDPORT_YML_FILE = "cu-cassandra-rndport.yaml";
+    private static final String DEFAULT_LOG4J_CONFIG_FILE = "/log4j-embedded-cassandra.properties";
     private static final String INTERNAL_CASSANDRA_KEYSPACE = "system";
     private static final String INTERNAL_CASSANDRA_AUTH_KEYSPACE = "system_auth";
     private static final String INTERNAL_CASSANDRA_DISTRIBUTED_KEYSPACE = "system_distributed";
@@ -49,33 +59,33 @@ public class EmbeddedCassandraServerHelper {
     private EmbeddedCassandraServerHelper() {
     }
 
-    public static void startEmbeddedCassandra() throws TTransportException, IOException, InterruptedException,
-            ConfigurationException {
+    public static void startEmbeddedCassandra()
+            throws TTransportException, IOException, InterruptedException, ConfigurationException {
         startEmbeddedCassandra(DEFAULT_STARTUP_TIMEOUT);
     }
 
-    public static void startEmbeddedCassandra(long timeout) throws TTransportException, IOException,
-            InterruptedException, ConfigurationException {
+    public static void startEmbeddedCassandra(long timeout)
+            throws TTransportException, IOException, InterruptedException, ConfigurationException {
         startEmbeddedCassandra(DEFAULT_CASSANDRA_YML_FILE, timeout);
     }
 
-    public static void startEmbeddedCassandra(String yamlFile) throws TTransportException, IOException,
-            ConfigurationException {
+    public static void startEmbeddedCassandra(String yamlFile)
+            throws TTransportException, IOException, ConfigurationException {
         startEmbeddedCassandra(yamlFile, DEFAULT_STARTUP_TIMEOUT);
     }
 
-    public static void startEmbeddedCassandra(String yamlFile, long timeout) throws TTransportException, IOException,
-            ConfigurationException {
+    public static void startEmbeddedCassandra(String yamlFile, long timeout)
+            throws TTransportException, IOException, ConfigurationException {
         startEmbeddedCassandra(yamlFile, DEFAULT_TMP_DIR, timeout);
     }
 
-    public static void startEmbeddedCassandra(String yamlFile, String tmpDir) throws TTransportException, IOException,
-            ConfigurationException {
+    public static void startEmbeddedCassandra(String yamlFile, String tmpDir)
+            throws TTransportException, IOException, ConfigurationException {
         startEmbeddedCassandra(yamlFile, tmpDir, DEFAULT_STARTUP_TIMEOUT);
     }
 
-    public static void startEmbeddedCassandra(String yamlFile, String tmpDir, long timeout) throws TTransportException,
-            IOException, ConfigurationException {
+    public static void startEmbeddedCassandra(String yamlFile, String tmpDir, long timeout)
+            throws TTransportException, IOException, ConfigurationException {
         if (cassandraDaemon != null) {
             /* nothing to do Cassandra is already started */
             return;
@@ -99,8 +109,8 @@ public class EmbeddedCassandraServerHelper {
      * @throws IOException
      * @throws ConfigurationException
      */
-    public static void startEmbeddedCassandra(File file, String tmpDir, long timeout) throws TTransportException,
-            IOException, ConfigurationException {
+    public static void startEmbeddedCassandra(File file, String tmpDir, long timeout)
+            throws TTransportException, IOException, ConfigurationException {
         if (cassandraDaemon != null) {
             /* nothing to do Cassandra is already started */
             return;
@@ -154,7 +164,7 @@ public class EmbeddedCassandraServerHelper {
         launchedYamlFile = yamlFile;
     }
 
-     /**
+    /**
      * drop all keyspaces (expect system).
      */
     public static void cleanEmbeddedCassandra() {
@@ -200,9 +210,8 @@ public class EmbeddedCassandraServerHelper {
     private static void dropKeyspaces() {
         String host = DatabaseDescriptor.getRpcAddress().getHostName();
         int port = DatabaseDescriptor.getNativeTransportPort();
-        try (com.datastax.driver.core.Cluster cluster =
-             com.datastax.driver.core.Cluster.builder().addContactPoint(host).withPort(port).build();
-             com.datastax.driver.core.Session session = cluster.connect()) {
+        try (com.datastax.driver.core.Cluster cluster = com.datastax.driver.core.Cluster.builder().addContactPoint(host)
+                .withPort(port).build(); com.datastax.driver.core.Session session = cluster.connect()) {
             List<String> keyspaces = new ArrayList<String>();
             for (com.datastax.driver.core.KeyspaceMetadata keyspace : cluster.getMetadata().getKeyspaces()) {
                 if (!isSystemKeyspaceName(keyspace.getName())) {
@@ -216,11 +225,9 @@ public class EmbeddedCassandraServerHelper {
     }
 
     private static boolean isSystemKeyspaceName(String keyspaceName) {
-        return    INTERNAL_CASSANDRA_KEYSPACE.equals(keyspaceName)
-               || INTERNAL_CASSANDRA_AUTH_KEYSPACE.equals(keyspaceName)
-               || INTERNAL_CASSANDRA_DISTRIBUTED_KEYSPACE.equals(keyspaceName)
-               || INTERNAL_CASSANDRA_SCHEMA_KEYSPACE.equals(keyspaceName)
-               || INTERNAL_CASSANDRA_TRACES_KEYSPACE.equals(keyspaceName);
+        return INTERNAL_CASSANDRA_KEYSPACE.equals(keyspaceName) || INTERNAL_CASSANDRA_AUTH_KEYSPACE.equals(keyspaceName)
+                || INTERNAL_CASSANDRA_DISTRIBUTED_KEYSPACE.equals(keyspaceName) || INTERNAL_CASSANDRA_SCHEMA_KEYSPACE
+                .equals(keyspaceName) || INTERNAL_CASSANDRA_TRACES_KEYSPACE.equals(keyspaceName);
     }
 
     private static void rmdir(String dir) throws IOException {
@@ -241,10 +248,8 @@ public class EmbeddedCassandraServerHelper {
         mkdir(directory);
         String fileName = resource.substring(resource.lastIndexOf("/") + 1);
         File file = new File(directory + System.getProperty("file.separator") + fileName);
-        try (
-            InputStream is = EmbeddedCassandraServerHelper.class.getResourceAsStream(resource);
-            OutputStream out = new FileOutputStream(file)
-        ) {
+        try (InputStream is = EmbeddedCassandraServerHelper.class.getResourceAsStream(resource);
+                OutputStream out = new FileOutputStream(file)) {
             byte[] buf = new byte[1024];
             int len;
             while ((len = is.read(buf)) > 0) {
@@ -270,16 +275,17 @@ public class EmbeddedCassandraServerHelper {
         mkdirs();
         CommitLog commitLog = CommitLog.instance;
         commitLog.getContext(); // wait for commit log allocator instantiation to avoid hanging on a race condition
-        commitLog.resetUnsafe(true); // cleanup screws w/ CommitLog, this brings it back to safe state
+        //        commitLog.resetUnsafe(); // cleanup screws w/ CommitLog, this brings it back to safe state
     }
 
     private static void cleanup() throws IOException {
         // clean up commitlog
-        String[] directoryNames = {DatabaseDescriptor.getCommitLogLocation()};
+        String[] directoryNames = { DatabaseDescriptor.getCommitLogLocation() };
         for (String dirName : directoryNames) {
             File dir = new File(dirName);
-            if (!dir.exists())
+            if (!dir.exists()) {
                 throw new RuntimeException("No such directory: " + dir.getAbsolutePath());
+            }
             FileUtils.deleteRecursive(dir);
         }
 
@@ -287,8 +293,9 @@ public class EmbeddedCassandraServerHelper {
         // files
         for (String dirName : DatabaseDescriptor.getAllDataFileLocations()) {
             File dir = new File(dirName);
-            if (!dir.exists())
+            if (!dir.exists()) {
                 throw new RuntimeException("No such directory: " + dir.getAbsolutePath());
+            }
             FileUtils.deleteRecursive(dir);
         }
     }
@@ -354,3 +361,4 @@ public class EmbeddedCassandraServerHelper {
     }
 
 }
+//CHECKSTYLE:ON

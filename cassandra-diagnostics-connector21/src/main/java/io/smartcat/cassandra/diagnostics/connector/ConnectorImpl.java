@@ -94,7 +94,7 @@ public class ConnectorImpl implements Connector {
             }
             initialized.set(true);
         } catch (IOException e) {
-            logger.error("Failed to initialize info provider implementation");
+            logger.error("Failed to initialize info provider implementation. Reason: " + e.getMessage());
         }
     }
 

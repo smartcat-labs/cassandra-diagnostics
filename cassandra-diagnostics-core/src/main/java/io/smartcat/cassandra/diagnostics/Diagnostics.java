@@ -71,7 +71,7 @@ public class Diagnostics implements QueryReporter {
     public void activate() {
         this.diagnosticsProcessor = new DiagnosticsProcessor(config);
         this.isRunning.set(true);
-        initMXBean();
+        initEndpoints();
     }
 
     private Configuration loadConfiguration() {
@@ -88,14 +88,15 @@ public class Diagnostics implements QueryReporter {
     }
 
     /**
-     * Initializes the Diagnostics MXBean.
+     * Initializes endpoints.
      */
-    private void initMXBean() {
+    private void initEndpoints() {
         logger.info("Intializing Diagnostics MXBean.");
         final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-        final DiagnosticsApi mbean = new DiagnosticsApiImpl(config, this);
+        final DiagnosticsApi diagnosticsApi = new DiagnosticsApiImpl(config, this);
+
         try {
-            final StandardMBean smbean = new StandardMBean(mbean, DiagnosticsApi.class);
+            final StandardMBean smbean = new StandardMBean(diagnosticsApi, DiagnosticsApi.class);
             mxbeanName = new ObjectName(
                     DiagnosticsApi.class.getPackage().getName() + ":type=" + DiagnosticsApi.class.getSimpleName());
             server.registerMBean(smbean, mxbeanName);
@@ -103,9 +104,10 @@ public class Diagnostics implements QueryReporter {
                 NotCompliantMBeanException e) {
             logger.error("Unable to register DiagnosticsMBean", e);
         }
+
         if (config.httpApiEnabled && httpApi == null) {
             logger.info("Starting Diagnostics HTTP API at {}:{}", config.httpApiHost, config.httpApiPort);
-            httpApi = new HttpHandler(config, mbean);
+            httpApi = new HttpHandler(config, diagnosticsApi);
             try {
                 httpApi.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
             } catch (IOException ioe) {
@@ -114,13 +116,19 @@ public class Diagnostics implements QueryReporter {
         }
     }
 
-    private void unregisterMXBean() {
+    private void unregisterEndpoints() {
         logger.info("Unregistering Diagnostics MXBean.");
         final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         try {
             server.unregisterMBean(mxbeanName);
         } catch (MBeanRegistrationException | InstanceNotFoundException e) {
             logger.error("Unable to unregister DiagnosticsMBean", e);
+        }
+
+        if (httpApi != null) {
+            logger.info("Stopping Diagnostics HTTP API");
+            httpApi.closeAllConnections();
+            httpApi = null;
         }
     }
 
@@ -136,13 +144,26 @@ public class Diagnostics implements QueryReporter {
      */
     public void reload() {
         isRunning.set(false);
-        logger.info("Reloading diagnostics configuation.");
         diagnosticsProcessor.shutdown();
-        unregisterMXBean();
 
-        config = loadConfiguration();
+        logger.info("Reloading diagnostics configuation.");
+        Configuration newConfig;
+        try {
+            newConfig = loadConfiguration();
+            if (newConfig == null) {
+                logger.error("Reload operation unsuccessful. Fix configuration and reload again");
+                return;
+            }
+        } catch (IllegalStateException ex) {
+            logger.error("Reload operation failed. Fix configuration and reload again");
+            return;
+        }
+
+        unregisterEndpoints();
+
+        config = newConfig;
         diagnosticsProcessor = new DiagnosticsProcessor(config);
-        initMXBean();
+        initEndpoints();
         logger.info("Configuration realoaded");
         isRunning.set(true);
     }

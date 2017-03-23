@@ -425,7 +425,7 @@ cas_contention_timeout_in_ms: 10000
 # we need to flush first so we can snapshot before removing the data.)
 truncate_request_timeout_in_ms: 600000
 # The default timeout for other, miscellaneous operations
-request_timeout_in_ms: 100000
+request_timeout_in_ms: 10000
 
 # Enable operation timeout information exchange between nodes to accurately
 # measure request timeouts.  If disabled, replicas will assume that requests

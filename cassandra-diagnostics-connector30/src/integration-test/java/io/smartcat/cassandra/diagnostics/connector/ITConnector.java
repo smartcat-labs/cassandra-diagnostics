@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,12 +24,15 @@ public class ITConnector {
 
     private static Cluster cluster;
     private static Session session;
-    private static CountDownLatch lock = new CountDownLatch(2);
-    private static int queryInterceptedCnt;
+    private static CountDownLatch lockForPreparedStatement = new CountDownLatch(1);
+    private static boolean preparedQueryIntercepted;
+    private static CountDownLatch lockForUnpreparedStatement = new CountDownLatch(1);
+    private static boolean unpreparedQueryIntercepted;
 
     @BeforeClass
     public static void setUp() throws ConfigurationException, TTransportException, IOException, InterruptedException {
-        queryInterceptedCnt = 0;
+        preparedQueryIntercepted = false;
+        unpreparedQueryIntercepted = false;
 
         final Instrumentation inst = InstrumentationSavingAgent.getInstrumentation();
         ConnectorConfiguration configuration = new ConnectorConfiguration();
@@ -38,10 +42,16 @@ public class ITConnector {
             @Override
             public void report(Query query) {
                 if (Query.StatementType.SELECT.equals(query.statementType()) && "test_keyspace"
-                        .equalsIgnoreCase(query.keyspace()) && "test_table".equalsIgnoreCase(query.tableName()) &&
-                        query.statement().equalsIgnoreCase("SELECT uid FROM test_keyspace.test_table")) {
-                    queryInterceptedCnt++;
-                    lock.countDown();
+                        .equalsIgnoreCase(query.keyspace()) && "test_table_prepared".equalsIgnoreCase(query.tableName()) &&
+                        query.statement().equalsIgnoreCase("SELECT uid FROM test_keyspace.test_table_prepared")) {
+                    preparedQueryIntercepted = true;
+                    lockForPreparedStatement.countDown();
+                }
+                if (Query.StatementType.SELECT.equals(query.statementType()) && "test_keyspace"
+                        .equalsIgnoreCase(query.keyspace()) && "test_table_unprepared".equalsIgnoreCase(query.tableName()) &&
+                        query.statement().equalsIgnoreCase("SELECT uid FROM test_keyspace.test_table_unprepared")) {
+                    unpreparedQueryIntercepted = true;
+                    lockForUnpreparedStatement.countDown();
                 }
             }
         }, configuration);
@@ -53,19 +63,31 @@ public class ITConnector {
         session = cluster.connect();
     }
 
-    @Test
-    public void query_is_intercepted_when_connector_is_active() throws InterruptedException {
-        session.execute("CREATE KEYSPACE IF NOT EXISTS test_keyspace "
-                + "WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
-        session.execute("CREATE TABLE IF NOT EXISTS test_keyspace.test_table (uid uuid PRIMARY KEY);");
-        String cql = "SELECT uid FROM test_keyspace.test_table";
-        PreparedStatement prepared = session.prepare(cql);
-        session.execute(cql);
-        session.execute(prepared.bind());
-        Thread.sleep(2000);
+    @AfterClass
+    public static void cleanUp() {
         cluster.close();
-        lock.await(60000, TimeUnit.MILLISECONDS);
-        Assert.assertEquals(2, queryInterceptedCnt);
     }
 
+    @Test
+    public void prepared_query_is_intercepted_when_connector_is_active() throws InterruptedException {
+        session.execute("CREATE KEYSPACE IF NOT EXISTS test_keyspace "
+                + "WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
+        session.execute("CREATE TABLE IF NOT EXISTS test_keyspace.test_table_prepared (uid uuid PRIMARY KEY);");
+        String cql = "SELECT uid FROM test_keyspace.test_table_prepared";
+        PreparedStatement prepared = session.prepare(cql);
+        session.execute(prepared.bind());
+        lockForPreparedStatement.await(60000, TimeUnit.MILLISECONDS);
+        Assert.assertTrue(preparedQueryIntercepted);
+    }
+
+    @Test
+    public void unprepared_query_is_intercepted_when_connector_is_active() throws InterruptedException {
+        session.execute("CREATE KEYSPACE IF NOT EXISTS test_keyspace "
+                + "WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
+        session.execute("CREATE TABLE IF NOT EXISTS test_keyspace.test_table_unprepared (uid uuid PRIMARY KEY);");
+        String cql = "SELECT uid FROM test_keyspace.test_table_unprepared";
+        session.execute(cql);
+        lockForUnpreparedStatement.await(60000, TimeUnit.MILLISECONDS);
+        Assert.assertTrue(unpreparedQueryIntercepted);
+    }    
 }

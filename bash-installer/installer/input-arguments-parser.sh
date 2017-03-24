@@ -6,7 +6,6 @@ ERRONEOUS_ARGUMENT_INPUT=10
 MANDATORY_ARGUMENT_MISSING=11
 CASSANDRA_ENV_SCRIPT_NAME="cassandra-env.sh"
 INSTALLER_SCRIPT_NAME="cassandra-diagnostics-installer.sh"
-INSTALLER_SHOW_USAGE=0
 
 # Parses input arguments into usable global variables.
 function parse_input_arguments() {
@@ -64,7 +63,6 @@ function create_global_variables_from_input_arguments() {
             ;;
 
             -h|--help)
-            echo "FOUND HELP SWITCH"
             INSTALLER_SHOW_USAGE=1
             shift
             ;;
@@ -118,7 +116,7 @@ function verify_input_arguments() {
 # Exits:
 #   - with $MANDATORY_ARGUMENT_MISSING, if any of mandatory arguments is not defined.
 function check_mandatory_parameters_are_set() {
-    if [ $INSTALLER_SHOW_USAGE -eq 1 ]; then
+    if test ${INSTALLER_SHOW_USAGE+1}; then
         return
     fi
 

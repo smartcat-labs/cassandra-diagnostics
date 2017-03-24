@@ -38,3 +38,7 @@ function absolute_path_of() {
 function print_debug() {
     print_message "[DEBUG]" "$@"
 }
+
+function print_warning() {
+    print_message "[WARNING]" "$@"
+}

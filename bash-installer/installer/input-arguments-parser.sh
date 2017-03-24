@@ -152,4 +152,5 @@ function check_mandatory_parameters_are_set() {
 #   - CASSANDRA_ENV_SCRIPT
 function create_additional_variables() {
     CASSANDRA_ENV_SCRIPT="$CASSANDRA_CONF_DIR/$CASSANDRA_ENV_SCRIPT_NAME"
+    LIBRARIES_DOWNLOAD_DIR="$TMPDIR/libraries"
 }

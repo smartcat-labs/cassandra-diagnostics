@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.smartcat</groupId>
         <artifactId>cassandra-diagnostics</artifactId>
-        <version>1.4.0-SNAPSHOT</version>
+        <version>1.3.9</version>
     </parent>
     <artifactId>cassandra-diagnostics-embedded-cassandra</artifactId>
     <packaging>jar</packaging>

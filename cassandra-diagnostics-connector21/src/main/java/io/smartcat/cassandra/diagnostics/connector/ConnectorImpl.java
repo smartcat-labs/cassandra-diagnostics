@@ -12,11 +12,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.cassandra.cql3.CQLStatement;
 import org.apache.cassandra.cql3.QueryOptions;
+import org.apache.cassandra.cql3.statements.ParsedStatement;
 import org.apache.cassandra.service.QueryState;
 import org.apache.cassandra.transport.messages.ResultMessage;
+import org.apache.cassandra.utils.MD5Digest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+
+import io.smartcat.cassandra.diagnostics.connector.ConnectorImpl.CassandraDaemonAdvice;
+import io.smartcat.cassandra.diagnostics.connector.ConnectorImpl.ProcessAdvice;
+import io.smartcat.cassandra.diagnostics.connector.ConnectorImpl.ProcessPreparedAdvice;
+import io.smartcat.cassandra.diagnostics.connector.ConnectorImpl.StorePreparedAdvice;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -146,12 +154,35 @@ public class ConnectorImpl implements Connector {
                     @Override
                     public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription,
                             ClassLoader classLoader) {
-                        return builder.visit(Advice.to(ProcessStatementAdvice.class).on(named("processStatement")
-                                .and(takesArguments(cqlStatementDescription(), queryStateDescription(),
-                                        queryOptionsDescription()))
-                                .and(returns(named("org.apache.cassandra.transport.messages.ResultMessage")))));
+                        return builder.visit(Advice.to(ProcessPreparedAdvice.class)
+                                        .on(named("processPrepared")
+                                            .and(takesArguments(cqlStatementDescription(),
+                                                    queryStateDescription(), queryOptionsDescription()))
+                                            .and(returns(
+                                                    named("org.apache.cassandra.transport.messages.ResultMessage")))));
                     }
-                }).installOn(inst);
+                })
+                .transform(new Transformer() {
+                    @Override
+                    public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription,
+                            ClassLoader classLoader) {
+                        return builder.visit(Advice.to(ProcessAdvice.class)
+                                        .on(named("process")
+                                            .and(takesArguments(queryStringDescription(),
+                                                    queryStateDescription(), queryOptionsDescription()))
+                                            .and(returns(
+                                                    named("org.apache.cassandra.transport.messages.ResultMessage")))));
+                    }
+                })
+                .transform(new Transformer() {
+                    @Override
+                    public Builder<?> transform(Builder<?> builder, TypeDescription typeDescription,
+                            ClassLoader classLoader) {
+                        return builder.visit(Advice.to(StorePreparedAdvice.class)
+                                        .on(named("storePreparedStatement")));
+                    }
+                })
+                .installOn(inst);
     }
 
     /**
@@ -183,7 +214,7 @@ public class ConnectorImpl implements Connector {
     /**
      * QueryProcessor Advice.
      */
-    public static class ProcessStatementAdvice {
+    public static class ProcessPreparedAdvice {
 
         /**
          * Code executed before the intercepted method.
@@ -204,21 +235,93 @@ public class ConnectorImpl implements Connector {
          * @param queryState query state information
          * @param options    query options
          * @param result     intercepted method's execution result
+         * @param preparedStatements QueryProcessor's internal list of prepared statements
          */
         @Advice.OnMethodExit
-        public static void exit(
-                @Advice.Enter
-                        long startTime,
-                @Advice.Argument(0)
-                        CQLStatement statement,
-                @Advice.Argument(1)
-                        QueryState queryState,
-                @Advice.Argument(2)
-                        QueryOptions options,
-                @Advice.Return
-                        ResultMessage result) {
-            ConnectorImpl.queryProcessorWrapper().processStatement(statement, queryState, options, startTime, result);
+        public static void exit(@Advice.Enter long startTime, @Advice.Argument(0) CQLStatement statement,
+                @Advice.Argument(1) QueryState queryState, @Advice.Argument(2) QueryOptions options,
+                @Advice.Return ResultMessage result, @Advice.FieldValue(value = "preparedStatements")
+        ConcurrentLinkedHashMap<MD5Digest, ParsedStatement.Prepared> preparedStatements) {
+            ConnectorImpl.queryProcessorWrapper()
+                .processPrepared(statement, queryState, options, startTime, result, preparedStatements);
         }
+    }
+
+    /**
+     * QueryProcessor Advice.
+     */
+    public static class ProcessAdvice {
+
+        /**
+         * Code executed before the intercepted method.
+         * @return execution start time
+         */
+        @Advice.OnMethodEnter
+        public static long enter() {
+            final long startTime = System.currentTimeMillis();
+            return startTime;
+        }
+
+        /**
+         * Code executed after the intercepted method.
+         *
+         * @param startTime execution start time recorded by the enter method.
+         * @param queryString CQL query string
+         * @param queryState query state information
+         * @param options query options
+         * @param result intercepted method's execution result
+         */
+        @Advice.OnMethodExit
+        public static void exit(@Advice.Enter long startTime, @Advice.Argument(0) String queryString,
+                @Advice.Argument(1) QueryState queryState, @Advice.Argument(2) QueryOptions options,
+                @Advice.Return ResultMessage result) {
+            ConnectorImpl.queryProcessorWrapper()
+                .process(queryString, queryState, options, startTime, result);
+        }
+    }
+
+    /**
+     * QueryProcessor Advice.
+     */
+    public static class StorePreparedAdvice {
+
+        /**
+         * Code executed before the intercepted method.
+         * @return execution start time
+         */
+        @Advice.OnMethodEnter
+        public static long enter() {
+            final long startTime = System.currentTimeMillis();
+            return startTime;
+        }
+
+        /**
+         * Code executed after the intercepted method.
+         *
+         * @param startTime execution start time recorded by the enter method.
+         * @param queryString CQL statement string
+         * @param keyspace query's keyspace
+         * @param prepared prepared statement
+         * @param forThrift is it a Thrift statement
+         * @param preparedStatements QueryProcessor's internal list of prepared statements
+         */
+        @Advice.OnMethodExit
+        public static void exit(@Advice.Enter long startTime, @Advice.Argument(0) String queryString,
+                @Advice.Argument(1) String keyspace, @Advice.Argument(2) ParsedStatement.Prepared prepared,
+                @Advice.Argument(3) boolean forThrift, @Advice.FieldValue(value = "preparedStatements")
+                ConcurrentLinkedHashMap<MD5Digest, ParsedStatement.Prepared> preparedStatements) {
+            ConnectorImpl.queryProcessorWrapper()
+                .storePrepared(queryString, keyspace, forThrift, prepared, preparedStatements);
+        }
+    }
+
+    /**
+     * Statement class type description helper.
+     * @return String class type description
+     */
+    private static TypeDescription queryStringDescription() {
+        return new TypeDescription.Latent("java.lang.String",
+                Modifier.INTERFACE, null, null);
     }
 
     /**

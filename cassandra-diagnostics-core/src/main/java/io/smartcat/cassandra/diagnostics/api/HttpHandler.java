@@ -41,7 +41,7 @@ public class HttpHandler extends NanoHTTPD {
             return respond(session);
         }
 
-        return newFixedLengthResponse(Status.FORBIDDEN, NanoHTTPD.MIME_PLAINTEXT, "Invalid API key");
+        return newFixedLengthResponse(Status.FORBIDDEN, NanoHTTPD.MIME_PLAINTEXT, "Invalid API key\r\n");
     }
 
     private Response respond(IHTTPSession session) {
@@ -54,10 +54,10 @@ public class HttpHandler extends NanoHTTPD {
         } else if (Method.POST.equals(method) && "/reload".equalsIgnoreCase(uri)) {
             diagnosticsApi.reload();
             return newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_PLAINTEXT,
-                    "Configuration reloaded");
+                    "Configuration reloaded\r\n");
         } else {
             return newFixedLengthResponse(Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT,
-                    "Requested URI " + uri + " not found");
+                    "Requested URI " + uri + " not found\r\n");
         }
     }
 

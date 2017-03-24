@@ -30,13 +30,8 @@ function append_diagnostics_configuration_to_env_script() {
 function remove_diagnostics_configuration_from_env_script() {
     local absolute_conf_file_path=$(absolute_path_of "$CASSANDRA_DIAGNOSTICS_CONF_FILE")
 
-    if contains_diagnostics_options "$CASSANDRA_ENV_SCRIPT"; then
-        print_info "Managed configuration detected. Removing..."
-        remove_diagnostics_configuration_from $CASSANDRA_ENV_SCRIPT
-        print_info "Old configuration file saved as $CASSANDRA_ENV_SCRIPT""$CASSANDRA_ENV_SCRIPT_BACKUP_EXTENSION"
-    else
-        print_info "Existing managed configuration not detected."
-    fi
+    remove_diagnostics_configuration_from $CASSANDRA_ENV_SCRIPT
+    print_info "Old configuration file saved as $CASSANDRA_ENV_SCRIPT""$CASSANDRA_ENV_SCRIPT_BACKUP_EXTENSION"
 }
 
 # Checks if cassandra-env.sh contains old cassandra-diagnostics JVM options.
@@ -101,6 +96,50 @@ function find_footer_line_number_in() {
     echo $(find_line_number_in "$1" "$DIAGNOSTICS_JVM_OPTIONS_FOOTER")
 }
 
+# Finds line number where cassandra-diagnostics YAML configuration is appended to JVM options.
+#
+# Parameters:
+#   $1 - file to search.
+#
+# Returns:
+#   - line number where configuration is appended, if found.
+#   - "-1" if configuration is not found.
+function find_unmanaged_yaml_configuration_line_in() {
+    echo $(find_line_number_in "$1" "Dcassandra.diagnostics.config=")
+}
+
+# Finds line number where cassandra-diagnostics agent configuration is appended to JVM options.
+#
+# Parameters:
+#   $1 - file to search.
+#
+# Returns:
+#   - line number where agent configuration is appended, if found.
+#   - "-1" if agent configuration is not found.
+function find_unmanaged_agent_configuration_line_in() {
+    local line_number=$(grep -n -e "-javaagent:.*/cassandra-diagnostics-core-.*.jar" "$1" | cut -f1 -d:)
+
+    if [ -z "$line_number" ]; then
+        echo -1
+    else
+        echo "$line_number"
+    fi
+}
+
+# Checks if passed file contains unmanaged cassandra-diagnostics JVM options.
+#
+# Parameters:
+#   $1 - file to search.
+#
+# Returns:
+#   - true, if file contains JVM options.
+#   - false otherwise
+function contains_unmanaged_diagnostics_configuration_in() {
+    let local yaml_line=$(find_unmanaged_yaml_configuration_line_in "$1")
+    let local agent_line=$(find_unmanaged_agent_configuration_line_in "$1")
+
+    [ $yaml_line -gt -1 ] || [ $agent_line -gt -1 ]
+}
 # Finds line number of provided string in provided file.
 #
 # Parameters:
@@ -129,6 +168,25 @@ function remove_diagnostics_configuration_from() {
     let local end_line=$(find_footer_line_number_in "$1")
 
     delete_lines_from "$1" $start_line $end_line
+}
+
+# Removes unmanaged cassandra-diagnostics JVM options.
+#
+# Parameters:
+#   $1 - file from which to remove options.
+function remove_unmanaged_diagnostics_configuration_from() {
+    local cassandra_env_file_path="$1"
+    cp "$cassandra_env_file_path" "$cassandra_env_file_path".bak
+    let local yaml_line=$(find_unmanaged_yaml_configuration_line_in "$cassandra_env_file_path")
+
+    if [ $yaml_line -gt -1 ]; then
+        sed -i"$CASSANDRA_ENV_SCRIPT_BACKUP_EXTENSION" "$yaml_line,$yaml_line d" "$cassandra_env_file_path"
+    fi
+
+    let local agent_line=$(find_unmanaged_agent_configuration_line_in "$1")
+    if [ $agent_line -gt -1 ]; then
+        sed -i"$CASSANDRA_ENV_SCRIPT_BACKUP_EXTENSION" "$agent_line,$agent_line d" "$cassandra_env_file_path"
+    fi
 }
 
 # Deletes lines from file.
@@ -171,4 +229,34 @@ function append_managed_configuration() {
 #   - string containing space-separated list of reporter classes.
 function find_reporters_in() {
     echo $(awk -f "$PAYLOAD_DIRECTORY"/find-reporter-modules.awk "$1")
+}
+
+# Finds and removes cassandra-diagnostics JVM options from cassandra-env.sh.
+function find_and_remove_diagnostics_configuration_from_cassandra_env() {
+    print_info "Searching for installer managed configuration in $CASSANDRA_ENV_SCRIPT_NAME..."
+    if contains_diagnostics_options "$CASSANDRA_ENV_SCRIPT"; then
+        print_info "Configuration managed by installer detected in $CASSANDRA_ENV_SCRIPT. Removing."
+        remove_diagnostics_configuration_from_env_script
+
+        return
+    else
+        print_info "Installer managed configuration not found."
+    fi
+
+    print_info "Searching for manual configuration in $CASSANDRA_ENV_SCRIPT_NAME..."
+    if contains_unmanaged_diagnostics_configuration_in "$CASSANDRA_ENV_SCRIPT"; then
+        print_warning "Configuration not managed by installer detected in $CASSANDRA_ENV_SCRIPT."
+        print_warning "Backing up original file as $CASSANDRA_ENV_SCRIPT.bak."
+        print_warning "Removing configuration..."
+        remove_unmanaged_diagnostics_configuration_from "$CASSANDRA_ENV_SCRIPT"
+        print_warning "Installer removed previous cassandra-diagnostics configuration from $CASSANDRA_ENV_SCRIPT,"
+        print_warning "which was most likely manually added."
+        print_warning "Please review and correct $CASSANDRA_ENV_SCRIPT if neccessary."
+
+        return
+    else
+        print_info "Manual configuration not found."
+    fi
+
+    print_info "No cassandra-diagnostics configuration detected in $CASSANDRA_ENV_SCRIPT_NAME."
 }

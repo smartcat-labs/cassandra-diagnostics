@@ -3,6 +3,16 @@
 UNABLE_TO_DOWNLOAD_COMPONENT_EXIT_CODE=40
 UNKNOWN_REPORTER_MODULE_EXIT_CODE=41
 
+function set_wget_options() {
+    WGET_VERSION=$(get_wget_version)
+    let WGET_MAJOR=$(echo $WGET_VERSION | cut -d"." -f1)
+    let WGET_MINOR=$(echo $WGET_VERSION | cut -d"." -f2)
+
+    if [ $WGET_MAJOR -ge 1 ] && [ $WGET_MINOR -ge 18 ]; then
+        WGET_OPTIONS="--progress=bar --show-progress -q"
+    fi
+}
+
 # Downloads file to specified directory.
 #
 # Parameters:
@@ -12,7 +22,12 @@ UNKNOWN_REPORTER_MODULE_EXIT_CODE=41
 # Exits:
 #   - with $UNABLE_TO_DOWNLOAD_COMPONENT_EXIT_CODE, when download is unsuccessful.
 function download() {
-    wget -q "$1" --directory-prefix="$2" --progress=bar --show-progress -c
+    if test ${WGET_OPTIONS+1}; then
+        wget "$1" --directory-prefix="$2" -c $WGET_OPTIONS
+    else
+        print_info "Downloading $1 ..."
+        wget "$1" --directory-prefix="$2" -c -q
+    fi
 
     if [ $? != 0 ]; then
         print_error "Unable to download $1. Exiting."
@@ -34,14 +49,16 @@ function download() {
 #   - with $UNABLE_TO_DOWNLOAD_COMPONENT_EXIT_CODE, when download error occurs.
 #   - with $UNKNOWN_REPORTER_MODULE_EXIT_CODE, when unknown reporter module is found in $REPORTER_MODULES.
 function download_diagnostics_libraries() {
+    set_wget_options
+
     # Download diagnostics core.
-    download "$DIAGNOSTICS_CORE_URL" "$CASSANDRA_LIB_DIR"
+    download "$DIAGNOSTICS_CORE_URL" "$LIBRARIES_DOWNLOAD_DIR"
 
     # Download diagnostics connector.
-    download "$DIAGNOSTICS_CONNECTOR_URL" "$CASSANDRA_LIB_DIR"
+    download "$DIAGNOSTICS_CONNECTOR_URL" "$LIBRARIES_DOWNLOAD_DIR"
 
     # Download diagnostics driver connector.
-    download "$DIAGNOSTICS_DRIVER_CONNECTOR_URL" "$CASSANDRA_LIB_DIR"
+    download "$DIAGNOSTICS_DRIVER_CONNECTOR_URL" "$LIBRARIES_DOWNLOAD_DIR"
 
     # Download diagnostics reporters.
     for reporter in $REPORTER_MODULES; do
@@ -52,7 +69,7 @@ function download_diagnostics_libraries() {
             exit $UNKNOWN_REPORTER_MODULE_EXIT_CODE
         fi
 
-        download "$reporter_url" "$CASSANDRA_LIB_DIR"
+        download "$reporter_url" "$LIBRARIES_DOWNLOAD_DIR"
     done
 }
 
@@ -74,4 +91,13 @@ function verbose_remove() {
             print_info $(rm -rvf "$node")
         fi
     done
+}
+
+# Moves downloaded cassandra-diagnostics libraries from temporary directory to Cassandra libraries derectory.
+#
+# Uses global variables:
+#   - $CASSANDRA_LIB_DIR
+#   - $LIBRARIES_DOWNLOAD_DIR
+function move_diagnostics_libraries_to_lib_dir() {
+    mv -f "$LIBRARIES_DOWNLOAD_DIR"/* "$CASSANDRA_LIB_DIR"
 }

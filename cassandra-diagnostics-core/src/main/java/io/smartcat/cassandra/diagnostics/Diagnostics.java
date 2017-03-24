@@ -124,12 +124,6 @@ public class Diagnostics implements QueryReporter {
         } catch (MBeanRegistrationException | InstanceNotFoundException e) {
             logger.error("Unable to unregister DiagnosticsMBean", e);
         }
-
-        if (httpApi != null) {
-            logger.info("Stopping Diagnostics HTTP API");
-            httpApi.closeAllConnections();
-            httpApi = null;
-        }
     }
 
     @Override

@@ -4,7 +4,8 @@
 
 DIAGNOSTICS_JVM_OPTIONS_HEADER="### Begin cassandra-diagnostics-installer managed configuration. DO NOT EDIT! ###"
 DIAGNOSTICS_JVM_OPTIONS_FOOTER="#### End cassandra-diagnostics-installer managed configuration. DO NOT EDIT! ####"
-DIAGNOSTICS_JVM_OPTIONS_TEMPLATE="JVM_OPTS=\"\$JVM_OPTS -Dcassandra.diagnostics.config=\""
+DIAGNOSTICS_JVM_OPTIONS_YAML_OPTION="JVM_OPTS=\"\$JVM_OPTS -Dcassandra.diagnostics.config="$(absolute_path_of "$CASSANDRA_DIAGNOSTICS_CONF_FILE")"\""
+DIAGNOSTICS_JVM_OPTIONS_AGENT_OPTION="JVM_OPTS=\"\$JVM_OPTS -javaagent:"$(absolute_path_of "$CASSANDRA_LIB_DIR")"/cassandra-diagnostics-core-$CASSANDRA_DIAGNOSTICS_VERSION.jar\""
 CASSANDRA_ENV_SCRIPT_BACKUP_EXTENSION=".old"
 
 INVALID_CONFIGURATION_EXIT_CODE=60
@@ -153,8 +154,11 @@ function append_managed_configuration() {
     local cassandra_env_file_path="$1"
     local absolute_conf_file_path="$2"
 
-    echo -e "$DIAGNOSTICS_JVM_OPTIONS_HEADER \n" >> "$cassandra_env_file_path"
-    echo -e "$DIAGNOSTICS_JVM_OPTIONS_TEMPLATE""$absolute_conf_file_path \n" >> "$cassandra_env_file_path"
+    echo -e "$DIAGNOSTICS_JVM_OPTIONS_HEADER" >> "$cassandra_env_file_path"
+    echo "" >> "$cassandra_env_file_path"
+    echo -e "$DIAGNOSTICS_JVM_OPTIONS_YAML_OPTION" >> "$cassandra_env_file_path"
+    echo -e "$DIAGNOSTICS_JVM_OPTIONS_AGENT_OPTION" >> "$cassandra_env_file_path"
+    echo "" >> "$cassandra_env_file_path"
     echo -e "$DIAGNOSTICS_JVM_OPTIONS_FOOTER" >> "$cassandra_env_file_path"
 }
 

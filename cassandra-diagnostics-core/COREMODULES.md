@@ -32,7 +32,7 @@ There is a slow query counter available that periodically reports the count of s
 Three main options that impact reporting are:
 * `slowQueryReportEnabled:` Defines is each slow query will be reported (false by default)
 * `slowQueryCountReportEnabled:` Defines if slow query periodic count will be reported (true by default)
-* `queryTypesToLog` - list of types of the query that will be logged. Possible values that can be passed into the list are: UPDATE, SELECT, ALL.
+* `queryTypesToLog` - list of types of the query that will be logged. Possible values that can be passed into the list are: UPDATE, SELECT, ALL. Default value is ALL.
 
 ```
 - module: io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule

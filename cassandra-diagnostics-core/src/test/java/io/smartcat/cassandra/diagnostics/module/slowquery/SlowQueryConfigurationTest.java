@@ -21,6 +21,8 @@ public class SlowQueryConfigurationTest {
         assertThat(conf.tablesForLogging()).isEmpty();
         assertThat(conf.slowQueryReportEnabled()).isFalse();
         assertThat(conf.slowQueryCountReportEnabled()).isTrue();
+        assertThat(conf.queryTypesToLog().size()).isEqualTo(1);
+        assertThat(conf.queryTypesToLog().get(0)).isEqualTo("ALL");
     }
 
     @Test
@@ -30,6 +32,7 @@ public class SlowQueryConfigurationTest {
         options.put("tablesForLogging", Arrays.asList("keyspace1.table1", "keyspace2.table2"));
         options.put("slowQueryReportEnabled", true);
         options.put("slowQueryCountReportEnabled", false);
+        options.put("queryTypesToLog", Arrays.asList("UPDATE", "SELECT"));
 
         SlowQueryConfiguration conf = SlowQueryConfiguration.create(options);
         assertThat(conf.slowQueryThreshold()).isEqualTo(10);
@@ -38,6 +41,8 @@ public class SlowQueryConfigurationTest {
         assertThat(conf.tablesForLogging()).contains("keyspace2.table2");
         assertThat(conf.slowQueryReportEnabled()).isTrue();
         assertThat(conf.slowQueryCountReportEnabled()).isFalse();
+        assertThat(conf.queryTypesToLog().size()).isEqualTo(2);
+        assertThat(conf.queryTypesToLog()).contains("UPDATE", "SELECT");
     }
 
     @Test

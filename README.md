@@ -40,7 +40,7 @@ Currently Cassandra Diagnostics implements the following connector implementatio
 
 There are default module implementations which serve as core features. Modules use configured reporters to report their activity.
 
-[Core module](cassandra-diagnostics-core/COREMODULES.md) implementations:
+Please read [core modules README](cassandra-diagnostics-core/COREMODULES.md) for more information and configuraion options for the modules.Core module implementations:
 
 #### Heartbeat Module
 

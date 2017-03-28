@@ -1,6 +1,7 @@
 package io.smartcat.cassandra.diagnostics.module.slowquery;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ public class SlowQueryConfiguration {
         private static final boolean DEFAULT_SLOW_QUERY_COUNT_REPORT_ENABLED = true;
         private static final int DEFAULT_SLOW_QUERY_COUNT_REPORT_PERIOD = 1;
         private static final String DEFAULT_SLOW_QUERY_COUNT_REPORT_TIMEUNIT = "MINUTES";
+        private static final List<String> DEFAULT_SLOW_QUERY_TYPES_TO_LOG = Arrays.asList("ALL");
 
         /**
          * Query execution's threshold.
@@ -53,6 +55,11 @@ public class SlowQueryConfiguration {
          * Slow query count reporting time unit.
          */
         public TimeUnit slowQueryCountReportTimeunit = TimeUnit.valueOf(DEFAULT_SLOW_QUERY_COUNT_REPORT_TIMEUNIT);
+
+        /**
+         * Slow query statement types to be logged. Only the types in the list will be logged.
+         */
+        public List<String> queryTypesToLog = DEFAULT_SLOW_QUERY_TYPES_TO_LOG;
     }
 
     private Values values = new Values();
@@ -140,6 +147,15 @@ public class SlowQueryConfiguration {
      */
     public long slowQueryCountReportingRateInMillis() {
         return slowQueryCountReportTimeunit().toMillis(slowQueryCountReportPeriod());
+    }
+
+    /**
+     * Slow query statement types to be logged. Only the types in the list will be logged.
+     *
+     * @return List of query types to be logged.
+     */
+    public List<String> queryTypesToLog() {
+        return values.queryTypesToLog;
     }
 
 }

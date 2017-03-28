@@ -64,6 +64,11 @@ public class SlowQueryLogDecider {
 
     private boolean typeForLogging(Query query) {
         logger.trace("Checking if query type is for logging.");
+        boolean logAll = slowQueryConfiguration.queryTypesToLog().contains("ALL");
+        boolean queryTypeMatches = slowQueryConfiguration.queryTypesToLog().contains(query.statementType().toString());
+        if (!logAll && !queryTypeMatches) {
+            return false;
+        }
         if (query.statementType() == StatementType.SELECT || query.statementType() == StatementType.UPDATE) {
             return true;
         }

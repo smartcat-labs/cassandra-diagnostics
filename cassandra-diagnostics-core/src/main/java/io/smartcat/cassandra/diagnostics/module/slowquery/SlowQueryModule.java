@@ -93,23 +93,19 @@ public class SlowQueryModule extends Module {
         }
 
         if (config.slowQueryReportEnabled()) {
-            if (config.queryTypesToLog().contains("ALL")
-                    || config.queryTypesToLog().contains(query.statementType().toString())) {
-                final Map<String, String> tags = new HashMap<>(4);
-                tags.put("host", hostname);
-                tags.put("statementType", query.statementType().toString());
+            final Map<String, String> tags = new HashMap<>(4);
+            tags.put("host", hostname);
+            tags.put("statementType", query.statementType().toString());
 
-                final Map<String, String> fields = new HashMap<>(4);
-                fields.put("client", query.clientAddress());
-                fields.put("statement", query.statement());
+            final Map<String, String> fields = new HashMap<>(4);
+            fields.put("client", query.clientAddress());
+            fields.put("statement", query.statement());
 
-                final Measurement measurement = Measurement.create(service,
-                        (double) query.executionTimeInMilliseconds(), query.startTimeInMilliseconds(),
-                        TimeUnit.MILLISECONDS, tags, fields);
+            final Measurement measurement = Measurement.create(service, (double) query.executionTimeInMilliseconds(),
+                    query.startTimeInMilliseconds(), TimeUnit.MILLISECONDS, tags, fields);
 
-                logger.trace("Measurement transformed: {}", measurement);
-                report(measurement);
-            }
+            logger.trace("Measurement transformed: {}", measurement);
+            report(measurement);
         }
     }
 

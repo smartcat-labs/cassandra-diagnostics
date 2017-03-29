@@ -1,4 +1,4 @@
-# Cassandra Diagnostics Connector for Cassandra 3.0.x
+# Cassandra Diagnostics Connector for Cassandra 2.0.x
 
 Connector is a module which hooks into the query path and extract information for diagnostics. Bytecode instrumentation is used to augment existing Cassandra code with addition functionality. It uses low priority threads to execute the diagnostics information extraction with minimal performance impact to the target code (Cassandra node or application/driver).
 

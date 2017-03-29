@@ -1,19 +1,6 @@
-# Cassandra Diagnostics Connector for Cassandra 3.0.x
+# Cassandra Diagnostics Connector for Cassandra Driver
 
 Connector is a module which hooks into the query path and extract information for diagnostics. Bytecode instrumentation is used to augment existing Cassandra code with addition functionality. It uses low priority threads to execute the diagnostics information extraction with minimal performance impact to the target code (Cassandra node or application/driver).
-
-## Tracing Slow Queries
-
-Tracing of slow queries enables watching and logging the actual queries which took longer to execute based on the configured treshold. The treshold is configured in Slow Query Module. This tracing is, then, output into the reporters and can be furthur processed or displayed on visualization tools' dashboards.
-
-When used with LogReported (which reports the measurements and tracing information in Cassandra's log), slow query tracing is displayed like this:
-
-```
-INFO  [cassandra-diagnostics-connector-0] 2017-03-23 14:23:58,998 LogReporter.java:35 - Measurement SLOW_QUERY [time=1490275438931, value=50.0, tags={host=SmartCat-Inspiron-5559, statementType=SELECT}, fields={sta
-tement=select * from typestest where name = ? and choice = ? LIMIT 100, client=/127.0.0.1:58908}]
-```
-
-The slow query, in this example is `select * from typestest where name = ? and choice = ? LIMIT 100` and it came from the 127.0.0.1:58908 client [TODO @nikola please confirm that client part is correct)
 
 ## Configuration
 
@@ -49,3 +36,5 @@ connector:
   queuedEventsRelaxThreshold: 700 # optional
   enableTracing: false # optional
 ```
+
+Note that slow query tracing is currently not possible with driver connector.

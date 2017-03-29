@@ -13,7 +13,7 @@ INFO  [cassandra-diagnostics-connector-0] 2017-03-23 14:23:58,998 LogReporter.ja
 tement=select * from typestest where name = ? and choice = ? LIMIT 100, client=/127.0.0.1:58908}]
 ```
 
-The slow query, in this example is `select * from typestest where name = ? and choice = ? LIMIT 100` and it came from the 127.0.0.1:58908 client [TODO @nikola please confirm that client part is correct)
+The slow query, in this example is `select * from typestest where name = ? and choice = ? LIMIT 100` and it came from the 127.0.0.1:58908 client
 
 ## Configuration
 

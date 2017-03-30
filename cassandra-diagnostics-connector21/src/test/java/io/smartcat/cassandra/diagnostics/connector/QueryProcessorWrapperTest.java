@@ -58,7 +58,7 @@ public class QueryProcessorWrapperTest {
 
         QueryOptions options = mock(QueryOptions.class);
 
-        wrapper.processStatement(statement, queryState, options, System.currentTimeMillis(), null);
+        wrapper.processPrepared(statement, queryState, options, System.currentTimeMillis(), null, null);
 
         lock.await(1000, TimeUnit.MILLISECONDS);
 
@@ -93,7 +93,7 @@ public class QueryProcessorWrapperTest {
 
         QueryOptions options = mock(QueryOptions.class);
 
-        wrapper.processStatement(statement, queryState, options, System.currentTimeMillis(), null);
+        wrapper.processPrepared(statement, queryState, options, System.currentTimeMillis(), null, null);
         lock.await(1000, TimeUnit.MILLISECONDS);
 
         assertThat(reportedQuery).isEqualTo(null);

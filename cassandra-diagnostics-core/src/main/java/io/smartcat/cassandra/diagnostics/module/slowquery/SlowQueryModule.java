@@ -48,7 +48,7 @@ public class SlowQueryModule extends Module {
      * Constructor.
      *
      * @param configuration Module configuration
-     * @param reporters     Reporter list
+     * @param reporters Reporter list
      * @throws ConfigurationException in case the provided module configuration is not valid
      */
     public SlowQueryModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
@@ -101,9 +101,8 @@ public class SlowQueryModule extends Module {
             fields.put("client", query.clientAddress());
             fields.put("statement", query.statement());
 
-            final Measurement measurement = Measurement
-                    .create(service, (double) query.executionTimeInMilliseconds(), query.startTimeInMilliseconds(),
-                            TimeUnit.MILLISECONDS, tags, fields);
+            final Measurement measurement = Measurement.create(service, (double) query.executionTimeInMilliseconds(),
+                    query.startTimeInMilliseconds(), TimeUnit.MILLISECONDS, tags, fields);
 
             logger.trace("Measurement transformed: {}", measurement);
             report(measurement);
@@ -135,8 +134,7 @@ public class SlowQueryModule extends Module {
         final Map<String, String> tags = new HashMap<>(2);
         tags.put("host", hostname);
         tags.put("statementType", statementType.toString());
-        return Measurement
-                .create(slowQueryCountMeasurementName, count, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
-                        new HashMap<String, String>());
+        return Measurement.create(slowQueryCountMeasurementName, count, System.currentTimeMillis(),
+                TimeUnit.MILLISECONDS, tags, new HashMap<String, String>());
     }
 }

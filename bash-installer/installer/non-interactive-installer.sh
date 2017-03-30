@@ -30,6 +30,9 @@ if [ $# == 0 ]; then
     exit 0
 fi
 
+# Include functions for restarting Cassandra service.
+. "$PAYLOAD_DIRECTORY"/cassandra-service-manager.sh
+
 # Include arguments parser functions.
 . "$PAYLOAD_DIRECTORY"/input-arguments-parser.sh
 
@@ -37,7 +40,7 @@ fi
 parse_input_arguments "$@"
 
 # Show usage if help input parameter is passed.
-if [ $INSTALLER_SHOW_USAGE -eq 1 ]; then
+if test ${INSTALLER_SHOW_USAGE+1}; then
     print_usage "$INSTALLER_SCRIPT_NAME"
     exit 0
 fi
@@ -55,15 +58,19 @@ validate_input_arguments
 
 REPORTER_MODULES=$(find_reporters_in "$CASSANDRA_DIAGNOSTICS_CONF_FILE")
 
-print_info "Removing existing cassandra-diagnostics libraries."
-remove_installed_cassandra_diagnostics_libraries
-
-print_info "Downloading cassandra-diagnostics libraries to $CASSANDRA_LIB_DIR:"
+print_info "Downloading cassandra-diagnostics libraries..."
 download_diagnostics_libraries
 print_info "Done downloading."
 
-print_info "Removing old diagnostics configuration from $CASSANDRA_ENV_SCRIPT_NAME, if present."
-remove_diagnostics_configuration_from_env_script
+print_info "Removing existing cassandra-diagnostics libraries."
+remove_installed_cassandra_diagnostics_libraries
+
+print_info "Moving cassandra-diagnostics libraries to $CASSANDRA_LIB_DIR..."
+move_diagnostics_libraries_to_lib_dir
+
+find_and_remove_diagnostics_configuration_from_cassandra_env
 
 print_info "Appending cassandra-diagnostics configuration to $CASSANDRA_ENV_SCRIPT_NAME."
 append_diagnostics_configuration_to_env_script
+
+restart_cassandra_service

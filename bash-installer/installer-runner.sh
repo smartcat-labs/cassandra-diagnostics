@@ -2,7 +2,7 @@
 
 # Extracts payload directory and starts installer entry script.
 
-export TMPDIR=$(mktemp -d /tmp/cassandra-diagnostics-installer.XXXXXX)
+TMPDIR=$(mktemp -d /tmp/cassandra-diagnostics-installer.XXXXXX)
 
 INSTALLER_ARCHIVE=`awk '/^__INSTALLER_ARCHIVE__/ {print NR + 1; exit 0; }' $0`
 

@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.Query;
-import io.smartcat.cassandra.diagnostics.Query.StatementType;
 
 /**
  * Decider which will decide if query should be reported based on configuration.
@@ -64,11 +63,9 @@ public class SlowQueryLogDecider {
 
     private boolean typeForLogging(Query query) {
         logger.trace("Checking if query type is for logging.");
-        if (query.statementType() == StatementType.SELECT || query.statementType() == StatementType.UPDATE) {
-            return true;
-        }
-
-        return false;
+        boolean logAll = slowQueryConfiguration.queryTypesToLog().contains("ALL");
+        boolean queryTypeMatches = slowQueryConfiguration.queryTypesToLog().contains(query.statementType().toString());
+        return logAll || queryTypeMatches;
     }
 
     private boolean tableForLogging(Query query) {

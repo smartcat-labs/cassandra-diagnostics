@@ -68,3 +68,7 @@ function check_prerequisites() {
     check_if_binary_is_in_path "wget"
     check_if_binary_is_in_path "readlink"
 }
+
+function get_wget_version() {
+    echo $(wget --version | head -1 | cut -d" " -f 3)
+}

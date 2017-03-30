@@ -22,7 +22,7 @@ Cassandra Diagnostics has a modular architecture. On one side it has connectors 
 
 ### Cassandra Connector
 
-Connector is a module which hooks into the query path and extract information for diagnostics. Bytecode instrumentation is used to augment existing Cassandra code with addition functionality. It uses low priority threads to execute the diagnostics information extraction with minimal performance impact to the target code (Cassandra node or application/driver).
+Connector is a module which hooks into the query path and extract information for diagnostics. Bytecode instrumentation is used to augment existing Cassandra code with additional functionality. It uses low priority threads to execute the diagnostics information extraction with minimal performance impact to the target code (Cassandra node or application/driver).
 
 Currently Cassandra Diagnostics implements the following connector implementation:
 

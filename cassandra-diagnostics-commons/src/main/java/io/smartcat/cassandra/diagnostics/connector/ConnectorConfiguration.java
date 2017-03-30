@@ -12,16 +12,16 @@ public class ConnectorConfiguration {
     public int numWorkerThreads = 2;
 
     /**
-     * The number of diagnostics events waiting to be processed that
-     * once reached, new events are being dropped until the number of queued events
-     * dropped to <code>queuedEventsRelaxThreshold</code>.
+     * Configured threshold for queue size, above this threshold all events will be
+     * dropped until the number of queued events is dropped to
+     * <code>queuedEventsRelaxThreshold</code>.
      */
     public int queuedEventsOverflowThreshold = 1000;
 
     /**
-     * The number of diagnostics events waiting to be processed that
-     * once reached, after the queue previously was in the overflow state, new events are being queued again,
-     * until the number of queued events dropped to <code>queuedEventsOverflowThreshold</code>.
+     * Lower threshold bound for event queue size. After the queue was previously
+     * in overflow state, new events will be queued only when the number of queued
+     * events drop below this value.
      */
     public int queuedEventsRelaxThreshold = 700;
 

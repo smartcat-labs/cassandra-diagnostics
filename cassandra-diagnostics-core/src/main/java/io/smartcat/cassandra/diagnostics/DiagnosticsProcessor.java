@@ -40,16 +40,17 @@ public class DiagnosticsProcessor {
             throw new IllegalStateException("Configuration does not have any module defined.");
         }
 
-        initReporters(configuration.reporters);
+        initReporters(configuration.reporters, configuration.global);
         initModules(configuration.modules, configuration.global);
     }
 
-    private void initReporters(final List<ReporterConfiguration> reportersConfiguration) {
+    private void initReporters(final List<ReporterConfiguration> reportersConfiguration,
+            final GlobalConfiguration globalConfiguration) {
         for (ReporterConfiguration reporterConfig : reportersConfiguration) {
             try {
                 logger.info("Creating reporter for class name {}", reporterConfig.reporter);
                 Reporter reporter = (Reporter) Class.forName(reporterConfig.reporter)
-                        .getConstructor(ReporterConfiguration.class).newInstance(reporterConfig);
+                        .getConstructor(ReporterConfiguration.class).newInstance(reporterConfig, globalConfiguration);
                 reporters.put(reporterConfig.reporter, reporter);
             } catch (Exception e) {
                 logger.warn("Failed to create reporter by class name", e);

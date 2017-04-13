@@ -49,6 +49,7 @@ public class YamlConfigurationLoaderTest {
         YamlConfigurationLoader loader = new YamlConfigurationLoader();
         Configuration configuration = loader.loadConfig();
         assertThat(configuration.hostname).isEqualTo("test-hostname");
+        assertThat(configuration.systemName).isEqualTo("smartcat-cassandra-cluster");
         assertThat(configuration.httpApiEnabled).isTrue();
         assertThat(configuration.httpApiHost).isEqualTo("10.0.0.1");
         assertThat(configuration.httpApiPort).isEqualTo(8001);

@@ -105,6 +105,7 @@ public class StatusModule extends Module {
     private Measurement createMeasurement(CompactionInfo compactionInfo) {
         final Map<String, String> tags = new HashMap<>(4);
         tags.put("host", hostname);
+        tags.put("systemName", systemName);
         tags.put("keyspace", compactionInfo.keyspace);
         tags.put("columnfamily", compactionInfo.columnFamily);
         tags.put("taskType", compactionInfo.taskType);
@@ -123,6 +124,7 @@ public class StatusModule extends Module {
     private Measurement createMeasurement(TPStatsInfo tpStatsInfo) {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", hostname);
+        tags.put("systemName", systemName);
 
         final Map<String, String> fields = new HashMap<>(5);
         fields.put("activeTasks", Long.toString(tpStatsInfo.activeTasks));
@@ -138,6 +140,7 @@ public class StatusModule extends Module {
     private Measurement createMeasurement(long repairSessions) {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", hostname);
+        tags.put("systemName", systemName);
 
         final Map<String, String> fields = new HashMap<>();
 

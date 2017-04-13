@@ -28,6 +28,11 @@ public abstract class Module {
     protected final String hostname = Utils.getHostname();
 
     /**
+     * System name under observation.
+     */
+    protected final String systemName = Utils.getSystemname();
+
+    /**
      * Constructor.
      *
      * @param configuration Module configuration

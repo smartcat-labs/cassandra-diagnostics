@@ -1,4 +1,5 @@
 hostname: "test-hostname"
+systemName: "smartcat-cassandra-cluster"
 
 httpApiEnabled: true
 httpApiHost: 10.0.0.1

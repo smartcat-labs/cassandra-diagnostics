@@ -95,6 +95,7 @@ public class SlowQueryModule extends Module {
         if (config.slowQueryReportEnabled()) {
             final Map<String, String> tags = new HashMap<>(4);
             tags.put("host", hostname);
+            tags.put("systemName", systemName);
             tags.put("statementType", query.statementType().toString());
 
             final Map<String, String> fields = new HashMap<>(4);
@@ -133,6 +134,7 @@ public class SlowQueryModule extends Module {
     private Measurement createSlowQueryCountMeasurement(double count, StatementType statementType) {
         final Map<String, String> tags = new HashMap<>(2);
         tags.put("host", hostname);
+        tags.put("systemName", systemName);
         tags.put("statementType", statementType.toString());
         return Measurement.create(slowQueryCountMeasurementName, count, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, new HashMap<String, String>());

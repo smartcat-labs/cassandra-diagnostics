@@ -54,6 +54,10 @@ public class Diagnostics implements QueryReporter {
         if (config.hostname != null && !config.hostname.isEmpty()) {
             Utils.setHostname(config.hostname);
         }
+
+        if (config.systemName != null && !config.systemName.isEmpty()) {
+            Utils.setSystemname(config.systemName);
+        }
     }
 
     /**

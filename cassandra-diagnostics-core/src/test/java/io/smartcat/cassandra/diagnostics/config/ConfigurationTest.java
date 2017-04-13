@@ -52,9 +52,24 @@ public class ConfigurationTest {
         YamlConfigurationLoader loader = new YamlConfigurationLoader();
         Configuration configuration = loader.loadConfig();
         assertThat(configuration.hostname).isEqualTo("test-hostname");
+    }
+
+    @Test
+    public void test_http_api_settings() throws ConfigurationException {
+        System.setProperty("cassandra.diagnostics.config", "valid-cassandra-diagnostics.yml");
+        YamlConfigurationLoader loader = new YamlConfigurationLoader();
+        Configuration configuration = loader.loadConfig();
         assertThat(configuration.httpApiEnabled).isEqualTo(true);
         assertThat(configuration.httpApiHost).isEqualTo("10.0.0.1");
         assertThat(configuration.httpApiPort).isEqualTo(8001);
+    }
+
+    @Test
+    public void test_systemname() throws ConfigurationException {
+        System.setProperty("cassandra.diagnostics.config", "valid-cassandra-diagnostics.yml");
+        YamlConfigurationLoader loader = new YamlConfigurationLoader();
+        Configuration configuration = loader.loadConfig();
+        assertThat(configuration.systemName).isEqualTo("smartcat-cassandra-cluster");
     }
 
     @Test

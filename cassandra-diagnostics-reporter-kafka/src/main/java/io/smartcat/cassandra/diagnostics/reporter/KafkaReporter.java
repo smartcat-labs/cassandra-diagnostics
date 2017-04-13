@@ -49,7 +49,7 @@ public class KafkaReporter extends Reporter {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
         producer = new KafkaProducer<>(properties);
-        partitionKey = Utils.getHostname();
+        partitionKey = Utils.getSystemname() + "_" + Utils.getHostname();
     }
 
     @Override

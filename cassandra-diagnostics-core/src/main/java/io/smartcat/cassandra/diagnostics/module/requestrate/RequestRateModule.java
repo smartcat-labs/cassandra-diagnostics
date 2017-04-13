@@ -104,6 +104,7 @@ public class RequestRateModule extends Module {
     private Measurement createMeasurement(String service, StatementType statementType, double rate) {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", hostname);
+        tags.put("systemName", systemName);
         tags.put("statementType", statementType.toString());
         return Measurement.create(service, rate, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
                 new HashMap<String, String>());

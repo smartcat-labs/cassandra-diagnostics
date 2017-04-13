@@ -86,6 +86,7 @@ public class ClusterHealthModule extends Module {
     private Measurement createMeasurement(long numberOfUnreachableNode) {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", hostname);
+        tags.put("systemName", systemName);
 
         final Map<String, String> fields = new HashMap<>();
 

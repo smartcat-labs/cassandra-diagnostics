@@ -54,6 +54,11 @@ public class Configuration {
     public String hostname = null;
 
     /**
+     * System wide name. Set to differentiate between systems under observation.
+     */
+    public String systemName = null;
+
+    /**
      * Enables diagnostics HTTP API.
      */
     public Boolean httpApiEnabled = true;
@@ -92,6 +97,7 @@ public class Configuration {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{ hostname: " + hostname);
+        sb.append("{ systemName: " + systemName);
         sb.append(", httpApiEnabled: " + httpApiEnabled);
         sb.append(", httpApiPort: " + httpApiPort);
         sb.append(", reporters: ");

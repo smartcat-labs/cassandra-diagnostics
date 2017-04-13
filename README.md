@@ -161,6 +161,14 @@ reporters:
 etc...
 ```
 
+It is important to name system under observation because measurements can be collected by various systems. Hostname is not enough, it is easy to
+imagine one host having Cassandra node and Kafka node both emitting measurement and we want to group those by system. By default "cassandra-cluster" will be used but it is advised to override this to have unique grouping of measurements:
+
+```
+systemName: "cassandra-cluster"
+hostname: "test-hostname"
+```
+
 ## Information provider
 
 Being deployed on the node itself, diagnostics connector should provide a connection to the node over JMX by wrapping the Cassandra's NodeProbe class with provides access to all actions and metrics exposed over JMX. This is configured in the `connector` part of the configuration which sits in the root of diagnostics config.

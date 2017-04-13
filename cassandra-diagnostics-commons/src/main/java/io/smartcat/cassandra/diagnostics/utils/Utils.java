@@ -15,6 +15,8 @@ public class Utils {
 
     private static String hostname = null;
 
+    private static String systemname = "cassandra-cluster";
+
     private Utils() {
 
     }
@@ -46,6 +48,24 @@ public class Utils {
      */
     public static void setHostname(final String hostname) {
         Utils.hostname = hostname;
+    }
+
+    /**
+     * Get system name.
+     *
+     * @return system name
+     */
+    public static String getSystemname() {
+        return systemname;
+    }
+
+    /**
+     * Set system name.
+     *
+     * @param systemname systemname value
+     */
+    public static void setSystemname(final String systemname) {
+        Utils.systemname = systemname;
     }
 
 }

@@ -142,6 +142,7 @@ public class MetricsCollector {
     private Measurement createMeasurement(String service, double value) {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", Utils.getHostname());
+        tags.put("systemName", Utils.getSystemname());
         return Measurement.create(service, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
                 new HashMap<String, String>());
     }

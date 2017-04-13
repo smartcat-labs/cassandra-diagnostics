@@ -49,7 +49,7 @@ public class SlowQueryModuleTest {
         assertThat(measurement.hasValue()).isTrue();
         assertThat(measurement.getValue()).isEqualTo(234);
 
-        assertThat(measurement.tags().keySet()).isEqualTo(Sets.newSet("host", "statementType"));
+        assertThat(measurement.tags().keySet()).isEqualTo(Sets.newSet("host", "statementType", "systemName"));
         assertThat(measurement.tags().get("statementType")).isEqualTo("SELECT");
     }
 

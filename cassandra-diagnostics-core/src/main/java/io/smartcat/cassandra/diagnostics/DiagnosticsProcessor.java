@@ -40,6 +40,10 @@ public class DiagnosticsProcessor {
             throw new IllegalStateException("Configuration does not have any module defined.");
         }
 
+        if (configuration.global == null) {
+            throw new IllegalStateException("Configuration does not have global configuration defined.");
+        }
+
         initReporters(configuration.reporters, configuration.global);
         initModules(configuration.modules, configuration.global);
     }
@@ -50,7 +54,8 @@ public class DiagnosticsProcessor {
             try {
                 logger.info("Creating reporter for class name {}", reporterConfig.reporter);
                 Reporter reporter = (Reporter) Class.forName(reporterConfig.reporter)
-                        .getConstructor(ReporterConfiguration.class).newInstance(reporterConfig, globalConfiguration);
+                        .getConstructor(ReporterConfiguration.class, GlobalConfiguration.class)
+                        .newInstance(reporterConfig, globalConfiguration);
                 reporters.put(reporterConfig.reporter, reporter);
             } catch (Exception e) {
                 logger.warn("Failed to create reporter by class name", e);
@@ -80,14 +85,14 @@ public class DiagnosticsProcessor {
             moduleReporters.addAll(reporters.values());
         } else {
             List<Reporter> reporters = getModuleReporters(moduleConfiguration.reporters);
-            if (moduleReporters.isEmpty()) {
+            if (reporters.isEmpty()) {
                 throw new IllegalStateException("Module does not have any reporter assigned.");
             }
             moduleReporters.addAll(reporters);
         }
 
         final Module module = (Module) Class.forName(moduleConfiguration.module)
-                .getConstructor(ModuleConfiguration.class, List.class)
+                .getConstructor(ModuleConfiguration.class, List.class, GlobalConfiguration.class)
                 .newInstance(moduleConfiguration, moduleReporters, globalConfiguration);
 
         return module;

@@ -40,6 +40,8 @@ public class Configuration {
                 modules.add(module);
 
                 connector = ConnectorConfiguration.getDefault();
+
+                global = GlobalConfiguration.getDefault();
             }
         };
     }

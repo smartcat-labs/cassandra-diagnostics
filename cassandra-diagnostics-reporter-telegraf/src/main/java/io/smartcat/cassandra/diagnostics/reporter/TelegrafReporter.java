@@ -13,6 +13,7 @@ import org.influxdb.dto.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 
 /**
@@ -32,10 +33,11 @@ public class TelegrafReporter extends Reporter {
     /**
      * Constructor.
      *
-     * @param configuration configuration
+     * @param configuration        configuration
+     * @param globalConfiguration  Global diagnostics configuration
      */
-    public TelegrafReporter(ReporterConfiguration configuration) {
-        super(configuration);
+    public TelegrafReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
+        super(configuration, globalConfiguration);
 
         logger.debug("Initializing Telegraf reporter with config: {}", configuration.toString());
 

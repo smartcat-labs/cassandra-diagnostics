@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.Module;
@@ -34,12 +35,14 @@ public class HeartbeatModule extends Module {
     /**
      * Constructor.
      *
-     * @param configuration Module configuration
-     * @param reporters     Reporter list
+     * @param configuration        Module configuration
+     * @param reporters            Reporter list
+     * @param globalConfiguration  Global diagnostics configuration
      * @throws ConfigurationException in case the provided module configuration is not valid
      */
-    public HeartbeatModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
-        super(configuration, reporters);
+    public HeartbeatModule(ModuleConfiguration configuration, List<Reporter> reporters,
+            final GlobalConfiguration globalConfiguration) throws ConfigurationException {
+        super(configuration, reporters, globalConfiguration);
 
         HeartbeatConfiguration config = HeartbeatConfiguration.create(configuration.options);
         service = configuration.getMeasurementOrDefault(DEFAULT_MEASUREMENT_NAME);
@@ -69,8 +72,8 @@ public class HeartbeatModule extends Module {
 
     private Measurement createMeasurement() {
         final Map<String, String> tags = new HashMap<>(1);
-        tags.put("host", hostname);
-        tags.put("systemName", systemName);
+        tags.put("host", globalConfiguration.hostname);
+        tags.put("systemName", globalConfiguration.systemName);
         Measurement measurement = Measurement
                 .create(service, 1.0, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
                         new HashMap<String, String>());

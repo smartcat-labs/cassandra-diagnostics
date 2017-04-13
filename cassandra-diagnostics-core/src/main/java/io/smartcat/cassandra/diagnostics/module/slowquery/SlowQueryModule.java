@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.Query.StatementType;
@@ -47,12 +48,14 @@ public class SlowQueryModule extends Module {
     /**
      * Constructor.
      *
-     * @param configuration Module configuration
-     * @param reporters Reporter list
+     * @param configuration        Module configuration
+     * @param reporters            Reporter list
+     * @param globalConfiguration  Global diagnostics configuration
      * @throws ConfigurationException in case the provided module configuration is not valid
      */
-    public SlowQueryModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
-        super(configuration, reporters);
+    public SlowQueryModule(ModuleConfiguration configuration, List<Reporter> reporters,
+            final GlobalConfiguration globalConfiguration) throws ConfigurationException {
+        super(configuration, reporters, globalConfiguration);
         config = SlowQueryConfiguration.create(configuration.options);
 
         service = configuration.getMeasurementOrDefault(DEFAULT_MEASUREMENT_NAME);
@@ -83,7 +86,7 @@ public class SlowQueryModule extends Module {
             return;
         }
 
-        if (hostname == null) {
+        if (globalConfiguration.hostname == null) {
             logger.error("Cannot log slow query because hostname is not resolved");
             throw new IllegalArgumentException("Cannot log slow query because hostname is not resolved.");
         }
@@ -94,8 +97,8 @@ public class SlowQueryModule extends Module {
 
         if (config.slowQueryReportEnabled()) {
             final Map<String, String> tags = new HashMap<>(4);
-            tags.put("host", hostname);
-            tags.put("systemName", systemName);
+            tags.put("host", globalConfiguration.hostname);
+            tags.put("systemName", globalConfiguration.systemName);
             tags.put("statementType", query.statementType().toString());
 
             final Map<String, String> fields = new HashMap<>(4);
@@ -133,8 +136,8 @@ public class SlowQueryModule extends Module {
 
     private Measurement createSlowQueryCountMeasurement(double count, StatementType statementType) {
         final Map<String, String> tags = new HashMap<>(2);
-        tags.put("host", hostname);
-        tags.put("systemName", systemName);
+        tags.put("host", globalConfiguration.hostname);
+        tags.put("systemName", globalConfiguration.systemName);
         tags.put("statementType", statementType.toString());
         return Measurement.create(slowQueryCountMeasurementName, count, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, new HashMap<String, String>());

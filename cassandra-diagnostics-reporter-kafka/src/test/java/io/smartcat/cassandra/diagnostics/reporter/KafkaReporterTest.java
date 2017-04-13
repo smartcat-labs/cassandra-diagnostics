@@ -23,6 +23,7 @@ import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 
 public class KafkaReporterTest {
@@ -65,7 +66,7 @@ public class KafkaReporterTest {
     public void send_measurements() {
         ReporterConfiguration config = new ReporterConfiguration();
         config.options.put("kafkaBootstrapServers", HOST + ":" + BROKER_PORT);
-        KafkaReporter reporter = new KafkaReporter(config);
+        KafkaReporter reporter = new KafkaReporter(config, GlobalConfiguration.getDefault());
 
         Map<String, String> tags = new HashMap<>();
         tags.put("tag1", "tv1");

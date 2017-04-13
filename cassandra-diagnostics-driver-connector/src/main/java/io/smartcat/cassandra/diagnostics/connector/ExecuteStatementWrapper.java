@@ -9,8 +9,8 @@ import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Statement;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Query;
-import io.smartcat.cassandra.diagnostics.utils.Utils;
 
 /**
  * This class is a Diagnostics wrapper for driver session manager execute async method.
@@ -26,11 +26,13 @@ public class ExecuteStatementWrapper extends AbstractEventProcessor {
      *
      * @param queryReporter QueryReporter used to report queries
      * @param configuration Connector configuration
+     * @param globalConfiguration global configuration general for diagnostics
      */
-    public ExecuteStatementWrapper(QueryReporter queryReporter, ConnectorConfiguration configuration) {
+    public ExecuteStatementWrapper(QueryReporter queryReporter, ConnectorConfiguration configuration,
+            GlobalConfiguration globalConfiguration) {
         super(queryReporter, configuration);
         // obtain host address
-        host = Utils.getHostname();
+        host = globalConfiguration.hostname;
     }
 
     /**

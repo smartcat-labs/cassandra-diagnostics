@@ -51,12 +51,8 @@ public class Diagnostics implements QueryReporter {
      */
     public Diagnostics() {
         config = loadConfiguration();
-        if (config.hostname != null && !config.hostname.isEmpty()) {
-            Utils.setHostname(config.hostname);
-        }
-
-        if (config.systemName != null && !config.systemName.isEmpty()) {
-            Utils.setSystemname(config.systemName);
+        if (config.global.hostname != null && !config.global.hostname.isEmpty()) {
+            config.global.hostname = Utils.resolveHostname();
         }
     }
 
@@ -109,8 +105,8 @@ public class Diagnostics implements QueryReporter {
             logger.error("Unable to register DiagnosticsMBean", e);
         }
 
-        if (config.httpApiEnabled && httpApi == null) {
-            logger.info("Starting Diagnostics HTTP API at {}:{}", config.httpApiHost, config.httpApiPort);
+        if (config.global.httpApiEnabled && httpApi == null) {
+            logger.info("Starting Diagnostics HTTP API at {}:{}", config.global.httpApiHost, config.global.httpApiPort);
             httpApi = new HttpHandler(config, diagnosticsApi);
             try {
                 httpApi.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);

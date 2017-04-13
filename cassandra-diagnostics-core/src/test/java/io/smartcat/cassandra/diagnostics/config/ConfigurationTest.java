@@ -33,9 +33,9 @@ public class ConfigurationTest {
         Configuration conf = Configuration.getDefaultConfiguration();
         assertThat(conf.reporters.size()).isEqualTo(1);
         assertThat(conf.modules.size()).isEqualTo(1);
-        assertThat(conf.httpApiEnabled).isTrue();
-        assertThat(conf.httpApiHost).isEqualTo("127.0.0.1");
-        assertThat(conf.httpApiPort).isEqualTo(8998);
+        assertThat(conf.global.httpApiEnabled).isTrue();
+        assertThat(conf.global.httpApiHost).isEqualTo("127.0.0.1");
+        assertThat(conf.global.httpApiPort).isEqualTo(8998);
         ReporterConfiguration reporterConfiguration = conf.reporters.get(0);
         assertThat(reporterConfiguration.reporter).isEqualTo(LogReporter.class.getName());
 
@@ -51,7 +51,7 @@ public class ConfigurationTest {
         System.setProperty("cassandra.diagnostics.config", "valid-cassandra-diagnostics.yml");
         YamlConfigurationLoader loader = new YamlConfigurationLoader();
         Configuration configuration = loader.loadConfig();
-        assertThat(configuration.hostname).isEqualTo("test-hostname");
+        assertThat(configuration.global.hostname).isEqualTo("test-hostname");
     }
 
     @Test
@@ -59,9 +59,9 @@ public class ConfigurationTest {
         System.setProperty("cassandra.diagnostics.config", "valid-cassandra-diagnostics.yml");
         YamlConfigurationLoader loader = new YamlConfigurationLoader();
         Configuration configuration = loader.loadConfig();
-        assertThat(configuration.httpApiEnabled).isEqualTo(true);
-        assertThat(configuration.httpApiHost).isEqualTo("10.0.0.1");
-        assertThat(configuration.httpApiPort).isEqualTo(8001);
+        assertThat(configuration.global.httpApiEnabled).isEqualTo(true);
+        assertThat(configuration.global.httpApiHost).isEqualTo("10.0.0.1");
+        assertThat(configuration.global.httpApiPort).isEqualTo(8001);
     }
 
     @Test
@@ -69,7 +69,7 @@ public class ConfigurationTest {
         System.setProperty("cassandra.diagnostics.config", "valid-cassandra-diagnostics.yml");
         YamlConfigurationLoader loader = new YamlConfigurationLoader();
         Configuration configuration = loader.loadConfig();
-        assertThat(configuration.systemName).isEqualTo("smartcat-cassandra-cluster");
+        assertThat(configuration.global.systemName).isEqualTo("smartcat-cassandra-cluster");
     }
 
     @Test

@@ -3,6 +3,7 @@ package io.smartcat.cassandra.diagnostics.reporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 
 /**
@@ -24,10 +25,11 @@ public class LogReporter extends Reporter {
     /**
      * Constructor.
      *
-     * @param configuration configuration
+     * @param configuration        configuration
+     * @param globalConfiguration  Global diagnostics configuration
      */
-    public LogReporter(ReporterConfiguration configuration) {
-        super(configuration);
+    public LogReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
+        super(configuration, globalConfiguration);
     }
 
     @Override

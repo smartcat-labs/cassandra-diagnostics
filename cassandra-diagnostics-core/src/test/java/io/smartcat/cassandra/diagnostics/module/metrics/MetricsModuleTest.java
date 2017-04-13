@@ -20,6 +20,7 @@ import javax.management.StandardMBean;
 
 import org.junit.Test;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.LatchTestReporter;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
@@ -35,7 +36,7 @@ public class MetricsModuleTest {
         final ModuleConfiguration config = testConfiguration();
         initializeTestMBean(config);
 
-        final MetricsModule module = new MetricsModule(config, testReporters());
+        final MetricsModule module = new MetricsModule(config, testReporters(), GlobalConfiguration.getDefault());
 
         module.stop();
 
@@ -48,14 +49,14 @@ public class MetricsModuleTest {
         TestMXBeanImpl bean = (TestMXBeanImpl) initializeTestMBean(config);
 
         final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(testReporter);
             }
         };
 
-        final MetricsModule module = new MetricsModule(config, reporters);
+        final MetricsModule module = new MetricsModule(config, reporters, GlobalConfiguration.getDefault());
         boolean wait = latch.await(2000, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
@@ -81,7 +82,7 @@ public class MetricsModuleTest {
     private List<Reporter> testReporters() {
         return new ArrayList<Reporter>() {
             {
-                add(new TestReporter(null));
+                add(new TestReporter(null, GlobalConfiguration.getDefault()));
             }
         };
     }

@@ -16,6 +16,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import io.smartcat.cassandra.diagnostics.DiagnosticsAgent;
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
@@ -39,7 +40,8 @@ public class StatusModuleTest {
         PowerMockito.mockStatic(DiagnosticsAgent.class);
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
 
-        final StatusModule module = new StatusModule(testConfiguration(1, true, true, true), testReporters());
+        final StatusModule module = new StatusModule(testConfiguration(1, true, true, true), testReporters(),
+                GlobalConfiguration.getDefault());
         module.stop();
 
         PowerMockito.verifyStatic();
@@ -53,14 +55,15 @@ public class StatusModuleTest {
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
 
         final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(testReporter);
             }
         };
 
-        final StatusModule module = new StatusModule(testConfiguration(1, true, false, false), reporters);
+        final StatusModule module = new StatusModule(testConfiguration(1, true, false, false), reporters,
+                GlobalConfiguration.getDefault());
         boolean wait = latch.await(1000, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
@@ -75,14 +78,15 @@ public class StatusModuleTest {
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
 
         final CountDownLatch latch = new CountDownLatch(3);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(testReporter);
             }
         };
 
-        final StatusModule module = new StatusModule(testConfiguration(1, false, true, false), reporters);
+        final StatusModule module = new StatusModule(testConfiguration(1, false, true, false), reporters,
+                GlobalConfiguration.getDefault());
         boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
@@ -97,14 +101,15 @@ public class StatusModuleTest {
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
 
         final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(testReporter);
             }
         };
 
-        final StatusModule module = new StatusModule(testConfiguration(1, false, false, true), reporters);
+        final StatusModule module = new StatusModule(testConfiguration(1, false, false, true), reporters,
+                GlobalConfiguration.getDefault());
         boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
@@ -119,14 +124,15 @@ public class StatusModuleTest {
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
 
         final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(testReporter);
             }
         };
 
-        final StatusModule module = new StatusModule(testConfiguration(1, false, false, false), reporters);
+        final StatusModule module = new StatusModule(testConfiguration(1, false, false, false), reporters,
+                GlobalConfiguration.getDefault());
         boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isFalse();
@@ -149,7 +155,7 @@ public class StatusModuleTest {
     private List<Reporter> testReporters() {
         return new ArrayList<Reporter>() {
             {
-                add(new TestReporter(null));
+                add(new TestReporter(null, GlobalConfiguration.getDefault()));
             }
         };
     }

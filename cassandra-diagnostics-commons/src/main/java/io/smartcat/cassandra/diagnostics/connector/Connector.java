@@ -2,6 +2,7 @@ package io.smartcat.cassandra.diagnostics.connector;
 
 import java.lang.instrument.Instrumentation;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
 
 /**
@@ -9,14 +10,15 @@ import io.smartcat.cassandra.diagnostics.info.InfoProvider;
  */
 public interface Connector {
     /**
-     * Performs Cassandra classes instrumentation in order to inject Cassandra Diagnostics
-     * interceptors.
+     * Performs Cassandra classes instrumentation in order to inject Cassandra Diagnostics interceptors.
      *
-     * @param inst          instrumentation reference
-     * @param reporter      query reporter
-     * @param configuration connector specific configuration
+     * @param inst                instrumentation reference
+     * @param reporter            query reporter
+     * @param configuration       connector specific configuration
+     * @param globalConfiguration global configuration general for diagnostics
      */
-    void init(Instrumentation inst, QueryReporter reporter, ConnectorConfiguration configuration);
+    void init(Instrumentation inst, QueryReporter reporter, ConnectorConfiguration configuration,
+            GlobalConfiguration globalConfiguration);
 
     /**
      * Blocks the calling thread until the connector's target (e.g. Cassand node)

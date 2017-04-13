@@ -28,8 +28,8 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.utils.Utils;
 
 /**
  * Metrics collector class. Handles mbeans, jmx connection and collecting metrics.
@@ -44,6 +44,8 @@ public class MetricsCollector {
 
     private final MetricsConfiguration config;
 
+    private final GlobalConfiguration globalConfiguration;
+
     private JMXConnector jmxc;
 
     private MBeanServerConnection mbeanServerConn;
@@ -54,9 +56,11 @@ public class MetricsCollector {
      * Constructor.
      *
      * @param config metrics configuration
+     * @param globalConfiguration Global diagnostics configuration
      */
-    public MetricsCollector(final MetricsConfiguration config) {
+    public MetricsCollector(final MetricsConfiguration config, final GlobalConfiguration globalConfiguration) {
         this.config = config;
+        this.globalConfiguration = globalConfiguration;
     }
 
     /**
@@ -141,8 +145,8 @@ public class MetricsCollector {
 
     private Measurement createMeasurement(String service, double value) {
         final Map<String, String> tags = new HashMap<>(1);
-        tags.put("host", Utils.getHostname());
-        tags.put("systemName", Utils.getSystemname());
+        tags.put("host", globalConfiguration.hostname);
+        tags.put("systemName", globalConfiguration.systemName);
         return Measurement.create(service, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
                 new HashMap<String, String>());
     }

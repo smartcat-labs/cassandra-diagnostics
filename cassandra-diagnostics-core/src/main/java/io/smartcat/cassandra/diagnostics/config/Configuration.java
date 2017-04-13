@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.connector.ConnectorConfiguration;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.module.heartbeat.HeartbeatModule;
@@ -49,39 +50,9 @@ public class Configuration {
     public ConnectorConfiguration connector = ConnectorConfiguration.getDefault();
 
     /**
-     * System wide hostname. Set to override {@code InetAddress} querying.
+     * Global configuration.
      */
-    public String hostname = null;
-
-    /**
-     * System wide name. Set to differentiate between systems under observation.
-     */
-    public String systemName = null;
-
-    /**
-     * Enables diagnostics HTTP API.
-     */
-    public Boolean httpApiEnabled = true;
-
-    /**
-     * Host name for binding HTTP API listening socket.
-     */
-    public String httpApiHost = "127.0.0.1";
-
-    /**
-     * TCP port for diagnostics HTTP API.
-     */
-    public Integer httpApiPort = 8998;
-
-    /**
-     * Enables HTTP API key-based authentication.
-     */
-    public Boolean httpApiAuthEnabled = false;
-
-    /**
-     * HTTP API access key.
-     */
-    public String httpApiKey = "diagnostics-api-key";
+    public GlobalConfiguration global = GlobalConfiguration.getDefault();
 
     /**
      * Reporters configuration list with reporter specific properties.
@@ -96,10 +67,10 @@ public class Configuration {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("{ hostname: " + hostname);
-        sb.append("{ systemName: " + systemName);
-        sb.append(", httpApiEnabled: " + httpApiEnabled);
-        sb.append(", httpApiPort: " + httpApiPort);
+        sb.append("{ hostname: " + global.hostname);
+        sb.append("{ systemName: " + global.systemName);
+        sb.append(", httpApiEnabled: " + global.httpApiEnabled);
+        sb.append(", httpApiPort: " + global.httpApiPort);
         sb.append(", reporters: ");
         for (ReporterConfiguration reporter: reporters) {
             sb.append(reporter.toString());

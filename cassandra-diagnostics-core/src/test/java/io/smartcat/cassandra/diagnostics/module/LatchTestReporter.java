@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
@@ -14,8 +15,9 @@ public class LatchTestReporter extends Reporter {
 
     private final List<Measurement> reported = new ArrayList<>();
 
-    public LatchTestReporter(ReporterConfiguration configuration, CountDownLatch latch) {
-        super(configuration);
+    public LatchTestReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration,
+            CountDownLatch latch) {
+        super(configuration, globalConfiguration);
         this.latch = latch;
     }
 

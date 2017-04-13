@@ -48,10 +48,10 @@ public class YamlConfigurationLoaderTest {
         System.setProperty("cassandra.diagnostics.config", "valid-cassandra-diagnostics.yml");
         YamlConfigurationLoader loader = new YamlConfigurationLoader();
         Configuration configuration = loader.loadConfig();
-        assertThat(configuration.hostname).isEqualTo("test-hostname");
-        assertThat(configuration.systemName).isEqualTo("smartcat-cassandra-cluster");
-        assertThat(configuration.httpApiEnabled).isTrue();
-        assertThat(configuration.httpApiHost).isEqualTo("10.0.0.1");
-        assertThat(configuration.httpApiPort).isEqualTo(8001);
+        assertThat(configuration.global.hostname).isEqualTo("test-hostname");
+        assertThat(configuration.global.systemName).isEqualTo("smartcat-cassandra-cluster");
+        assertThat(configuration.global.httpApiEnabled).isTrue();
+        assertThat(configuration.global.httpApiHost).isEqualTo("10.0.0.1");
+        assertThat(configuration.global.httpApiPort).isEqualTo(8001);
     }
 }

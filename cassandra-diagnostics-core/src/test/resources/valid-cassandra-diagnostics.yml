@@ -1,9 +1,10 @@
-hostname: "test-hostname"
-systemName: "smartcat-cassandra-cluster"
+global:
+  hostname: "test-hostname"
+  systemName: "smartcat-cassandra-cluster"
 
-httpApiEnabled: true
-httpApiHost: 10.0.0.1
-httpApiPort: 8001
+  httpApiEnabled: true
+  httpApiHost: 10.0.0.1
+  httpApiPort: 8001
 
 connector:
   jmxHost: 10.0.0.1

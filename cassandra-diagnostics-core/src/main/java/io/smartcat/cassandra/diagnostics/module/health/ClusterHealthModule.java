@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.DiagnosticsAgent;
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
@@ -42,13 +43,15 @@ public class ClusterHealthModule extends Module {
     /**
      * Constructor.
      *
-     * @param configuration Module configuration
-     * @param reporters Reporter list
+     * @param configuration        Module configuration
+     * @param reporters            Reporter list
+     * @param globalConfiguration  Global diagnostics configuration
      * @throws ConfigurationException configuration parsing exception
      */
-    public ClusterHealthModule(ModuleConfiguration configuration, List<Reporter> reporters)
+    public ClusterHealthModule(ModuleConfiguration configuration, List<Reporter> reporters,
+            final GlobalConfiguration globalConfiguration)
             throws ConfigurationException {
-        super(configuration, reporters);
+        super(configuration, reporters, globalConfiguration);
 
         ClusterHealthConfiguration config = ClusterHealthConfiguration.create(configuration.options);
         period = config.period();
@@ -85,8 +88,8 @@ public class ClusterHealthModule extends Module {
 
     private Measurement createMeasurement(long numberOfUnreachableNode) {
         final Map<String, String> tags = new HashMap<>(1);
-        tags.put("host", hostname);
-        tags.put("systemName", systemName);
+        tags.put("host", globalConfiguration.hostname);
+        tags.put("systemName", globalConfiguration.systemName);
 
         final Map<String, String> fields = new HashMap<>();
 

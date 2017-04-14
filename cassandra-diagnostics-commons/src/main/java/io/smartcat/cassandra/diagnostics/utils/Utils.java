@@ -13,39 +13,21 @@ public class Utils {
 
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
-    private static String hostname = null;
-
     private Utils() {
 
     }
 
     /**
-     * Get system hostname if no hostname has been set.
+     * Get system hostname.
      *
      * @return system hostname
      */
-    public static String getHostname() {
-        if (hostname != null) {
-            return hostname;
-        }
-
+    public static String resolveHostname() {
         try {
-            hostname = InetAddress.getLocalHost().getHostName();
+            return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
             logger.warn("Cannot resolve local host hostname");
-            hostname = "UNKNOWN";
+            return "UNKNOWN";
         }
-
-        return hostname;
     }
-
-    /**
-     * Set system hostname and override {@code InetAddress} calls.
-     *
-     * @param hostname hostname value
-     */
-    public static void setHostname(final String hostname) {
-        Utils.hostname = hostname;
-    }
-
 }

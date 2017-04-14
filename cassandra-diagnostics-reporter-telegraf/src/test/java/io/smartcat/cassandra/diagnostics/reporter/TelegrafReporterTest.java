@@ -23,6 +23,7 @@ import org.powermock.api.support.membermodification.MemberModifier;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 
 @RunWith(PowerMockRunner.class)
@@ -52,7 +53,7 @@ public class TelegrafReporterTest {
         ReporterConfiguration configuration = new ReporterConfiguration();
         configuration.options.put("telegrafHost", "localhost");
 
-        TelegrafReporter reporter = new TelegrafReporter(configuration);
+        TelegrafReporter reporter = new TelegrafReporter(configuration, GlobalConfiguration.getDefault());
         MemberModifier.field(TelegrafReporter.class, "telegrafClient").set(reporter, tcpClientMock);
 
         Map<String, String> tags = new HashMap<>();

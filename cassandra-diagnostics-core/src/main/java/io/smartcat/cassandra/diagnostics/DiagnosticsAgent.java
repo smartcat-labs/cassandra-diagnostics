@@ -38,7 +38,8 @@ public class DiagnosticsAgent {
         logger.info("Cassandra Diagnostics starting.");
         diagnostics = new Diagnostics();
         connector = ConnectorFactory.getImplementation();
-        connector.init(inst, diagnostics, diagnostics.getConfiguration().connector);
+        connector.init(inst, diagnostics, diagnostics.getConfiguration().connector,
+                diagnostics.getConfiguration().global);
         Thread th = new Thread(new Runnable() {
             @Override
             public void run() {

@@ -2,10 +2,10 @@ package io.smartcat.cassandra.diagnostics.module;
 
 import java.util.List;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.reporter.Reporter;
-import io.smartcat.cassandra.diagnostics.utils.Utils;
 
 /**
  * Module abstraction that forces a constructor signature. All valid modules should extend this class.
@@ -23,19 +23,22 @@ public abstract class Module {
     protected final List<Reporter> reporters;
 
     /**
-     * System hostname value.
+     * Reporter list defined in configuration.
      */
-    protected final String hostname = Utils.getHostname();
+    protected final GlobalConfiguration globalConfiguration;
 
     /**
      * Constructor.
      *
-     * @param configuration Module configuration
-     * @param reporters     Reporter list
+     * @param configuration        Module configuration
+     * @param reporters            Reporter list
+     * @param globalConfiguration  Global diagnostics configuration
      */
-    public Module(ModuleConfiguration configuration, List<Reporter> reporters) {
+    public Module(ModuleConfiguration configuration, List<Reporter> reporters,
+            final GlobalConfiguration globalConfiguration) {
         this.configuration = configuration;
         this.reporters = reporters;
+        this.globalConfiguration = globalConfiguration;
     }
 
     /**

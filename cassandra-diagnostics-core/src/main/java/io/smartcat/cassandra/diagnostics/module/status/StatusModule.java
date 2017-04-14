@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.smartcat.cassandra.diagnostics.DiagnosticsAgent;
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
@@ -50,12 +51,14 @@ public class StatusModule extends Module {
     /**
      * Constructor.
      *
-     * @param configuration Module configuration
-     * @param reporters     Reporter list
+     * @param configuration        Module configuration
+     * @param reporters            Reporter list
+     * @param globalConfiguration  Global diagnostics configuration
      * @throws ConfigurationException configuration parsing exception
      */
-    public StatusModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
-        super(configuration, reporters);
+    public StatusModule(ModuleConfiguration configuration, List<Reporter> reporters,
+            final GlobalConfiguration globalConfiguration) throws ConfigurationException {
+        super(configuration, reporters, globalConfiguration);
 
         StatusConfiguration config = StatusConfiguration.create(configuration.options);
         period = config.period();
@@ -104,7 +107,8 @@ public class StatusModule extends Module {
 
     private Measurement createMeasurement(CompactionInfo compactionInfo) {
         final Map<String, String> tags = new HashMap<>(4);
-        tags.put("host", hostname);
+        tags.put("host", globalConfiguration.hostname);
+        tags.put("systemName", globalConfiguration.systemName);
         tags.put("keyspace", compactionInfo.keyspace);
         tags.put("columnfamily", compactionInfo.columnFamily);
         tags.put("taskType", compactionInfo.taskType);
@@ -122,7 +126,8 @@ public class StatusModule extends Module {
 
     private Measurement createMeasurement(TPStatsInfo tpStatsInfo) {
         final Map<String, String> tags = new HashMap<>(1);
-        tags.put("host", hostname);
+        tags.put("host", globalConfiguration.hostname);
+        tags.put("systemName", globalConfiguration.systemName);
 
         final Map<String, String> fields = new HashMap<>(5);
         fields.put("activeTasks", Long.toString(tpStatsInfo.activeTasks));
@@ -137,7 +142,8 @@ public class StatusModule extends Module {
 
     private Measurement createMeasurement(long repairSessions) {
         final Map<String, String> tags = new HashMap<>(1);
-        tags.put("host", hostname);
+        tags.put("host", globalConfiguration.hostname);
+        tags.put("systemName", globalConfiguration.systemName);
 
         final Map<String, String> fields = new HashMap<>();
 

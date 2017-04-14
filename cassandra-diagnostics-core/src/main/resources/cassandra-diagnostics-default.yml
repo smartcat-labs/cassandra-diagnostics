@@ -1,3 +1,7 @@
+# Global diagnostics configuration
+global:
+  systemName: "smartcat-cassandra-cluster"
+
 # Reporters
 reporters:
   - reporter: io.smartcat.cassandra.diagnostics.reporter.LogReporter

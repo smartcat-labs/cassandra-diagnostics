@@ -116,6 +116,9 @@ JVM_OPTS="$JVM_OPTS -Dcassandra.diagnostics.config=some-other-cassandra-diagnost
 The following is an example of the configuration file:
 
 ```
+global:
+  systemName: "smartcat-cassandra-cluster"
+
 reporters:
   - reporter: io.smartcat.cassandra.diagnostics.reporter.LogReporter
 
@@ -131,6 +134,9 @@ modules:
 Specific query reporter may require additional configuration options. Those options are specified using `options` property. The following example shows a configuration options in case of `RiemannReporter` and it shows how you can configure specific modules to use this reporter:
 
 ```
+global:
+  systemName: "smartcat-cassandra-cluster"
+
 # Reporters
 reporters:
   - reporter: io.smartcat.cassandra.diagnostics.reporter.LogReporter
@@ -155,10 +161,20 @@ modules:
 By default all measurements are reported with hostname queried with [InetAddress](http://docs.oracle.com/javase/7/docs/api/java/net/InetAddress.html) java class. If required, hostname can be set using a hostname variable in configuration file:
 
 ```
-hostname: "test-hostname"
+global:
+  systemName: "smartcat-cassandra-cluster"
+  hostname: "test-hostname"
 
 reporters:
 etc...
+```
+
+It is important to name system under observation because measurements can be collected by various systems. Hostname is not enough, it is easy to imagine one host having Cassandra node and Kafka node both emitting measurement and we want to group those by system. By default "cassandra-cluster" will be used but it is advised to override this to have unique grouping of measurements:
+
+```
+global:
+  systemName: "cassandra-cluster"
+  hostname: "test-hostname"
 ```
 
 ## Information provider

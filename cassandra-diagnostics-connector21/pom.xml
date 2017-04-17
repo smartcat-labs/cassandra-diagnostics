@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.smartcat</groupId>
         <artifactId>cassandra-diagnostics</artifactId>
-        <version>1.4.2-SNAPSHOT</version>
+        <version>1.4.2</version>
     </parent>
     <artifactId>cassandra-diagnostics-connector21</artifactId>
     <description>Cassandra Diagnostics Connector for Cassandra 2.1.x.</description>

@@ -57,10 +57,9 @@ public class ITConnector {
                 }
             }
         }, configuration, globalConfiguration);
-        
+
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
         connector.waitForSetupCompleted();
-        Thread.sleep(4000);
         cluster = Cluster.builder().addContactPoint("127.0.0.1").withPort(9142).build();
         session = cluster.connect();
     }

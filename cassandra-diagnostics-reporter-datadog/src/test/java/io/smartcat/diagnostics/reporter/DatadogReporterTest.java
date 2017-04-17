@@ -9,7 +9,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -73,11 +73,11 @@ public class DatadogReporterTest {
         config.options.put("fixedTags", Arrays.asList("host:somehost,tag2:two,tag3:three"));
         final DatadogReporter reporter = new DatadogReporter(config, GlobalConfiguration.getDefault());
 
-        Map<String, String> tags = new HashMap<>();
+        Map<String, String> tags = new LinkedHashMap<>();
         tags.put("tag1", "tv1");
         tags.put("tag2", "tv2");
 
-        Map<String, String> fields = new HashMap<>();
+        Map<String, String> fields = new LinkedHashMap<>();
         fields.put("v2", "abc");
 
         final Measurement measurement = Measurement
@@ -108,11 +108,11 @@ public class DatadogReporterTest {
         config.options.put("fixedTags", Arrays.asList("host:somehost,tag2:two,tag3:three"));
         final DatadogReporter reporter = new DatadogReporter(config, GlobalConfiguration.getDefault());
 
-        Map<String, String> tags = new HashMap<>();
+        Map<String, String> tags = new LinkedHashMap<>();
         tags.put("tag1", "tv1");
         tags.put("tag2", "tv2");
 
-        Map<String, String> fields = new HashMap<>();
+        Map<String, String> fields = new LinkedHashMap<>();
         fields.put("v1", "15.0");
         fields.put("v2", "26.0");
         fields.put("v3", "50.0");
@@ -152,11 +152,11 @@ public class DatadogReporterTest {
         config.options.put("fixedTags", Arrays.asList("host:somehost,tag2:two,tag3:three"));
         final DatadogReporter reporter = new DatadogReporter(config, GlobalConfiguration.getDefault());
 
-        Map<String, String> tags = new HashMap<>();
+        Map<String, String> tags = new LinkedHashMap<>();
         tags.put("tag1", "tv1");
         tags.put("tag2", "tv2");
 
-        Map<String, String> fields = new HashMap<>();
+        Map<String, String> fields = new LinkedHashMap<>();
         fields.put("v1", "1a");
         fields.put("v2", "df");
         fields.put("v3", ".");

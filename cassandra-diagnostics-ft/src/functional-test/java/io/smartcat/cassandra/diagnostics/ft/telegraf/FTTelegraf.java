@@ -61,6 +61,6 @@ public class FTTelegraf {
         result = influxdb.query(new Query("select count(value) from queryReport", "diagnostics"));
 
         Assertions.assertThat(result.getResults().get(0).getSeries()).isNotNull();
-        cluster.close();        
+        cluster.close();
     }
 }

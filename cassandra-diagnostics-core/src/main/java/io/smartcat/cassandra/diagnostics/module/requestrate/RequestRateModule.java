@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.Query.StatementType;
@@ -46,13 +47,15 @@ public class RequestRateModule extends Module {
     /**
      * Constructor.
      *
-     * @param configuration Module configuration
-     * @param reporters     Reporter list
+     * @param configuration        Module configuration
+     * @param reporters            Reporter list
+     * @param globalConfiguration  Global diagnostics configuration
      * @throws ConfigurationException in case the provided module configuration is not valid
      */
-    public RequestRateModule(ModuleConfiguration configuration, List<Reporter> reporters)
+    public RequestRateModule(ModuleConfiguration configuration, List<Reporter> reporters,
+            final GlobalConfiguration globalConfiguration)
             throws ConfigurationException {
-        super(configuration, reporters);
+        super(configuration, reporters, globalConfiguration);
 
         RequestRateConfiguration config = RequestRateConfiguration.create(configuration.options);
         service = configuration.getMeasurementOrDefault(DEFAULT_MEASUREMENT_NAME);
@@ -103,7 +106,8 @@ public class RequestRateModule extends Module {
 
     private Measurement createMeasurement(String service, StatementType statementType, double rate) {
         final Map<String, String> tags = new HashMap<>(1);
-        tags.put("host", hostname);
+        tags.put("host", globalConfiguration.hostname);
+        tags.put("systemName", globalConfiguration.systemName);
         tags.put("statementType", statementType.toString());
         return Measurement.create(service, rate, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
                 new HashMap<String, String>());

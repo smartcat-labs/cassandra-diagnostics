@@ -9,6 +9,7 @@ import org.influxdb.dto.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 
 /**
@@ -58,10 +59,11 @@ public class InfluxReporter extends Reporter {
     /**
      * Constructor.
      *
-     * @param configuration Reporter configuration
+     * @param configuration        Reporter configuration
+     * @param globalConfiguration  Global diagnostics configuration
      */
-    public InfluxReporter(ReporterConfiguration configuration) {
-        super(configuration);
+    public InfluxReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
+        super(configuration, globalConfiguration);
 
         if (!configuration.options.containsKey(ADDRESS_PROP)) {
             logger.warn("Not properly configured. Missing influx address. Aborting initialization.");

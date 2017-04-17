@@ -17,6 +17,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.utils.EmbeddedCassandraServerHelper;
 
@@ -38,6 +39,7 @@ public class ITConnector {
         ConnectorConfiguration configuration = new ConnectorConfiguration();
         configuration.enableTracing = true;
         final Connector connector = new ConnectorImpl();
+        GlobalConfiguration globalConfiguration = GlobalConfiguration.getDefault();
         connector.init(inst, new QueryReporter() {
             @Override
             public void report(Query query) {
@@ -54,7 +56,7 @@ public class ITConnector {
                     lockForUnpreparedStatement.countDown();
                 }
             }
-        }, configuration);
+        }, configuration, globalConfiguration);
         
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
         connector.waitForSetupCompleted();

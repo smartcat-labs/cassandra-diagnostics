@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
@@ -24,21 +25,23 @@ public class RequestRateModuleTest {
 
     @Test
     public void should_load_default_configuration_and_initialize() throws ConfigurationException {
-        final RequestRateModule module = new RequestRateModule(testConfiguration(1), testReporters());
+        final RequestRateModule module = new RequestRateModule(testConfiguration(1), testReporters(),
+                GlobalConfiguration.getDefault());
         module.stop();
     }
 
     @Test
     public void should_report_request_rate_when_started() throws ConfigurationException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(2);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(testReporter);
             }
         };
 
-        final RequestRateModule module = new RequestRateModule(testConfiguration(1), reporters);
+        final RequestRateModule module = new RequestRateModule(testConfiguration(1), reporters,
+                GlobalConfiguration.getDefault());
         boolean wait = latch.await(100, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
@@ -47,7 +50,8 @@ public class RequestRateModuleTest {
     @Test
     public void should_report_exact_request_rate_values() throws ConfigurationException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(20);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
+                latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(latchTestReporter);
@@ -59,7 +63,8 @@ public class RequestRateModuleTest {
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
 
-        final RequestRateModule module = new RequestRateModule(testConfiguration(1), reporters);
+        final RequestRateModule module = new RequestRateModule(testConfiguration(1), reporters,
+                GlobalConfiguration.getDefault());
 
         final long numberOfRequests = 1000;
         for (int i = 0; i < numberOfRequests / 2; i++) {
@@ -89,15 +94,17 @@ public class RequestRateModuleTest {
     @Test
     public void should_report_using_log_reporter() throws ConfigurationException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
+                latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(latchTestReporter);
-                add(new LogReporter(null));
+                add(new LogReporter(null, GlobalConfiguration.getDefault()));
             }
         };
 
-        final RequestRateModule module = new RequestRateModule(testConfiguration(1), reporters);
+        final RequestRateModule module = new RequestRateModule(testConfiguration(1), reporters,
+                GlobalConfiguration.getDefault());
         boolean wait = latch.await(200, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
@@ -106,7 +113,8 @@ public class RequestRateModuleTest {
     @Test
     public void should_report_average_request_rate_for_period() throws ConfigurationException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(6);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
+                latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(latchTestReporter);
@@ -116,7 +124,8 @@ public class RequestRateModuleTest {
         final Query selectQuery = mock(Query.class);
         when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
 
-        final RequestRateModule module = new RequestRateModule(testConfiguration(2), reporters);
+        final RequestRateModule module = new RequestRateModule(testConfiguration(2), reporters,
+                GlobalConfiguration.getDefault());
 
         final long numberOfRequests = 1000;
         for (int i = 0; i < numberOfRequests; i++) {
@@ -154,7 +163,7 @@ public class RequestRateModuleTest {
     private List<Reporter> testReporters() {
         return new ArrayList<Reporter>() {
             {
-                add(new TestReporter(null));
+                add(new TestReporter(null, GlobalConfiguration.getDefault()));
             }
         };
     }

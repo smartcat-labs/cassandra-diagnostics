@@ -25,11 +25,11 @@ public class HttpHandler extends NanoHTTPD {
      * @param diagnosticsApi diagnostics api
      */
     public HttpHandler(Configuration config, DiagnosticsApi diagnosticsApi) {
-        super(config.httpApiHost, config.httpApiPort);
+        super(config.global.httpApiHost, config.global.httpApiPort);
         this.diagnosticsApi = diagnosticsApi;
 
-        apiAuthEnabled = config.httpApiAuthEnabled;
-        apiKey = config.httpApiKey;
+        apiAuthEnabled = config.global.httpApiAuthEnabled;
+        apiKey = config.global.httpApiKey;
     }
 
     /* (non-Javadoc)

@@ -13,6 +13,7 @@ import com.aphyr.riemann.client.RiemannBatchClient;
 import com.aphyr.riemann.client.RiemannClient;
 import com.aphyr.riemann.client.UnsupportedJVMException;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 
 /**
@@ -38,10 +39,11 @@ public class RiemannReporter extends Reporter {
     /**
      * Constructor.
      *
-     * @param configuration configuration
+     * @param configuration         configuration
+     * @param globalConfiguration   Global diagnostics configuration
      */
-    public RiemannReporter(ReporterConfiguration configuration) {
-        super(configuration);
+    public RiemannReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
+        super(configuration, globalConfiguration);
 
         logger.debug("Initializing riemann client with config: {}", configuration.toString());
 

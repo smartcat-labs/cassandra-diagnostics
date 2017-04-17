@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.utils.Utils;
 
 /**
  * A Datadog based {@link Reporter} implementation. Query reports are reporter via Datadog HTTP API
@@ -41,14 +41,15 @@ public class DatadogReporter extends Reporter {
     /**
      * Constructor.
      *
-     * @param configuration Reporter configuration
+     * @param configuration        Reporter configuration
+     * @param globalConfiguration  Global configuration
      */
-    public DatadogReporter(ReporterConfiguration configuration) {
-        super(configuration);
+    public DatadogReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
+        super(configuration, globalConfiguration);
 
         logger.debug("Initializing datadog client with config: {}", configuration.toString());
 
-        hostname = Utils.getHostname();
+        hostname = globalConfiguration.hostname;
         if (hostname == null || hostname.isEmpty()) {
             logger.warn("Failed to init Datadog client: cannot resolve hostname. Aborting initialization.");
             return;

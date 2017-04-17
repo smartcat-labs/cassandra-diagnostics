@@ -40,16 +40,22 @@ public class DiagnosticsProcessor {
             throw new IllegalStateException("Configuration does not have any module defined.");
         }
 
-        initReporters(configuration.reporters);
-        initModules(configuration.modules);
+        if (configuration.global == null) {
+            throw new IllegalStateException("Configuration does not have global configuration defined.");
+        }
+
+        initReporters(configuration.reporters, configuration.global);
+        initModules(configuration.modules, configuration.global);
     }
 
-    private void initReporters(final List<ReporterConfiguration> reportersConfiguration) {
+    private void initReporters(final List<ReporterConfiguration> reportersConfiguration,
+            final GlobalConfiguration globalConfiguration) {
         for (ReporterConfiguration reporterConfig : reportersConfiguration) {
             try {
                 logger.info("Creating reporter for class name {}", reporterConfig.reporter);
                 Reporter reporter = (Reporter) Class.forName(reporterConfig.reporter)
-                        .getConstructor(ReporterConfiguration.class).newInstance(reporterConfig);
+                        .getConstructor(ReporterConfiguration.class, GlobalConfiguration.class)
+                        .newInstance(reporterConfig, globalConfiguration);
                 reporters.put(reporterConfig.reporter, reporter);
             } catch (Exception e) {
                 logger.warn("Failed to create reporter by class name", e);
@@ -57,11 +63,12 @@ public class DiagnosticsProcessor {
         }
     }
 
-    private void initModules(final List<ModuleConfiguration> modulesConfiguration) {
+    private void initModules(final List<ModuleConfiguration> modulesConfiguration,
+            final GlobalConfiguration globalConfiguration) {
         for (ModuleConfiguration moduleConfig : modulesConfiguration) {
             try {
                 logger.info("Creating module for class name {}", moduleConfig.module);
-                final Module module = createModule(moduleConfig);
+                final Module module = createModule(moduleConfig, globalConfiguration);
                 modules.add(module);
             } catch (Exception e) {
                 logger.warn("Failed to create module by class name", e);
@@ -69,22 +76,24 @@ public class DiagnosticsProcessor {
         }
     }
 
-    private Module createModule(final ModuleConfiguration moduleConfiguration) throws Exception {
-        final List<Reporter> refs = new ArrayList<>();
+    private Module createModule(final ModuleConfiguration moduleConfiguration,
+            final GlobalConfiguration globalConfiguration) throws Exception {
+        final List<Reporter> moduleReporters = new ArrayList<>();
 
         if (moduleConfiguration.reporters == null || moduleConfiguration.reporters.isEmpty()) {
             logger.info("Assigning all available reporters to module {}", moduleConfiguration.module);
-            refs.addAll(reporters.values());
+            moduleReporters.addAll(reporters.values());
         } else {
-            List<Reporter> moduleReporters = getModuleReporters(moduleConfiguration.reporters);
-            if (moduleReporters.isEmpty()) {
+            List<Reporter> reporters = getModuleReporters(moduleConfiguration.reporters);
+            if (reporters.isEmpty()) {
                 throw new IllegalStateException("Module does not have any reporter assigned.");
             }
-            refs.addAll(moduleReporters);
+            moduleReporters.addAll(reporters);
         }
 
         final Module module = (Module) Class.forName(moduleConfiguration.module)
-                .getConstructor(ModuleConfiguration.class, List.class).newInstance(moduleConfiguration, refs);
+                .getConstructor(ModuleConfiguration.class, List.class, GlobalConfiguration.class)
+                .newInstance(moduleConfiguration, moduleReporters, globalConfiguration);
 
         return module;
     }

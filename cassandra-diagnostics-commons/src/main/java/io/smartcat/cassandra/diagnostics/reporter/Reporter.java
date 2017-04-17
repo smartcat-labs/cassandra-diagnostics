@@ -1,5 +1,6 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 
 /**
@@ -13,12 +14,19 @@ public abstract class Reporter {
     protected ReporterConfiguration configuration;
 
     /**
+     * Diagnostics global configuration.
+     */
+    protected GlobalConfiguration globalConfiguration;
+
+    /**
      * Constructor.
      *
-     * @param configuration Reporter configuration
+     * @param configuration        Reporter configuration
+     * @param globalConfiguration  Diagnostics configuration
      */
-    public Reporter(ReporterConfiguration configuration) {
+    public Reporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
         this.configuration = configuration;
+        this.globalConfiguration = globalConfiguration;
     }
 
     /**

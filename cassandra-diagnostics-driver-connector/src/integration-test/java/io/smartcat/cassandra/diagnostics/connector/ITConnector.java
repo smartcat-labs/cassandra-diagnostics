@@ -15,6 +15,7 @@ import org.springframework.instrument.InstrumentationSavingAgent;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.utils.EmbeddedCassandraServerHelper;
 
@@ -40,7 +41,7 @@ public class ITConnector {
                     lock.countDown();
                 }
             }
-        }, configuration);
+        }, configuration, GlobalConfiguration.getDefault());
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
         cluster = Cluster.builder().addContactPoint("127.0.0.1").withPort(9142).build();
         session = cluster.connect();

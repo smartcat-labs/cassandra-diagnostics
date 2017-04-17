@@ -70,7 +70,7 @@ public class HttpHandlerTest {
     @Test
     public void get_version_valid_api_key() {
         Configuration config = Configuration.getDefaultConfiguration();
-        config.httpApiAuthEnabled = true;
+        config.global.httpApiAuthEnabled = true;
 
         DiagnosticsApi mxBean = mock(DiagnosticsApi.class);
         when(mxBean.getVersion()).thenReturn("1.2.3");
@@ -80,7 +80,7 @@ public class HttpHandlerTest {
         when(session.getMethod()).thenReturn(Method.GET);
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("authorization", config.httpApiKey);
+        headers.put("authorization", config.global.httpApiKey);
         when(session.getHeaders()).thenReturn(headers);
         when(session.getUri()).thenReturn("/version");
 
@@ -98,7 +98,7 @@ public class HttpHandlerTest {
     @Test
     public void get_version_missing_api_key() {
         Configuration config = Configuration.getDefaultConfiguration();
-        config.httpApiAuthEnabled = true;
+        config.global.httpApiAuthEnabled = true;
 
         DiagnosticsApi mxBean = mock(DiagnosticsApi.class);
         HttpHandler httpApi = new HttpHandler(config, mxBean);
@@ -113,7 +113,7 @@ public class HttpHandlerTest {
     @Test
     public void get_version_invalid_api_key() {
         Configuration config = Configuration.getDefaultConfiguration();
-        config.httpApiAuthEnabled = true;
+        config.global.httpApiAuthEnabled = true;
 
         DiagnosticsApi mxBean = mock(DiagnosticsApi.class);
         HttpHandler httpApi = new HttpHandler(config, mxBean);

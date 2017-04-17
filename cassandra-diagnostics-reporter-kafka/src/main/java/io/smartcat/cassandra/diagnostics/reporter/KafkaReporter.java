@@ -10,8 +10,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.utils.Utils;
 
 /**
  * Apache Kafka based {@link Reporter} implementation. All measurements are written into Kafka based on measurements
@@ -32,10 +32,11 @@ public class KafkaReporter extends Reporter {
     /**
      * Constructor.
      *
-     * @param configuration Reporter configuration
+     * @param configuration        Reporter configuration
+     * @param globalConfiguration  Global diagnostics configuration
      */
-    public KafkaReporter(ReporterConfiguration configuration) {
-        super(configuration);
+    public KafkaReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
+        super(configuration, globalConfiguration);
 
         final String servers = configuration.getDefaultOption(SERVERS, "");
         if (servers.isEmpty()) {
@@ -49,7 +50,7 @@ public class KafkaReporter extends Reporter {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
         producer = new KafkaProducer<>(properties);
-        partitionKey = Utils.getHostname();
+        partitionKey = globalConfiguration.systemName + "_" + globalConfiguration.hostname;
     }
 
     @Override

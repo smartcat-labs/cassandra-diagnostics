@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.LatchTestReporter;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
@@ -20,21 +21,23 @@ public class HeartbeatModuleTest {
 
     @Test
     public void should_load_default_configuration_and_initialize() throws ConfigurationException {
-        final HeartbeatModule module = new HeartbeatModule(testConfiguration(), testReporters());
+        final HeartbeatModule module = new HeartbeatModule(testConfiguration(), testReporters(),
+                GlobalConfiguration.getDefault());
         module.stop();
     }
 
     @Test
     public void should_report_heartbeat_when_started() throws ConfigurationException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(testReporter);
             }
         };
 
-        final HeartbeatModule module = new HeartbeatModule(testConfiguration(), reporters);
+        final HeartbeatModule module = new HeartbeatModule(testConfiguration(), reporters,
+                GlobalConfiguration.getDefault());
         boolean wait = latch.await(100, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
@@ -43,15 +46,17 @@ public class HeartbeatModuleTest {
     @Test
     public void should_report_using_log_reporter() throws ConfigurationException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
+                latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(latchTestReporter);
-                add(new LogReporter(null));
+                add(new LogReporter(null, GlobalConfiguration.getDefault()));
             }
         };
 
-        final HeartbeatModule module = new HeartbeatModule(testConfiguration(), reporters);
+        final HeartbeatModule module = new HeartbeatModule(testConfiguration(), reporters,
+                GlobalConfiguration.getDefault());
         boolean wait = latch.await(200, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
@@ -69,7 +74,7 @@ public class HeartbeatModuleTest {
     private List<Reporter> testReporters() {
         return new ArrayList<Reporter>() {
             {
-                add(new TestReporter(null));
+                add(new TestReporter(null, GlobalConfiguration.getDefault()));
             }
         };
     }

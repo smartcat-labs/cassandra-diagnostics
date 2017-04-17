@@ -7,6 +7,7 @@ import java.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.Module;
@@ -31,15 +32,17 @@ public class MetricsModule extends Module {
     /**
      * Constructor.
      *
-     * @param configuration Module configuration
-     * @param reporters     Reporter list
+     * @param configuration        Module configuration
+     * @param reporters            Reporter list
+     * @param globalConfiguration  Global diagnostics configuration
      * @throws ConfigurationException in case the provided module configuration is not valid
      */
-    public MetricsModule(ModuleConfiguration configuration, List<Reporter> reporters) throws ConfigurationException {
-        super(configuration, reporters);
+    public MetricsModule(ModuleConfiguration configuration, List<Reporter> reporters,
+            final GlobalConfiguration globalConfiguration) throws ConfigurationException {
+        super(configuration, reporters, globalConfiguration);
 
         config = MetricsConfiguration.create(configuration.options);
-        metricsCollector = new MetricsCollector(config);
+        metricsCollector = new MetricsCollector(config, globalConfiguration);
 
         logger.info("Metrics module initialized with {} {} reporting period.", config.period(),
                 config.timeunit().name());

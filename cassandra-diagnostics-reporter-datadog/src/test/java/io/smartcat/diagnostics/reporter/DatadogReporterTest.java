@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.reporter.DatadogReporter;
 import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
@@ -30,7 +31,7 @@ public class DatadogReporterTest {
         config.options.put("keysPrefix", "");
         config.options.put("fixedTags", Arrays.asList("host:hostname"));
 
-        final DatadogReporter reporter = new DatadogReporter(config);
+        final DatadogReporter reporter = new DatadogReporter(config, GlobalConfiguration.getDefault());
 
         reporter.stop();
     }
@@ -40,7 +41,7 @@ public class DatadogReporterTest {
         final ReporterConfiguration config = new ReporterConfiguration();
         config.options.put("statsDPort", "NONE");
 
-        final DatadogReporter reporter = new DatadogReporter(config);
+        final DatadogReporter reporter = new DatadogReporter(config, GlobalConfiguration.getDefault());
 
         reporter.stop();
 
@@ -52,7 +53,7 @@ public class DatadogReporterTest {
         final ReporterConfiguration config = new ReporterConfiguration();
         config.options.put("fixedTags", new Integer(0));
 
-        final DatadogReporter reporter = new DatadogReporter(config);
+        final DatadogReporter reporter = new DatadogReporter(config, GlobalConfiguration.getDefault());
 
         reporter.stop();
 
@@ -70,7 +71,7 @@ public class DatadogReporterTest {
         config.options.put("statsDPort", 9876);
         config.options.put("keysPrefix", "prefix");
         config.options.put("fixedTags", Arrays.asList("host:somehost,tag2:two,tag3:three"));
-        final DatadogReporter reporter = new DatadogReporter(config);
+        final DatadogReporter reporter = new DatadogReporter(config, GlobalConfiguration.getDefault());
 
         Map<String, String> tags = new HashMap<>();
         tags.put("tag1", "tv1");
@@ -105,7 +106,7 @@ public class DatadogReporterTest {
         config.options.put("statsDPort", 9876);
         config.options.put("keysPrefix", "prefix");
         config.options.put("fixedTags", Arrays.asList("host:somehost,tag2:two,tag3:three"));
-        final DatadogReporter reporter = new DatadogReporter(config);
+        final DatadogReporter reporter = new DatadogReporter(config, GlobalConfiguration.getDefault());
 
         Map<String, String> tags = new HashMap<>();
         tags.put("tag1", "tv1");
@@ -149,7 +150,7 @@ public class DatadogReporterTest {
         config.options.put("statsDPort", 9876);
         config.options.put("keysPrefix", "prefix");
         config.options.put("fixedTags", Arrays.asList("host:somehost,tag2:two,tag3:three"));
-        final DatadogReporter reporter = new DatadogReporter(config);
+        final DatadogReporter reporter = new DatadogReporter(config, GlobalConfiguration.getDefault());
 
         Map<String, String> tags = new HashMap<>();
         tags.put("tag1", "tv1");

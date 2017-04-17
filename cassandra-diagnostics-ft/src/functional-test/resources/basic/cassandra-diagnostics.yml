@@ -6,5 +6,9 @@ modules:
     measurement: queryReport
     options:
       slowQueryThresholdInMilliseconds: 1
+      slowQueryReportEnabled: true
+      slowQueryCountReportEnabled: true
+      queryTypesToLog:
+        - ALL
     reporters:
       - io.smartcat.cassandra.diagnostics.reporter.LogReporter

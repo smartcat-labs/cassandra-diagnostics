@@ -17,6 +17,7 @@ import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Query;
 
 public class ExecuteStatementWrapperTest {
@@ -35,7 +36,8 @@ public class ExecuteStatementWrapperTest {
     public void process_regular_select_statement() throws Exception {
         TestQueryReporter reporter = new TestQueryReporter();
         ConnectorConfiguration configuration = new ConnectorConfiguration();
-        ExecuteStatementWrapper wrapper = new ExecuteStatementWrapper(reporter, configuration);
+        ExecuteStatementWrapper wrapper = new ExecuteStatementWrapper(reporter, configuration,
+                GlobalConfiguration.getDefault());
 
         RegularStatement statement = mock(RegularStatement.class);
         Session session = mock(Session.class);
@@ -58,7 +60,8 @@ public class ExecuteStatementWrapperTest {
     public void process_regular_update_statement() throws Exception {
         TestQueryReporter reporter = new TestQueryReporter();
         ConnectorConfiguration configuration = new ConnectorConfiguration();
-        ExecuteStatementWrapper wrapper = new ExecuteStatementWrapper(reporter, configuration);
+        ExecuteStatementWrapper wrapper = new ExecuteStatementWrapper(reporter, configuration,
+                GlobalConfiguration.getDefault());
 
         RegularStatement statement = mock(RegularStatement.class);
         Session session = mock(Session.class);
@@ -81,7 +84,8 @@ public class ExecuteStatementWrapperTest {
     public void process_bound_select_statement() throws Exception {
         TestQueryReporter reporter = new TestQueryReporter();
         ConnectorConfiguration configuration = new ConnectorConfiguration();
-        ExecuteStatementWrapper wrapper = new ExecuteStatementWrapper(reporter, configuration);
+        ExecuteStatementWrapper wrapper = new ExecuteStatementWrapper(reporter, configuration,
+                GlobalConfiguration.getDefault());
 
         BoundStatement statement = mock(BoundStatement.class);
         Session session = mock(Session.class);

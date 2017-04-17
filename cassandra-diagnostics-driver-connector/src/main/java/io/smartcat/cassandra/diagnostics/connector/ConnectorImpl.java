@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Statement;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -49,12 +50,14 @@ public class ConnectorImpl implements Connector {
     /**
      * Initialize connector instance using the provided instrumentation.
      *
-     * @param inst an Instrumentation reference
-     * @param queryReporter QueryReporter implementation reference
-     * @param configuration Connector configuration
+     * @param inst                  Instrumentation reference
+     * @param queryReporter         QueryReporter implementation reference
+     * @param configuration         Connector configuration
+     * @param globalConfiguration   global configuration general for diagnostics
      */
-    public void init(Instrumentation inst, QueryReporter queryReporter, ConnectorConfiguration configuration) {
-        executeStatementWrapper = new ExecuteStatementWrapper(queryReporter, configuration);
+    public void init(Instrumentation inst, QueryReporter queryReporter, ConnectorConfiguration configuration,
+            GlobalConfiguration globalConfiguration) {
+        executeStatementWrapper = new ExecuteStatementWrapper(queryReporter, configuration, globalConfiguration);
         setIntercepters(inst);
     }
 

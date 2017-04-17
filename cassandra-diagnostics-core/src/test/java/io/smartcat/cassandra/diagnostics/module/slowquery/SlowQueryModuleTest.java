@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.mockito.internal.util.collections.Sets;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
@@ -32,8 +33,8 @@ public class SlowQueryModuleTest {
         ModuleConfiguration conf = new ModuleConfiguration();
         conf.options.put("slowQueryReportEnabled", true);
         conf.options.put("slowQueryCountReportEnabled", false);
-        TestReporter reporter = new TestReporter(null);
-        SlowQueryModule module = new SlowQueryModule(conf, testReporters(reporter));
+        TestReporter reporter = new TestReporter(null, GlobalConfiguration.getDefault());
+        SlowQueryModule module = new SlowQueryModule(conf, testReporters(reporter), GlobalConfiguration.getDefault());
 
         Query query = Query.create(1474741407205L, 234L, "/127.0.0.1:40042", Query.StatementType.SELECT, "keyspace",
                 "table", "select count(*) from keyspace.table");
@@ -49,14 +50,15 @@ public class SlowQueryModuleTest {
         assertThat(measurement.hasValue()).isTrue();
         assertThat(measurement.getValue()).isEqualTo(234);
 
-        assertThat(measurement.tags().keySet()).isEqualTo(Sets.newSet("host", "statementType"));
+        assertThat(measurement.tags().keySet()).isEqualTo(Sets.newSet("host", "statementType", "systemName"));
         assertThat(measurement.tags().get("statementType")).isEqualTo("SELECT");
     }
 
     @Test
     public void should_report_number_of_slow_queries() throws ConfigurationException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(110);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
+                latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(latchTestReporter);
@@ -68,7 +70,8 @@ public class SlowQueryModuleTest {
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
 
-        final SlowQueryModule module = new SlowQueryModule(testConfiguration(1), reporters);
+        final SlowQueryModule module = new SlowQueryModule(testConfiguration(1), reporters,
+                GlobalConfiguration.getDefault());
 
         final long numberOfSlowQueries = 100;
         for (int i = 0; i < numberOfSlowQueries / 2; i++) {
@@ -110,7 +113,8 @@ public class SlowQueryModuleTest {
         configuration.options.put("slowQueryCountReportEnabled", false);
 
         final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
+                latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(latchTestReporter);
@@ -122,7 +126,7 @@ public class SlowQueryModuleTest {
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
 
-        final SlowQueryModule module = new SlowQueryModule(configuration, reporters);
+        final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
 
         final long numberOfSlowQueries = 100;
         for (int i = 0; i < numberOfSlowQueries / 2; i++) {
@@ -149,7 +153,8 @@ public class SlowQueryModuleTest {
         configuration.options.put("queryTypesToLog", Arrays.asList("ALL"));
 
         final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
+                latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(latchTestReporter);
@@ -161,7 +166,7 @@ public class SlowQueryModuleTest {
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
 
-        final SlowQueryModule module = new SlowQueryModule(configuration, reporters);
+        final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
 
         final long numberOfSlowQueries = 100;
         for (int i = 0; i < numberOfSlowQueries / 2; i++) {
@@ -188,7 +193,8 @@ public class SlowQueryModuleTest {
         configuration.options.put("queryTypesToLog", Arrays.asList("UPDATE"));
 
         final CountDownLatch latch = new CountDownLatch(500);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
+                latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(latchTestReporter);
@@ -200,7 +206,7 @@ public class SlowQueryModuleTest {
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
 
-        final SlowQueryModule module = new SlowQueryModule(configuration, reporters);
+        final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
 
         final long numberOfSlowQueries = 1000;
         for (int i = 0; i < numberOfSlowQueries / 2; i++) {
@@ -230,7 +236,8 @@ public class SlowQueryModuleTest {
         configuration.options.put("queryTypesToLog", Arrays.asList("ALL"));
 
         final CountDownLatch latch = new CountDownLatch(100);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
+                latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(latchTestReporter);
@@ -242,7 +249,7 @@ public class SlowQueryModuleTest {
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
 
-        final SlowQueryModule module = new SlowQueryModule(configuration, reporters);
+        final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
 
         final long numberOfSlowQueries = 100;
         for (int i = 0; i < numberOfSlowQueries / 2; i++) {
@@ -280,7 +287,8 @@ public class SlowQueryModuleTest {
         configuration.options.put("queryTypesToLog", Arrays.asList("UPDATE", "SELECT"));
 
         final CountDownLatch latch = new CountDownLatch(100);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, latch);
+        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
+                latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
                 add(latchTestReporter);
@@ -292,7 +300,7 @@ public class SlowQueryModuleTest {
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
 
-        final SlowQueryModule module = new SlowQueryModule(configuration, reporters);
+        final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
 
         final long numberOfSlowQueries = 100;
         for (int i = 0; i < numberOfSlowQueries / 2; i++) {

@@ -19,6 +19,8 @@ import org.springframework.instrument.InstrumentationSavingAgent;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
+import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
+
 public class ConnectorImplTest {
 
     private static Instrumentation instrumentation;
@@ -33,7 +35,7 @@ public class ConnectorImplTest {
     public void invokes_wrapper_when_query_processor_process_prepared_activates() throws Exception {
         ConnectorConfiguration configuration = new ConnectorConfiguration();
         Connector connector = new ConnectorImpl();
-        connector.init(instrumentation, mock(QueryReporter.class), configuration);
+        connector.init(instrumentation, mock(QueryReporter.class), configuration, GlobalConfiguration.getDefault());
         QueryProcessorWrapper queryProcessorWrapper = mock(QueryProcessorWrapper.class);
         setStatic(ConnectorImpl.class.getDeclaredField("queryProcessorWrapper"), queryProcessorWrapper);
 

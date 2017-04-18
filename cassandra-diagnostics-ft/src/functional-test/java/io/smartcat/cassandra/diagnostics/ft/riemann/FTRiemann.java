@@ -24,6 +24,8 @@ import io.netty.util.internal.SystemPropertyUtil;
 
 public class FTRiemann {
 
+    private static final String INFLUXDB_NAME = "diagnostics-test";
+
     private static Cluster cluster;
     private static Session session;
     private static InfluxDB influxdb;
@@ -38,6 +40,7 @@ public class FTRiemann {
 
         influxdb = InfluxDBFactory.connect(SystemPropertyUtil.get("influxdb.url"), 
                 SystemPropertyUtil.get("influxdb.user"), SystemPropertyUtil.get("influxdb.password"));
+        influxdb.createDatabase(INFLUXDB_NAME);
     }
 
     @Test
@@ -55,7 +58,7 @@ public class FTRiemann {
 
         QueryResult result = null;
         for (int i = 0; i < 10; i++) {
-            result = influxdb.query(new Query("SHOW SERIES FROM \"queryReport\"", SystemPropertyUtil.get("influxdb.dbname")));
+            result = influxdb.query(new Query("SHOW SERIES FROM \"queryReport\"", INFLUXDB_NAME));
             if (!result.hasError()) {
                 break;
             }

@@ -5,7 +5,7 @@ reporters:
       influxUsername: admin
       influxPassword: secret
       influxDbName: diagnostics
-      influxRetentionPolicy: default
+      influxRetentionPolicy: autogen
       influxPointsInBatch: 1
       influxFlushPeriodInSeconds: 1
 

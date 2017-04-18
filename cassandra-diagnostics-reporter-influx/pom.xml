@@ -9,7 +9,7 @@
     <artifactId>cassandra-diagnostics-reporter-influx</artifactId>
 
     <properties>
-        <version.influxdb-java>2.2</version.influxdb-java>
+        <version.influxdb-java>2.5</version.influxdb-java>
     </properties>
 
     <dependencies>
@@ -46,9 +46,12 @@
                             <artifactSet>
                                 <includes>
                                     <include>org.influxdb:influxdb-java:*</include>
-                                    <include>com.squareup.retrofit:retrofit:*</include>
+                                    <include>com.squareup.retrofit2:retrofit:*</include>
+                                    <include>com.squareup.retrofit2:converter-moshi:*</include>
                                     <include>com.google.code.gson:gson:*</include>
-                                    <include>com.squareup.okhttp:okhttp:*</include>
+                                    <include>com.squareup.okhttp3:okhttp:*</include>
+                                    <include>com.squareup.okhttp3:logging-interceptor:*</include>
+                                    <include>com.squareup.moshi:moshi:*</include>
                                     <include>com.squareup.okio:okio:*</include>
                                 </includes>
                             </artifactSet>

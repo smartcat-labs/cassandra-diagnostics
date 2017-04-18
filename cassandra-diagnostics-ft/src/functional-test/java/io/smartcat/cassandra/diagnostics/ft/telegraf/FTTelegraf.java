@@ -24,6 +24,8 @@ import io.netty.util.internal.SystemPropertyUtil;
 
 public class FTTelegraf {
 
+    private static final String INFLUXDB_NAME = "diagnostics-test";
+
     private static Cluster cluster;
     private static Session session;
     private static InfluxDB influxdb;
@@ -39,6 +41,7 @@ public class FTTelegraf {
 
         influxdb = InfluxDBFactory.connect(SystemPropertyUtil.get("influxdb.url"), 
                 SystemPropertyUtil.get("influxdb.user"), SystemPropertyUtil.get("influxdb.password"));
+        influxdb.createDatabase(INFLUXDB_NAME);
     }
 
     @Test
@@ -54,13 +57,17 @@ public class FTTelegraf {
 
         session.execute("SELECT * FROM test_keyspace.test_table");
 
-        Thread.sleep(10000);
+        QueryResult result = null;
+        for (int i = 0; i < 10; i++) {
+            result = influxdb.query(new Query("SHOW SERIES FROM \"queryReport\"", INFLUXDB_NAME));
+            if (!result.hasError()) {
+                break;
+            }
+            Thread.sleep(500);
+        }
 
-        QueryResult result = influxdb.query(new Query("select count(value) from queryReport", SystemPropertyUtil.get("influxdb.dbname")));
+        Assertions.assertThat(result.getResults().size()).isEqualTo(1);
 
-        result = influxdb.query(new Query("select count(value) from queryReport", "diagnostics"));
-
-        Assertions.assertThat(result.getResults().get(0).getSeries()).isNotNull();
         cluster.close();
     }
 }

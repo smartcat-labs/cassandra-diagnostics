@@ -42,7 +42,7 @@ public class InfluxReporter extends Reporter {
 
     private static final String RETENTION_POLICY_PROP = "influxRetentionPolicy";
 
-    private static final String DEFAULT_RETENTION_POLICY = "default";
+    private static final String DEFAULT_RETENTION_POLICY = "autogen";
 
     private String dbAddress;
 

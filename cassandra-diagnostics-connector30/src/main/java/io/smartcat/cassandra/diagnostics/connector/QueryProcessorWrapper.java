@@ -125,7 +125,10 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
                         throw new IllegalStateException("Both prepared statement and query string are missing.");
                     } else if (statement == null) {
                         cqlStatement = QueryProcessor.parseStatement(queryString).prepare().statement;
-                        cqlQuery = queryString;
+
+                        if (slowQueryTracingEnabled) {
+                            cqlQuery = queryString;
+                        }
                     } else {
                         cqlStatement = statement;
 

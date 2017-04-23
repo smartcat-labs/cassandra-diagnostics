@@ -1,4 +1,4 @@
-package io.smartcat.cassandra.diagnostics.ft.basic;
+package io.smartcat.cassandra.diagnostics.ft.tracing;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -30,7 +30,7 @@ import com.datastax.driver.core.Session;
 
 import io.netty.util.internal.SystemPropertyUtil;
 
-public class FTBasic {
+public class FTTracing {
 
     private static final String SELECT_QUERY = "SELECT * FROM test_keyspace.test_table";
     private static final String CASSANDRA_LOG = "system.log";
@@ -70,59 +70,35 @@ public class FTBasic {
 
     @Test
     public void test() throws Exception {
+        PreparedStatement statement = session.prepare(SELECT_QUERY);
+        session.execute(statement.bind());
         session.execute(SELECT_QUERY);
 
         verifyLogFileIsChanged();
 
         BufferedReader reader = new BufferedReader(new FileReader(logFilePath.toFile()));
         String line;
-        boolean queryReportFound = false;
-        boolean queryCountFound = false;
-        boolean heartbeatFound = false;
-        boolean requestRateFound = false;
-        boolean repairSessionsFound = false;
-        boolean compactionInfoFound = false;
-        boolean numberOfUnreachableNodesFound = false;
+        int logWithTracingFound = 0;
         while ((line = reader.readLine()) != null) {
-            if (line.matches(".* QUERYREPORT_COUNT.*")) {
-                queryCountFound = true;
-                continue;
-            }
             if (line.matches(".* QUERYREPORT.*")) {
-                queryReportFound = true;
-                continue;
-            }
-            if (line.matches(".* HEARTBEAT.*")) {
-                heartbeatFound = true;
-                continue;
-            }
-            if (line.matches(".* REQUEST_RATE.*")) {
-                requestRateFound = true;
-                continue;
-            }
-            if (line.matches(".* REPAIR_SESSIONS.*")) {
-                repairSessionsFound = true;
-                continue;
-            }
-            if (line.matches(".* COMPACTION_INFO.*")) {
-                compactionInfoFound = true;
-                continue;
-            }
-            if (line.matches(".* NUMBER_OF_UNREACHABLE_NODES.*")) {
-                numberOfUnreachableNodesFound = true;
-                continue;
+                String fields = line.substring((line.indexOf("fields={") + 8), line.lastIndexOf("}"));
+                String[] fieldsArray = fields.split(",");
+
+                for (String field : fieldsArray) {
+                    if (!field.startsWith("statement=")) {
+                        continue;
+                    }
+
+                    String[] statementField = field.split("=");
+                    if (SELECT_QUERY.equals(statementField[1])) {
+                        logWithTracingFound++;
+                    }
+                }
             }
         }
         reader.close();
 
-        Assertions.assertThat(queryReportFound).isTrue();
-        Assertions.assertThat(queryCountFound).isTrue();
-        Assertions.assertThat(heartbeatFound).isTrue();
-        Assertions.assertThat(requestRateFound).isTrue();
-        Assertions.assertThat(repairSessionsFound).isTrue();
-        Assertions.assertThat(repairSessionsFound).isTrue();
-        // TODO: fix compaction info for 2.1 Assertions.assertThat(compactionInfoFound).isTrue();
-        Assertions.assertThat(numberOfUnreachableNodesFound).isTrue();
+        Assertions.assertThat(logWithTracingFound).isEqualTo(2);
     }
 
     public void verifyLogFileIsChanged() throws Exception {

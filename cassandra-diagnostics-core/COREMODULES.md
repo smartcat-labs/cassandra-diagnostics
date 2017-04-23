@@ -127,6 +127,8 @@ Reporting period is by default 1 minute and more frequent updates should be cons
     compactionsEnabled: false #optional
     tpStatsEnabled: false #optional
     repairsEnabled: false #optional
+  reporters:
+    - io.smartcat.cassandra.diagnostics.reporter.LogReporter
 ```
 
 ## Cluster Health Module
@@ -142,5 +144,7 @@ Default reporting interval is set to 10s in order to detect these short outages.
     period: 10 #optional
     timeunit: SECONDS #optional
     numberOfUnreachableNodesEnabled: true #optional
+  reporters:
+    - io.smartcat.cassandra.diagnostics.reporter.LogReporter
 ```
 

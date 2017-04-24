@@ -120,7 +120,6 @@ public class FTBasic {
         Assertions.assertThat(heartbeatFound).isTrue();
         Assertions.assertThat(requestRateFound).isTrue();
         Assertions.assertThat(repairSessionsFound).isTrue();
-        Assertions.assertThat(repairSessionsFound).isTrue();
         // TODO: fix compaction info for 2.1 Assertions.assertThat(compactionInfoFound).isTrue();
         Assertions.assertThat(numberOfUnreachableNodesFound).isTrue();
     }

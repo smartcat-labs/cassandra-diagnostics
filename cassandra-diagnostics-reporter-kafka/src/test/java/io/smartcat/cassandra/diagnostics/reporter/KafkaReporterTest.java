@@ -66,6 +66,8 @@ public class KafkaReporterTest {
     public void send_measurements() {
         ReporterConfiguration config = new ReporterConfiguration();
         config.options.put("kafkaBootstrapServers", HOST + ":" + BROKER_PORT);
+        config.options.put("kafkaTopic", "testTopic");
+
         KafkaReporter reporter = new KafkaReporter(config, GlobalConfiguration.getDefault());
 
         Map<String, String> tags = new HashMap<>();
@@ -88,7 +90,7 @@ public class KafkaReporterTest {
         consumerProps.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProps);
-        consumer.subscribe(Collections.singletonList(measurement.name()));
+        consumer.subscribe(Collections.singletonList("testTopic"));
 
         ConsumerRecords<String, String> records = consumer.poll(30000);
         assertEquals(1, records.count());

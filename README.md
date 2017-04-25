@@ -102,7 +102,11 @@ Values for `time` is given in milliseconds. `tags` are used to better specify me
 
 #### Datadog Reporter
 
-[Datadog Reporter](cassandra-diagnostics-reporter-datadog/README.md) send measurements towards [Datadog Agent](https://github.com/DataDog/dd-agent) using UDP.
+[Datadog Reporter](cassandra-diagnostics-reporter-datadog/README.md) sends measurements towards [Datadog Agent](https://github.com/DataDog/dd-agent) using UDP.
+
+#### Kafka Reporter
+
+[Kafka Reporter](cassandra-diagnostics-reporter-kafka/README.md) sends measurements towards [Kafka](https://kafka.apache.org/).
 
 ## Configuration
 

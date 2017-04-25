@@ -2,7 +2,7 @@
 
 [KafkaReporter](src/main/java/io/smartcat/cassandra/diagnostics/reporter/KafkaReporter.java) sends measurements to a [Kafka](https://kafka.apache.org/) topic.
 
-Measurements objects are sent do designated Kafka topic. The message payload is JSON-serialized Measurement object and the message key is the hostname (serialized by Kafka's StringSerializer).
+Measurements objects are sent do designated Kafka topic. The message payload is JSON-serialized Measurement object and the message key is created using hostname and systemName config parameters (serialized by Kafka's StringSerializer).
 
 Kafka reporter has the following configuration parameters:
 

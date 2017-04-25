@@ -23,11 +23,13 @@ public class KafkaReporter extends Reporter {
      */
     private static final Logger logger = LoggerFactory.getLogger(KafkaReporter.class);
 
-    private static final String SERVERS = "kafkaBootstrapServers";
+    private static final String SERVERS_PROP = "kafkaBootstrapServers";
+    private static final String TOPIC_PROP = "kafkaTopic";
 
     private static Producer<String, String> producer;
 
     private String partitionKey;
+    private String topic;
 
     /**
      * Constructor.
@@ -38,9 +40,15 @@ public class KafkaReporter extends Reporter {
     public KafkaReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
         super(configuration, globalConfiguration);
 
-        final String servers = configuration.getDefaultOption(SERVERS, "");
+        final String servers = configuration.getDefaultOption(SERVERS_PROP, "");
         if (servers.isEmpty()) {
-            logger.warn("Missing required property " + SERVERS + ". Aborting initialization.");
+            logger.warn("Missing required property " + SERVERS_PROP + ". Aborting initialization.");
+            return;
+        }
+
+        topic = configuration.getDefaultOption(TOPIC_PROP, "");
+        if (topic.isEmpty()) {
+            logger.warn("Missing required property " + TOPIC_PROP + ". Aborting initialization.");
             return;
         }
 
@@ -60,7 +68,7 @@ public class KafkaReporter extends Reporter {
             return;
         }
 
-        producer.send(new ProducerRecord<>(measurement.name(), partitionKey, measurement.toJson()));
+        producer.send(new ProducerRecord<>(topic, partitionKey, measurement.toJson()));
     }
 
     @Override

@@ -1,0 +1,19 @@
+connector:
+  enableTracing: true
+
+reporters:
+  - reporter: io.smartcat.cassandra.diagnostics.reporter.LogReporter
+
+modules:
+  - module: io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule
+    measurement: queryReport
+    options:
+      slowQueryThresholdInMilliseconds: 1
+      slowQueryReportEnabled: true
+      slowQueryCountReportEnabled: false
+      tablesForLogging: #optional
+        - test_keyspace.test_table
+      queryTypesToLog:
+        - ALL
+    reporters:
+      - io.smartcat.cassandra.diagnostics.reporter.LogReporter

@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.smartcat</groupId>
         <artifactId>cassandra-diagnostics</artifactId>
-        <version>1.4.2</version>
+        <version>1.4.3</version>
     </parent>
     <artifactId>cassandra-diagnostics-ft</artifactId>
     <description>Cassandra Diagnostics functional test</description>
@@ -13,7 +13,7 @@
     <properties>
         <version.cassandra.driver>2.1.10.3</version.cassandra.driver>
         <version.plugin.docker-maven-plugin>0.15.4</version.plugin.docker-maven-plugin>
-        <version.influxdb-java>2.2</version.influxdb-java>
+        <version.influxdb-java>2.5</version.influxdb-java>
     </properties>
 
     <dependencies>
@@ -231,6 +231,120 @@
             </build>
         </profile>
         <profile>
+            <id>tracing-ft</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <functional.test>tracing</functional.test>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>${version.plugin.docker-maven-plugin}</version>
+                        <configuration>
+                            <skip>${skip.functional.tests}</skip>
+                            <images>
+                                <image>
+                                    <name>cassandra-diagnostics-ft-tracing</name>
+                                    <build>
+                                        <assembly>
+                                            <basedir>/cassandra-diagnostics</basedir>
+                                            <inline>
+                                                <dependencySets>
+                                                    <dependencySet>
+                                                        <outputFileNameMapping>cassandra-diagnostics-core.jar</outputFileNameMapping>
+                                                        <includes>
+                                                            <include>io.smartcat:cassandra-diagnostics-core:*</include>
+                                                        </includes>
+                                                    </dependencySet>
+                                                    <dependencySet>
+                                                        <outputFileNameMapping>cassandra-diagnostics-connector.jar</outputFileNameMapping>
+                                                        <includes>
+                                                            <include>io.smartcat:cassandra-diagnostics-connector21:*</include>
+                                                        </includes>
+                                                    </dependencySet>
+                                                </dependencySets>
+                                            </inline>
+                                        </assembly>
+                                    </build>
+                                </image>
+                                <image>
+                                    <name>cassandra:2.1.14</name>
+                                    <alias>cassandra-ft</alias>
+                                    <run>
+                                        <ports>
+                                            <port>+cassandra.host:cassandra.port:9042</port>
+                                        </ports>
+                                        <volumes>
+                                            <bind>
+                                                <volume>${basedir}/src/functional-test/resources/${functional.test}/cassandra-env.sh:/etc/cassandra/cassandra-env.sh</volume>
+                                                <volume>${basedir}/src/functional-test/resources/${functional.test}/cassandra-diagnostics.yml:/etc/cassandra/cassandra-diagnostics.yml</volume>
+                                                <volume>${project.build.directory}:/var/log/cassandra</volume>
+                                            </bind>
+                                            <from>
+                                                <image>cassandra-diagnostics-ft-tracing</image>
+                                            </from>
+                                        </volumes>
+                                        <wait>
+                                            <time>120000</time>
+                                            <log>Starting listening for CQL clients</log>
+                                            <exec>
+                                                <postStart>sleep 60s</postStart>
+                                            </exec>
+                                        </wait>
+                                    </run>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>start</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                    <goal>start</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>stop</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>functional-tests</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <skipTests>${skip.functional.tests}</skipTests>
+                                    <includes>
+                                        <include>**/${functional.test}/FT*.java</include>
+                                    </includes>
+                                    <systemPropertyVariables>
+                                        <project.build.directory>${project.build.directory}</project.build.directory>
+                                        <cassandra.host>${cassandra.host}</cassandra.host>
+                                        <cassandra.port>${cassandra.port}</cassandra.port>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>influx</id>
             <properties>
                 <functional.test>influx</functional.test>
@@ -275,7 +389,7 @@
                                     </build>
                                 </image>
                                 <image>
-                                    <name>tutum/influxdb:0.13</name>
+                                    <name>influxdb:1.2.2-alpine</name>
                                     <alias>cassandra-diagnostics-influxdb</alias>
                                     <run>
                                         <ports>
@@ -420,7 +534,7 @@
                                     </build>
                                 </image>
                                 <image>
-                                    <name>tutum/influxdb:0.13</name>
+                                    <name>influxdb:1.2.2-alpine</name>
                                     <alias>cassandra-diagnostics-influxdb</alias>
                                     <run>
                                         <ports>
@@ -430,11 +544,13 @@
                                         <env>
                                             <ADMIN_USER>admin</ADMIN_USER>
                                             <INFLUXDB_INIT_PWD>secret</INFLUXDB_INIT_PWD>
-                                            <PRE_CREATE_DB>"diagnostics-test"</PRE_CREATE_DB>
                                         </env>
                                         <wait>
-                                            <time>120000</time>
-                                            <log>Creating database: "diagnostics-test"</log>
+                                            <http>
+                                                <method>GET</method>
+                                                <url>http://localhost:8086</url>
+                                                <status>200..499</status>
+                                            </http>
                                         </wait>
                                     </run>
                                 </image>
@@ -584,7 +700,7 @@
                                     </build>
                                 </image>
                                 <image>
-                                    <name>tutum/influxdb:0.13</name>
+                                    <name>influxdb:1.2.2-alpine</name>
                                     <alias>cassandra-diagnostics-influxdb</alias>
                                     <run>
                                         <ports>
@@ -594,11 +710,13 @@
                                         <env>
                                             <ADMIN_USER>admin</ADMIN_USER>
                                             <INFLUXDB_INIT_PWD>secret</INFLUXDB_INIT_PWD>
-                                            <PRE_CREATE_DB>"diagnostics"</PRE_CREATE_DB>
                                         </env>
                                         <wait>
-                                            <time>120000</time>
-                                            <log>Creating database: "diagnostics"</log>
+                                            <http>
+                                                <method>GET</method>
+                                                <url>http://localhost:8086</url>
+                                                <status>200..499</status>
+                                            </http>
                                         </wait>
                                     </run>
                                 </image>

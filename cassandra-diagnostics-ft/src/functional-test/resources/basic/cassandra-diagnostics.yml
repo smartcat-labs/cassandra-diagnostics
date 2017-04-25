@@ -8,7 +8,41 @@ modules:
       slowQueryThresholdInMilliseconds: 1
       slowQueryReportEnabled: true
       slowQueryCountReportEnabled: true
+      slowQueryCountReportPeriod: 1
+      slowQueryCountReportTimeunit: SECONDS
+      tablesForLogging: #optional
+        - test_keyspace.test_table
       queryTypesToLog:
         - ALL
+    reporters:
+      - io.smartcat.cassandra.diagnostics.reporter.LogReporter
+  - module: io.smartcat.cassandra.diagnostics.module.heartbeat.HeartbeatModule
+    measurement: heartbeat
+    options:
+      period: 1
+      timeunit: SECONDS
+    reporters:
+      - io.smartcat.cassandra.diagnostics.reporter.LogReporter
+  - module: io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateModule
+    measurement: request_rate
+    options:
+      period: 1
+      timeunit: SECONDS
+    reporters:
+      - io.smartcat.cassandra.diagnostics.reporter.LogReporter
+  - module: io.smartcat.cassandra.diagnostics.module.status.StatusModule
+    options:
+      period: 1
+      timeunit: SECONDS
+      compactionsEnabled: true
+      tpStatsEnabled: true
+      repairsEnabled: true
+    reporters:
+      - io.smartcat.cassandra.diagnostics.reporter.LogReporter
+  - module: io.smartcat.cassandra.diagnostics.module.health.ClusterHealthModule
+    options:
+      period: 1
+      timeunit: SECONDS
+      numberOfUnreachableNodesEnabled: true #optional
     reporters:
       - io.smartcat.cassandra.diagnostics.reporter.LogReporter

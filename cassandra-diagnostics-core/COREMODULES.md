@@ -58,7 +58,7 @@ Request Rate Module counts request rate of executed queries. Rates are reported 
 
 #### Configuration
 
-Measurement name is by default `request_rate` with `_update` and `_select` suffixes for upsert and select statements respectively. For precise measurements use a default reporting period of 1 second. If higher reporting period is used reported value represents average requests/second for the reporting period.
+Measurement name is by default `request_rate`. You can configure which requests to report with `requestsToReport` which is a list of statement type - consistency level pairs. By default if you do not specify anything ALL requests are counted without separation per statement type and consistency levels. For precise measurements use a default reporting period of 1 second. If higher reporting period is used reported value represents average requests/second for the reporting period.
 
 ```
 - module: io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateModule
@@ -66,6 +66,9 @@ Measurement name is by default `request_rate` with `_update` and `_select` suffi
   options:
     period: 1 #optional
     timeunit: SECONDS #optional
+    requestsToReport: # optional
+      - SELECT:ALL
+      - UPDATE:ONE
   reporters:
     - io.smartcat.cassandra.diagnostics.reporter.LogReporter
 ```

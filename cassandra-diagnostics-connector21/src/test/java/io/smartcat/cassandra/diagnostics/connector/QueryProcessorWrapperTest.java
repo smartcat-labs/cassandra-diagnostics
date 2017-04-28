@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.cassandra.cql3.QueryOptions;
 import org.apache.cassandra.cql3.statements.SelectStatement;
+import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.service.ClientState;
 import org.apache.cassandra.service.QueryState;
 import org.junit.Test;
@@ -57,6 +58,7 @@ public class QueryProcessorWrapperTest {
         when(queryState.getClientState()).thenReturn(clientState);
 
         QueryOptions options = mock(QueryOptions.class);
+        when(options.getConsistency()).thenReturn(ConsistencyLevel.ONE);
 
         wrapper.processPrepared(statement, queryState, options, System.currentTimeMillis(), null, null);
 
@@ -66,6 +68,7 @@ public class QueryProcessorWrapperTest {
         assertThat(reportedQuery.statementType()).isEqualTo(Query.StatementType.SELECT);
         assertThat(reportedQuery.keyspace()).isEqualTo("test_keyspace");
         assertThat(reportedQuery.tableName()).isEqualTo("test_table");
+        assertThat(reportedQuery.consistencyLevel()).isEqualTo(Query.ConsistencyLevel.ONE);
     }
 
     @Test

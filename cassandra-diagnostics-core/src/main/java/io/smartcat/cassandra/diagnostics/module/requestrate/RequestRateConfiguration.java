@@ -1,10 +1,14 @@
 package io.smartcat.cassandra.diagnostics.module.requestrate;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
+import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 
 /**
@@ -13,11 +17,23 @@ import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 public class RequestRateConfiguration {
 
     /**
+     * Default is to report all requests.
+     */
+    public static final String ALL_REQUESTS_TO_REPORT = "ALL";
+
+    /**
+     * Since request to report is combination between statement type and consistency level delimiter is used to glue
+     * those values together.
+     */
+    public static final String REQUEST_META_DELIMITER = ":";
+
+    /**
      * A helper class for constructing immutable outer class.
      */
     public static class Values {
         private static final int DEFAULT_PERIOD = 1;
         private static final String DEFAULT_TIMEUNIT = "SECONDS";
+        private static final List<String> DEFAULT_REQUESTS_TO_REPORT = Arrays.asList(ALL_REQUESTS_TO_REPORT);
 
         /**
          * Request rate reporting period.
@@ -28,6 +44,11 @@ public class RequestRateConfiguration {
          * Request rate reporting time unit.
          */
         public TimeUnit timeunit = TimeUnit.valueOf(DEFAULT_TIMEUNIT);
+
+        /**
+         * Combination of statement type and consistency level to report.
+         */
+        public List<String> requestsToReport = DEFAULT_REQUESTS_TO_REPORT;
     }
 
     private Values values = new Values();
@@ -47,8 +68,46 @@ public class RequestRateConfiguration {
         RequestRateConfiguration conf = new RequestRateConfiguration();
         Yaml yaml = new Yaml();
         String str = yaml.dumpAsMap(options);
-        conf.values = yaml.loadAs(str, RequestRateConfiguration.Values.class);
+
+        try {
+            conf.values = yaml.loadAs(str, RequestRateConfiguration.Values.class);
+        } catch (Exception e) {
+            throw new ConfigurationException("Unable to load configuration.", e);
+        }
+
+        validateRequestsToReport(conf);
+
         return conf;
+    }
+
+    private static void validateRequestsToReport(RequestRateConfiguration conf) throws ConfigurationException {
+        for (String requestToReport : conf.requestsToReport()) {
+            if (ALL_REQUESTS_TO_REPORT.equals(requestToReport)) {
+                continue;
+            }
+
+            String[] requestMeta = StringUtils.splitByWholeSeparator(requestToReport, REQUEST_META_DELIMITER);
+
+            if (requestMeta.length != 2) {
+                throw new ConfigurationException(
+                        "Only two configuration parameters supported, statement type and consistency level.");
+            }
+
+            String statementType = requestMeta[0];
+            String consistencyLevel = requestMeta[1];
+
+            try {
+                Query.StatementType.valueOf(statementType);
+            } catch (IllegalArgumentException ex) {
+                throw new ConfigurationException("Illegal statement type configured: " + statementType);
+            }
+
+            try {
+                Query.ConsistencyLevel.valueOf(consistencyLevel);
+             } catch (IllegalArgumentException ex) {
+                throw new ConfigurationException("Illegal consistency level configured: " + consistencyLevel);
+             }
+        }
     }
 
     /**
@@ -78,4 +137,12 @@ public class RequestRateConfiguration {
         return timeunit().toMillis(period());
     }
 
+    /**
+     * Type of requests to report (combination of consistency level and statement type).
+     *
+     * @return list of requests to report
+     */
+    public List<String> requestsToReport() {
+        return values.requestsToReport;
+    }
 }

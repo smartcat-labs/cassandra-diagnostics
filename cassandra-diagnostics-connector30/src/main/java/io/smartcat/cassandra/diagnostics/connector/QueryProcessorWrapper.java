@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.Query.ConsistencyLevel;
 
 /**
  * This class is a Diagnostics wrapper for {@link org.apache.cassandra.cql3.QueryProcessor}.
@@ -172,18 +173,33 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
     private Query createQuery(final long startTime, final long execTime, final String queryString,
             final SelectStatement statement, final QueryState queryState, final QueryOptions options) {
         return Query.create(startTime, execTime, queryState.getClientState().getRemoteAddress().toString(),
-                Query.StatementType.SELECT, statement.keyspace(), statement.columnFamily(), queryString);
+                Query.StatementType.SELECT, statement.keyspace(), statement.columnFamily(), queryString,
+                extractConsistencyLevel(options));
     }
 
     private Query createQuery(final long startTime, final long execTime, final String queryString,
             final ModificationStatement statement, final QueryState queryState, final QueryOptions options) {
         return Query.create(startTime, execTime, queryState.getClientState().getRemoteAddress().toString(),
-                Query.StatementType.UPDATE, statement.keyspace(), statement.columnFamily(), queryString);
+                Query.StatementType.UPDATE, statement.keyspace(), statement.columnFamily(), queryString,
+                extractConsistencyLevel(options));
     }
 
     private Query createGenericQuery(final long startTime, final long execTime, final String queryString,
             final CQLStatement statement, final QueryState queryState, final QueryOptions options) {
         return Query.create(startTime, execTime, queryState.getClientState().getRemoteAddress().toString(),
-                Query.StatementType.UNKNOWN, "", "", queryString);
+                Query.StatementType.UNKNOWN, "", "", queryString, extractConsistencyLevel(options));
+    }
+
+    private ConsistencyLevel extractConsistencyLevel(final QueryOptions queryOptions) {
+        ConsistencyLevel queryConsistencyLevel = ConsistencyLevel.UNKNOWN;
+
+        for (ConsistencyLevel consistencyLevel : ConsistencyLevel.values()) {
+            if (consistencyLevel.name().equals(queryOptions.getConsistency().name())) {
+                queryConsistencyLevel = consistencyLevel;
+                break;
+            }
+        }
+
+        return queryConsistencyLevel;
     }
 }

@@ -54,7 +54,7 @@ Default query execution time threshold is 25 milliseconds.
 
 #### Request Rate Module
 
-Request Rate Module uses codahale metrics library to create rate measurement of executed queries. Rates are reported for select and upsert statements using configured reporters in configured periods.
+Request Rate Module uses codahale metrics library to create rate measurement of executed queries. Rates are reported for configurable statement types and consistency levels using configured reporters in configured periods.
 Default reporting interval is 1 second.
 
 #### Metrics Module

@@ -33,12 +33,14 @@ public class StatusConfigurationTest {
         options.put("compactionsEnabled", true);
         options.put("tpStatsEnabled", true);
         options.put("repairsEnabled", true);
+        options.put("nativeTransportActiveEnabled", true);
         StatusConfiguration conf = StatusConfiguration.create(options);
         assertThat(conf.period()).isEqualTo(2);
         assertThat(conf.timeunit()).isEqualTo(TimeUnit.HOURS);
         assertThat(conf.compactionsEnabled()).isTrue();
         assertThat(conf.tpStatsEnabled()).isTrue();
         assertThat(conf.repairsEnabled()).isTrue();
+        assertThat(conf.nativeTransportActiveEnabled()).isTrue();
     }
 
     @Test

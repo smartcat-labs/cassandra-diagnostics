@@ -37,8 +37,16 @@ public interface InfoProvider {
 
     /**
      * Get the list of unreachable nodes.
+     *
      * @return unreachable nodes list
      */
     List<String> getUnreachableNodes();
+
+    /**
+     * Get the information if the native transport is active on the node.
+     *
+     * @return true iff native transport is active
+     */
+    boolean getNativeTransportActive();
 
 }

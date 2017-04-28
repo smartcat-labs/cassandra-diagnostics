@@ -129,5 +129,15 @@ public class NodeProbeWrapper implements InfoProvider {
                 nodeProbe.getCompactionManagerProxy().getMaximumCompactorThreads(),
                 nodeProbe.getCompactionManagerProxy().getCoreValidationThreads(),
                 nodeProbe.getCompactionManagerProxy().getMaximumValidatorThreads());
+
+    }
+    /**
+     * Get the information if the native transport is active on the node.
+     *
+     * @return true iff native transport is active
+     */
+    @Override
+    public boolean getNativeTransportActive() {
+        return this.nodeProbe.isNativeTransportRunning();
     }
 }

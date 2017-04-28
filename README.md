@@ -210,19 +210,20 @@ The Diagnostics API JMX MXBean could be found under the following object name:
 package io.smartcat.cassandra.diagnostics.api:type=DiagnosticsApi
 ```
 
-The HTTP API is controlled using the following options in the configuration file:
+The HTTP API is controlled using the following options in the `global` section in the configuration file:
 
 ```
-# controls if HTTP API is turned on. 'true' by default.
-httpApiEnabled: true
-# specifies the host/address part for listening TCP socket. '127.0.0.1' by default.
-httpApiHost: 127.0.0.1
-# specifies the port number for the listening TCP socket. '8998' by default.
-httpApiPort: 8998
-# if API authorization is enabled, API key must be provided through the 'Authorization' header
-httpApiAuthEnabled: false
-# API access key
-httpApiKey: "diagnostics-api-key"
+global:
+  # controls if HTTP API is turned on. 'true' by default.
+  httpApiEnabled: true
+  # specifies the host/address part for listening TCP socket. '127.0.0.1' by default.
+  httpApiHost: 127.0.0.1
+  # specifies the port number for the listening TCP socket. '8998' by default.
+  httpApiPort: 8998
+  # if API authorization is enabled, API key must be provided through the 'Authorization' header
+  httpApiAuthEnabled: false
+  # API access key
+  httpApiKey: "diagnostics-api-key"
 ```
 
 It implements the following endpoints for mapping HTTP requests to API operations:
@@ -231,6 +232,8 @@ It implements the following endpoints for mapping HTTP requests to API operation
 - `POST /reload` for `reload`
 
 ## Installation
+
+Script for automated installation is [also available](./bash-installer/README.md).
 
 Cassandra Diagnostics consists of the following three components:
 

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
 import io.smartcat.cassandra.diagnostics.Query;
@@ -86,7 +85,7 @@ public class RequestRateConfiguration {
                 continue;
             }
 
-            String[] requestMeta = StringUtils.splitByWholeSeparator(requestToReport, REQUEST_META_DELIMITER);
+            String[] requestMeta = requestToReport.split(REQUEST_META_DELIMITER);
 
             if (requestMeta.length != 2) {
                 throw new ConfigurationException(

@@ -10,7 +10,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,8 +133,7 @@ public class RequestRateModule extends Module {
                             Query.ConsistencyLevel.UNKNOWN.name(),
                             requestRate));
                 } else {
-                    String[] requestMeta = StringUtils.splitByWholeSeparator(statementConsistency,
-                            REQUEST_META_DELIMITER);
+                    String[] requestMeta = statementConsistency.split(REQUEST_META_DELIMITER);
                     String statementType = requestMeta[0];
                     String consistencyLevel = requestMeta[1];
                     logger.info("{}-{} request rate: {}/{}", statementType, consistencyLevel, requestRate,

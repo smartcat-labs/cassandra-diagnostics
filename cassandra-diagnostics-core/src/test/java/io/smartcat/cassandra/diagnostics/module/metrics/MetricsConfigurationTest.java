@@ -2,6 +2,7 @@ package io.smartcat.cassandra.diagnostics.module.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +21,7 @@ public class MetricsConfigurationTest {
         assertThat(conf.jmxHost()).isEqualTo("127.0.0.1");
         assertThat(conf.jmxPort()).isEqualTo(7199);
         assertThat(conf.jmxSslEnabled()).isEqualTo(false);
-        assertThat(conf.metricsPackageName()).isEqualTo("org.apache.cassandra.metrics");
+        assertThat(conf.metricsPackageNames()).isEqualTo(Arrays.asList("org.apache.cassandra.metrics"));
         assertThat(conf.metricsPatterns()).isNotNull();
         assertThat(conf.metricsPatterns()).isEmpty();
     }

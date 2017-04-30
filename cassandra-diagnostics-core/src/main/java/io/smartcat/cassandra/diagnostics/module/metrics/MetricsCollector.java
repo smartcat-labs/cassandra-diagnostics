@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMISocketFactory;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,12 +51,12 @@ public class MetricsCollector {
 
     private MBeanServerConnection mbeanServerConn;
 
-    private Set<MetricsMBean> mbeans;
+    private Set<MetricsMBean> mbeans = new HashSet<>();
 
     /**
      * Constructor.
      *
-     * @param config metrics configuration
+     * @param config              metrics configuration
      * @param globalConfiguration Global diagnostics configuration
      */
     public MetricsCollector(final MetricsConfiguration config, final GlobalConfiguration globalConfiguration) {
@@ -98,8 +99,10 @@ public class MetricsCollector {
             jmxc = JMXConnectorFactory.connect(jmxUrl, env);
             mbeanServerConn = jmxc.getMBeanServerConnection();
 
-            String queryName = String.format("%s:*", config.metricsPackageName());
-            mbeans = filterMBeans(mbeanServerConn.queryMBeans(new ObjectName(queryName), null));
+            for (String packageName : config.metricsPackageNames()) {
+                String queryName = String.format("%s:*", packageName);
+                mbeans.addAll(filterMBeans(packageName, mbeanServerConn.queryMBeans(new ObjectName(queryName), null)));
+            }
 
             return true;
         } catch (IOException e) {
@@ -120,6 +123,7 @@ public class MetricsCollector {
      */
     public List<Measurement> collectMeasurements() {
         List<Measurement> measurements = new ArrayList<Measurement>();
+        final Map<String, String> fields = new HashMap<>();
 
         for (final MetricsMBean mbean : mbeans) {
             for (final MBeanAttributeInfo attribute : mbean.getMBeanAttributes()) {
@@ -128,9 +132,8 @@ public class MetricsCollector {
                             .getAttribute(mbean.getMBean().getObjectName(), attribute.getName());
 
                     if (value != null) {
-                        measurements.add(createMeasurement(
-                                mbean.getMeasurementName() + config.metricsSeparator() + attribute.getName(),
-                                Double.parseDouble(value.toString())));
+                        fields.put(mbean.getMeasurementName() + config.metricsSeparator() + attribute.getName(),
+                                value.toString());
                     }
 
                 } catch (Exception e) {
@@ -140,18 +143,17 @@ public class MetricsCollector {
             }
         }
 
-        return measurements;
+        return Arrays.asList(createMeasurement("metrics", fields));
     }
 
-    private Measurement createMeasurement(String service, double value) {
+    private Measurement createMeasurement(final String service, final Map<String, String> fields) {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", globalConfiguration.hostname);
         tags.put("systemName", globalConfiguration.systemName);
-        return Measurement.create(service, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
-                new HashMap<String, String>());
+        return Measurement.create(service, 0d, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
     }
 
-    private Set<MetricsMBean> filterMBeans(final Set<ObjectInstance> mbeanObjectInstances)
+    private Set<MetricsMBean> filterMBeans(final String packageName, final Set<ObjectInstance> mbeanObjectInstances)
             throws IntrospectionException, ReflectionException, InstanceNotFoundException, IOException {
         Set<MetricsMBean> results = new HashSet<MetricsMBean>();
         List<Pattern> patterns = new ArrayList<Pattern>();
@@ -178,7 +180,7 @@ public class MetricsCollector {
                 }
             }
 
-            MetricsMBean mbean = new MetricsMBean(config, objectInstance, filteredAttributes);
+            MetricsMBean mbean = new MetricsMBean(packageName, config, objectInstance, filteredAttributes);
 
             boolean matches = false;
             if (patterns.isEmpty()) {
@@ -186,7 +188,7 @@ public class MetricsCollector {
             }
 
             for (Pattern pattern : patterns) {
-                if (pattern.matcher(mbean.getMBeanName()).matches()) {
+                if (pattern.matcher(mbean.buildMBeanName()).matches()) {
                     matches = true;
                 }
             }

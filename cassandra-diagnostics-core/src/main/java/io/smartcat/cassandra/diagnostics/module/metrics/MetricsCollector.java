@@ -188,7 +188,7 @@ public class MetricsCollector {
             }
 
             for (Pattern pattern : patterns) {
-                if (pattern.matcher(mbean.buildMBeanName()).matches()) {
+                if (pattern.matcher(mbean.getMBeanName()).matches()) {
                     matches = true;
                 }
             }

@@ -42,7 +42,7 @@ public class MetricsMBean {
      *
      * @return MBean name
      */
-    public String buildMBeanName() {
+    public String getMBeanName() {
         return mbeanName;
     }
 

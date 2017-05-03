@@ -19,7 +19,7 @@ public class RequestRateConfigurationTest {
         RequestRateConfiguration conf = RequestRateConfiguration.create(options);
         assertThat(conf.period()).isEqualTo(1);
         assertThat(conf.timeunit()).isEqualTo(TimeUnit.SECONDS);
-        assertThat(conf.requestsToReport()).hasSize(1).contains("ALL");
+        assertThat(conf.requestsToReport()).hasSize(1).contains("*:*");
     }
 
     @Test

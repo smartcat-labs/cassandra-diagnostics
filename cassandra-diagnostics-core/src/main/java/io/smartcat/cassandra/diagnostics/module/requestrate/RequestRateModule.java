@@ -1,6 +1,5 @@
 package io.smartcat.cassandra.diagnostics.module.requestrate;
 
-import static io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateConfiguration.ALL_REQUESTS_TO_REPORT;
 import static io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateConfiguration.REQUEST_META_DELIMITER;
 
 import java.util.HashMap;
@@ -16,8 +15,6 @@ import org.slf4j.LoggerFactory;
 import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
-import io.smartcat.cassandra.diagnostics.Query.ConsistencyLevel;
-import io.smartcat.cassandra.diagnostics.Query.StatementType;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.AtomicCounter;
 import io.smartcat.cassandra.diagnostics.module.Module;
@@ -77,14 +74,36 @@ public class RequestRateModule extends Module {
 
     @Override
     public void process(Query query) {
-        if (requestRates.containsKey(ALL_REQUESTS_TO_REPORT)) {
-            requestRates.get(ALL_REQUESTS_TO_REPORT).increment();
-        } else {
-            String statementTypeConsistency = query.statementType().name() + REQUEST_META_DELIMITER
-                    + query.consistencyLevel().name();
-            if (requestRates.containsKey(statementTypeConsistency)) {
-                requestRates.get(statementTypeConsistency).increment();
-            }
+        // SELECT:ONE
+        String statementTypeConsistency = query.statementType().name() + REQUEST_META_DELIMITER
+                + query.consistencyLevel().name();
+        if (requestRates.containsKey(statementTypeConsistency)) {
+            requestRates.get(statementTypeConsistency).increment();
+            return;
+        }
+
+        // SELECT:*
+        statementTypeConsistency = query.statementType().name() + REQUEST_META_DELIMITER
+                + RequestRateConfiguration.ALL_CONSISTENCY_LEVELS;
+        if (requestRates.containsKey(statementTypeConsistency)) {
+            requestRates.get(statementTypeConsistency).increment();
+            return;
+        }
+
+        // *:ONE
+        statementTypeConsistency = RequestRateConfiguration.ALL_STATEMENT_TYPES + REQUEST_META_DELIMITER
+                + query.consistencyLevel().name();
+        if (requestRates.containsKey(statementTypeConsistency)) {
+            requestRates.get(statementTypeConsistency).increment();
+            return;
+        }
+
+        // *:*
+        statementTypeConsistency = RequestRateConfiguration.ALL_STATEMENT_TYPES + REQUEST_META_DELIMITER
+                + RequestRateConfiguration.ALL_CONSISTENCY_LEVELS;
+        if (requestRates.containsKey(statementTypeConsistency)) {
+            requestRates.get(statementTypeConsistency).increment();
+            return;
         }
     }
 
@@ -97,17 +116,8 @@ public class RequestRateModule extends Module {
     private Map<String, AtomicCounter> initRequestRates(RequestRateConfiguration config) {
         Map<String, AtomicCounter> requestRates = new HashMap<>();
 
-        if (config.requestsToReport().contains(ALL_REQUESTS_TO_REPORT)) {
-            requestRates.put(ALL_REQUESTS_TO_REPORT, new AtomicCounter());
-        } else {
-            for (StatementType statementType : StatementType.values()) {
-                for (ConsistencyLevel consistencyLevel : ConsistencyLevel.values()) {
-                    String statementConsistencyPair = statementType + REQUEST_META_DELIMITER + consistencyLevel;
-                    if (config.requestsToReport().contains(statementConsistencyPair)) {
-                        requestRates.put(statementConsistencyPair, new AtomicCounter());
-                    }
-                }
-            }
+        for (String requestToReport : config.requestsToReport()) {
+            requestRates.put(requestToReport, new AtomicCounter());
         }
 
         return requestRates;
@@ -126,21 +136,12 @@ public class RequestRateModule extends Module {
             for (String statementConsistency : requestRates.keySet()) {
                 double requestRate = convertRate(requestRates.get(statementConsistency).sumThenReset());
 
-                if (ALL_REQUESTS_TO_REPORT.equals(statementConsistency)) {
-                    logger.info("Request rate: {}/{}", requestRate, timeunit.name());
+                String[] requestMeta = statementConsistency.split(REQUEST_META_DELIMITER);
+                String statementType = requestMeta[0];
+                String consistencyLevel = requestMeta[1];
+                logger.info("{}:{} request rate: {}/{}", statementType, consistencyLevel, requestRate, timeunit.name());
 
-                    report(createMeasurement(service, Query.StatementType.UNKNOWN.name(),
-                            Query.ConsistencyLevel.UNKNOWN.name(),
-                            requestRate));
-                } else {
-                    String[] requestMeta = statementConsistency.split(REQUEST_META_DELIMITER);
-                    String statementType = requestMeta[0];
-                    String consistencyLevel = requestMeta[1];
-                    logger.info("{}-{} request rate: {}/{}", statementType, consistencyLevel, requestRate,
-                            timeunit.name());
-
-                    report(createMeasurement(service, statementType, consistencyLevel, requestRate));
-                }
+                report(createMeasurement(service, statementType, consistencyLevel, requestRate));
             }
         }
     }

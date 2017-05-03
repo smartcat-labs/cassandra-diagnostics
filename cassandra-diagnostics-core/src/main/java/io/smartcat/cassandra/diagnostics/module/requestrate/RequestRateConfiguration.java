@@ -16,9 +16,14 @@ import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 public class RequestRateConfiguration {
 
     /**
-     * Default is to report all requests.
+     * Report all statement types.
      */
-    public static final String ALL_REQUESTS_TO_REPORT = "ALL";
+    public static final String ALL_STATEMENT_TYPES = "*";
+
+    /**
+     * Report all consistency levels.
+     */
+    public static final String ALL_CONSISTENCY_LEVELS = "*";
 
     /**
      * Since request to report is combination between statement type and consistency level delimiter is used to glue
@@ -32,7 +37,8 @@ public class RequestRateConfiguration {
     public static class Values {
         private static final int DEFAULT_PERIOD = 1;
         private static final String DEFAULT_TIMEUNIT = "SECONDS";
-        private static final List<String> DEFAULT_REQUESTS_TO_REPORT = Arrays.asList(ALL_REQUESTS_TO_REPORT);
+        private static final List<String> DEFAULT_REQUESTS_TO_REPORT = Arrays
+                .asList(ALL_STATEMENT_TYPES + REQUEST_META_DELIMITER + ALL_CONSISTENCY_LEVELS);
 
         /**
          * Request rate reporting period.
@@ -81,10 +87,6 @@ public class RequestRateConfiguration {
 
     private static void validateRequestsToReport(RequestRateConfiguration conf) throws ConfigurationException {
         for (String requestToReport : conf.requestsToReport()) {
-            if (ALL_REQUESTS_TO_REPORT.equals(requestToReport)) {
-                continue;
-            }
-
             String[] requestMeta = requestToReport.split(REQUEST_META_DELIMITER);
 
             if (requestMeta.length != 2) {
@@ -96,13 +98,17 @@ public class RequestRateConfiguration {
             String consistencyLevel = requestMeta[1];
 
             try {
-                Query.StatementType.valueOf(statementType);
+                if (!statementType.equals(ALL_STATEMENT_TYPES)) {
+                    Query.StatementType.valueOf(statementType);
+                }
             } catch (IllegalArgumentException ex) {
                 throw new ConfigurationException("Illegal statement type configured: " + statementType);
             }
 
             try {
-                Query.ConsistencyLevel.valueOf(consistencyLevel);
+                if (!consistencyLevel.equals(ALL_CONSISTENCY_LEVELS)) {
+                    Query.ConsistencyLevel.valueOf(consistencyLevel);
+                }
              } catch (IllegalArgumentException ex) {
                 throw new ConfigurationException("Illegal consistency level configured: " + consistencyLevel);
              }

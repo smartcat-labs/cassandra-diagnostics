@@ -1,5 +1,7 @@
 package io.smartcat.cassandra.diagnostics.module.requestrate;
 
+import static io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateConfiguration.ALL_CONSISTENCY_LEVELS;
+import static io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateConfiguration.ALL_STATEMENT_TYPES;
 import static io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateConfiguration.REQUEST_META_DELIMITER;
 
 import java.util.HashMap;
@@ -107,12 +109,21 @@ public class RequestRateModule extends Module {
         final String consistencyLevel = query.consistencyLevel().name();
 
         for (RequestRate requestRate : requestRates) {
-            if ((requestRate.statementType.equals("*") || requestRate.statementType.equals(statementType)) && (
-                    requestRate.consistencyLevel.equals("*") || requestRate.consistencyLevel
-                            .equals(consistencyLevel))) {
+            if (statementMatches(statementType, requestRate)
+                    && consistencyLevelMatches(consistencyLevel, requestRate)) {
                 requestRate.increment();
             }
         }
+    }
+
+    private boolean consistencyLevelMatches(final String consistencyLevel, RequestRate requestRate) {
+        return requestRate.consistencyLevel.equals(ALL_CONSISTENCY_LEVELS)
+                || requestRate.consistencyLevel.equals(consistencyLevel);
+    }
+
+    private boolean statementMatches(final String statementType, RequestRate requestRate) {
+        return requestRate.statementType.equals(ALL_STATEMENT_TYPES)
+                || requestRate.statementType.equals(statementType);
     }
 
     @Override

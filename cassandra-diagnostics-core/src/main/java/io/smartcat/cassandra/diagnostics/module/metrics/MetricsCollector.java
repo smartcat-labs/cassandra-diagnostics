@@ -150,7 +150,7 @@ public class MetricsCollector {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", globalConfiguration.hostname);
         tags.put("systemName", globalConfiguration.systemName);
-        return Measurement.create(service, 0d, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement.create(service, null, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
     }
 
     private Set<MetricsMBean> filterMBeans(final String packageName, final Set<ObjectInstance> mbeanObjectInstances)

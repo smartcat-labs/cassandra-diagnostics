@@ -91,7 +91,8 @@ Minimal configuration requires specifying `metricsPatterns` with required metric
     jmxSslEnabled: false #optional
     jmxSslUsername: username #optional, set if ssl enabled
     jmxSslPassword: password #optional, set if ssl enabled
-    metricsPackageName: "org.apache.cassandra.metrics" #optional
+    metricsPackageNames:
+      - "org.apache.cassandra.metrics" #optional
     metricsSeparator: "_" # optional, metrics measurement name separator
     metricsPatterns:
       - "^org.apache.cassandra.metrics.Cache.+"

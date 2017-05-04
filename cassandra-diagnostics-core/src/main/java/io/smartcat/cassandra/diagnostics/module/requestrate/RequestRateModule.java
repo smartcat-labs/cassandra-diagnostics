@@ -3,8 +3,10 @@ package io.smartcat.cassandra.diagnostics.module.requestrate;
 import static io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateConfiguration.REQUEST_META_DELIMITER;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +35,7 @@ public class RequestRateModule extends Module {
 
     private static final String REQUEST_RATE_THREAD_NAME = "request-rate-timer";
 
-    private final Map<String, AtomicCounter> requestRates;
+    private final Set<RequestRate> requestRates;
 
     private final String service;
 
@@ -48,14 +50,13 @@ public class RequestRateModule extends Module {
     /**
      * Constructor.
      *
-     * @param configuration        Module configuration
-     * @param reporters            Reporter list
-     * @param globalConfiguration  Global diagnostics configuration
+     * @param configuration       Module configuration
+     * @param reporters           Reporter list
+     * @param globalConfiguration Global diagnostics configuration
      * @throws ConfigurationException in case the provided module configuration is not valid
      */
     public RequestRateModule(ModuleConfiguration configuration, List<Reporter> reporters,
-            final GlobalConfiguration globalConfiguration)
-            throws ConfigurationException {
+            final GlobalConfiguration globalConfiguration) throws ConfigurationException {
         super(configuration, reporters, globalConfiguration);
 
         RequestRateConfiguration config = RequestRateConfiguration.create(configuration.options);
@@ -66,44 +67,51 @@ public class RequestRateModule extends Module {
         requestRates = initRequestRates(config);
 
         logger.info("RequestRate module initialized with {} {} reporting period and requests to report: {}.", period,
-                timeunit.name(), requestRates.keySet().toString());
+                timeunit.name(), config.requestsToReport());
 
         timer = new Timer(REQUEST_RATE_THREAD_NAME);
         timer.schedule(new RequestRateTask(), 0, config.reportingRateInMillis());
     }
 
+    /**
+     * Request rate class.
+     */
+    private class RequestRate {
+        public final String statementType;
+        public final String consistencyLevel;
+        public final AtomicCounter counter = new AtomicCounter();
+
+        /**
+         * Constructor.
+         *
+         * @param requestPattern Configured request rate report pattern
+         */
+        public RequestRate(String requestPattern) {
+            String[] requestMeta = requestPattern.split(REQUEST_META_DELIMITER);
+            this.statementType = requestMeta[0];
+            this.consistencyLevel = requestMeta[1];
+        }
+
+        public void increment() {
+            counter.increment();
+        }
+
+        public long sumThenReset() {
+            return counter.sumThenReset();
+        }
+    }
+
     @Override
     public void process(Query query) {
-        // SELECT:ONE
-        String statementTypeConsistency = query.statementType().name() + REQUEST_META_DELIMITER
-                + query.consistencyLevel().name();
-        if (requestRates.containsKey(statementTypeConsistency)) {
-            requestRates.get(statementTypeConsistency).increment();
-            return;
-        }
+        final String statementType = query.statementType().name();
+        final String consistencyLevel = query.consistencyLevel().name();
 
-        // SELECT:*
-        statementTypeConsistency = query.statementType().name() + REQUEST_META_DELIMITER
-                + RequestRateConfiguration.ALL_CONSISTENCY_LEVELS;
-        if (requestRates.containsKey(statementTypeConsistency)) {
-            requestRates.get(statementTypeConsistency).increment();
-            return;
-        }
-
-        // *:ONE
-        statementTypeConsistency = RequestRateConfiguration.ALL_STATEMENT_TYPES + REQUEST_META_DELIMITER
-                + query.consistencyLevel().name();
-        if (requestRates.containsKey(statementTypeConsistency)) {
-            requestRates.get(statementTypeConsistency).increment();
-            return;
-        }
-
-        // *:*
-        statementTypeConsistency = RequestRateConfiguration.ALL_STATEMENT_TYPES + REQUEST_META_DELIMITER
-                + RequestRateConfiguration.ALL_CONSISTENCY_LEVELS;
-        if (requestRates.containsKey(statementTypeConsistency)) {
-            requestRates.get(statementTypeConsistency).increment();
-            return;
+        for (RequestRate requestRate : requestRates) {
+            if ((requestRate.statementType.equals("*") || requestRate.statementType.equals(statementType)) && (
+                    requestRate.consistencyLevel.equals("*") || requestRate.consistencyLevel
+                            .equals(consistencyLevel))) {
+                requestRate.increment();
+            }
         }
     }
 
@@ -113,11 +121,11 @@ public class RequestRateModule extends Module {
         timer.cancel();
     }
 
-    private Map<String, AtomicCounter> initRequestRates(RequestRateConfiguration config) {
-        Map<String, AtomicCounter> requestRates = new HashMap<>();
+    private Set<RequestRate> initRequestRates(RequestRateConfiguration config) {
+        final Set<RequestRate> requestRates = new HashSet<>();
 
         for (String requestToReport : config.requestsToReport()) {
-            requestRates.put(requestToReport, new AtomicCounter());
+            requestRates.add(new RequestRate(requestToReport));
         }
 
         return requestRates;
@@ -133,15 +141,9 @@ public class RequestRateModule extends Module {
     private class RequestRateTask extends TimerTask {
         @Override
         public void run() {
-            for (String statementConsistency : requestRates.keySet()) {
-                double requestRate = convertRate(requestRates.get(statementConsistency).sumThenReset());
-
-                String[] requestMeta = statementConsistency.split(REQUEST_META_DELIMITER);
-                String statementType = requestMeta[0];
-                String consistencyLevel = requestMeta[1];
-                logger.info("{}:{} request rate: {}/{}", statementType, consistencyLevel, requestRate, timeunit.name());
-
-                report(createMeasurement(service, statementType, consistencyLevel, requestRate));
+            for (RequestRate requestRate : requestRates) {
+                double rate = convertRate(requestRate.sumThenReset());
+                report(createMeasurement(service, requestRate.statementType, requestRate.consistencyLevel, rate));
             }
         }
     }

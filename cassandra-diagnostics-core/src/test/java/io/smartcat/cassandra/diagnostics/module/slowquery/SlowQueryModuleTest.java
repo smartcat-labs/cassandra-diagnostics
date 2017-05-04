@@ -16,6 +16,7 @@ import org.mockito.internal.util.collections.Sets;
 import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.Query.ConsistencyLevel;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.LatchTestReporter;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
@@ -37,16 +38,17 @@ public class SlowQueryModuleTest {
         SlowQueryModule module = new SlowQueryModule(conf, testReporters(reporter), GlobalConfiguration.getDefault());
 
         Query query = Query.create(1474741407205L, 234L, "/127.0.0.1:40042", Query.StatementType.SELECT, "keyspace",
-                "table", "select count(*) from keyspace.table");
+                "table", "select count(*) from keyspace.table", ConsistencyLevel.ONE);
 
         module.process(query);
         module.stop();
 
         Measurement measurement = reporter.reported.get(0);
 
-        assertThat(measurement.fields().keySet()).isEqualTo(Sets.newSet("statement", "client"));
+        assertThat(measurement.fields().keySet()).isEqualTo(Sets.newSet("statement", "client", "consistencyLevel"));
         assertThat(measurement.fields().get("statement")).isEqualTo("select count(*) from keyspace.table");
         assertThat(measurement.fields().get("client")).isEqualTo("/127.0.0.1:40042");
+        assertThat(measurement.fields().get("consistencyLevel")).isEqualTo("ONE");
         assertThat(measurement.hasValue()).isTrue();
         assertThat(measurement.getValue()).isEqualTo(234);
 
@@ -67,8 +69,10 @@ public class SlowQueryModuleTest {
 
         final Query selectQuery = mock(Query.class);
         when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+        when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+        when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
 
         final SlowQueryModule module = new SlowQueryModule(testConfiguration(1), reporters,
                 GlobalConfiguration.getDefault());
@@ -123,8 +127,10 @@ public class SlowQueryModuleTest {
 
         final Query selectQuery = mock(Query.class);
         when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+        when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+        when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
 
         final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
 
@@ -163,8 +169,10 @@ public class SlowQueryModuleTest {
 
         final Query selectQuery = mock(Query.class);
         when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+        when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+        when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
 
         final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
 
@@ -203,8 +211,10 @@ public class SlowQueryModuleTest {
 
         final Query selectQuery = mock(Query.class);
         when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+        when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+        when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
 
         final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
 
@@ -246,8 +256,10 @@ public class SlowQueryModuleTest {
 
         final Query selectQuery = mock(Query.class);
         when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+        when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+        when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
 
         final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
 
@@ -297,8 +309,10 @@ public class SlowQueryModuleTest {
 
         final Query selectQuery = mock(Query.class);
         when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+        when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
         final Query updateQuery = mock(Query.class);
         when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+        when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
 
         final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
 

@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSetFuture;
@@ -46,6 +47,7 @@ public class ExecuteStatementWrapperTest {
         when(session.executeAsync(any(Statement.class))).thenReturn(result);
         when(statement.getKeyspace()).thenReturn("test_keyspace");
         when(statement.getQueryString()).thenReturn("SELECT * FROM test_table WHERE id = 1");
+        when(statement.getConsistencyLevel()).thenReturn(ConsistencyLevel.ALL);
 
         wrapper.processStatement(statement, System.currentTimeMillis(), result);
 
@@ -54,6 +56,7 @@ public class ExecuteStatementWrapperTest {
         assertThat(reporter.reportedQuery.keyspace()).isEqualTo("test_keyspace");
         assertThat(reporter.reportedQuery.statement()).isEqualTo("SELECT * FROM test_table WHERE id = 1;");
         assertThat(reporter.reportedQuery.statementType()).isEqualTo(Query.StatementType.SELECT);
+        assertThat(reporter.reportedQuery.consistencyLevel()).isEqualTo(Query.ConsistencyLevel.ALL);
     }
 
     @Test
@@ -70,6 +73,7 @@ public class ExecuteStatementWrapperTest {
         when(session.executeAsync(any(Statement.class))).thenReturn(result);
         when(statement.getKeyspace()).thenReturn("test_keyspace");
         when(statement.getQueryString()).thenReturn("INSERT INTO test_table");
+        when(statement.getConsistencyLevel()).thenReturn(ConsistencyLevel.ALL);
 
         wrapper.processStatement(statement, System.currentTimeMillis(), result);
 
@@ -78,6 +82,7 @@ public class ExecuteStatementWrapperTest {
         assertThat(reporter.reportedQuery.keyspace()).isEqualTo("test_keyspace");
         assertThat(reporter.reportedQuery.statement()).isEqualTo("INSERT INTO test_table;");
         assertThat(reporter.reportedQuery.statementType()).isEqualTo(Query.StatementType.UPDATE);
+        assertThat(reporter.reportedQuery.consistencyLevel()).isEqualTo(Query.ConsistencyLevel.ALL);
     }
 
     @Test
@@ -96,6 +101,7 @@ public class ExecuteStatementWrapperTest {
         when(statement.getKeyspace()).thenReturn("test_keyspace");
         when(statement.preparedStatement()).thenReturn(pstm);
         when(pstm.getQueryString()).thenReturn("SELECT * FROM test_table WHERE id = 1");
+        when(statement.getConsistencyLevel()).thenReturn(ConsistencyLevel.ALL);
 
         wrapper.processStatement(statement, System.currentTimeMillis(), result);
 
@@ -104,7 +110,7 @@ public class ExecuteStatementWrapperTest {
         assertThat(reporter.reportedQuery.keyspace()).isEqualTo("test_keyspace");
         assertThat(reporter.reportedQuery.statement()).isEqualTo("SELECT * FROM test_table WHERE id = 1;");
         assertThat(reporter.reportedQuery.statementType()).isEqualTo(Query.StatementType.SELECT);
-        System.out.println(reporter.reportedQuery);
+        assertThat(reporter.reportedQuery.consistencyLevel()).isEqualTo(Query.ConsistencyLevel.ALL);
     }
 
 }

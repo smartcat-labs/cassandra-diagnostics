@@ -104,6 +104,7 @@ public class SlowQueryModule extends Module {
             final Map<String, String> fields = new HashMap<>(4);
             fields.put("client", query.clientAddress());
             fields.put("statement", query.statement());
+            fields.put("consistencyLevel", query.consistencyLevel().name());
 
             final Measurement measurement = Measurement.create(service, (double) query.executionTimeInMilliseconds(),
                     query.startTimeInMilliseconds(), TimeUnit.MILLISECONDS, tags, fields);

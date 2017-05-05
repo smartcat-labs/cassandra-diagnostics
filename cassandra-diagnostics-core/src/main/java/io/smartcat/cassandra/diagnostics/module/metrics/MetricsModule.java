@@ -21,6 +21,8 @@ public class MetricsModule extends Module {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsModule.class);
 
+    private static final String DEFAULT_MEASUREMENT_NAME = "metrics";
+
     private static final String METRICS_THREAD_NAME = "metrics-timer";
 
     private final MetricsConfiguration config;
@@ -42,7 +44,8 @@ public class MetricsModule extends Module {
         super(configuration, reporters, globalConfiguration);
 
         config = MetricsConfiguration.create(configuration.options);
-        metricsCollector = new MetricsCollector(config, globalConfiguration);
+        metricsCollector = new MetricsCollector(configuration.getMeasurementOrDefault(DEFAULT_MEASUREMENT_NAME), config,
+                globalConfiguration);
 
         logger.info("Metrics module initialized with {} {} reporting period.", config.period(),
                 config.timeunit().name());

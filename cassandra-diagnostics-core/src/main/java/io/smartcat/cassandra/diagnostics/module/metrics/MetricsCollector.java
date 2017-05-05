@@ -42,6 +42,8 @@ public class MetricsCollector {
 
     private static final String DEFAULT_SOCKET_FACTORY = "com.sun.jndi.rmi.factory.socket";
 
+    private final String service;
+
     private final MetricsConfiguration config;
 
     private final GlobalConfiguration globalConfiguration;
@@ -55,10 +57,13 @@ public class MetricsCollector {
     /**
      * Constructor.
      *
+     * @param service             service name for measurements
      * @param config              metrics configuration
      * @param globalConfiguration Global diagnostics configuration
      */
-    public MetricsCollector(final MetricsConfiguration config, final GlobalConfiguration globalConfiguration) {
+    public MetricsCollector(final String service, final MetricsConfiguration config,
+            final GlobalConfiguration globalConfiguration) {
+        this.service = service;
         this.config = config;
         this.globalConfiguration = globalConfiguration;
     }
@@ -131,7 +136,8 @@ public class MetricsCollector {
 
                     if (value != null) {
                         measurements.add(createMeasurement(
-                                mbean.getMeasurementName() + config.metricsSeparator() + attribute.getName(),
+                                service + config.metricsSeparator() + mbean.getMeasurementName()
+                                + config.metricsSeparator() + attribute.getName(),
                                 Double.parseDouble(value.toString())));
                     }
 

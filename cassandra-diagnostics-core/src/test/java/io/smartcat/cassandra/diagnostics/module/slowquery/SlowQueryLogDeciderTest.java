@@ -9,6 +9,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.Query.ConsistencyLevel;
 import io.smartcat.cassandra.diagnostics.Query.StatementType;
 
 /**
@@ -109,7 +110,8 @@ public class SlowQueryLogDeciderTest {
     }
 
     private Query buildQuery(long executionTime, StatementType type, String keyspace, String table) {
-        return Query.create(1, executionTime, "clientAddress", type, keyspace, table, "statement");
+        return Query.create(1, executionTime, "clientAddress", type, keyspace, table, "statement",
+                ConsistencyLevel.ONE);
     }
 
     private SlowQueryLogDecider buildSlowLogDecider(final Map<String, Object> options) throws Exception {

@@ -73,7 +73,7 @@ public class MetricsModuleTest {
         configuration.options.put("timeunit", "SECONDS");
         configuration.options.put("jmxHost", "127.0.0.1");
         configuration.options.put("jmxPort", 7199);
-        configuration.options.put("metricsPackageName", "io.smartcat.cassandra.diagnostics.module");
+        configuration.options.put("metricsPackageNames", Arrays.asList("io.smartcat.cassandra.diagnostics.module"));
         configuration.options
                 .put("metricsPatterns", Arrays.asList("^io.smartcat.cassandra.diagnostics.module.TestMXBean+"));
         return configuration;

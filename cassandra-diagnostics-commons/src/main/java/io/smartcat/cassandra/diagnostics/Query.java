@@ -25,6 +25,71 @@ public class Query {
         UNKNOWN
     }
 
+    /**
+     * Defines possible consistency levels.
+     */
+    public enum ConsistencyLevel {
+        /**
+         * ANY consistency.
+         */
+        ANY,
+
+        /**
+         * ONE consistency.
+         */
+        ONE,
+
+        /**
+         * TWO consistency.
+         */
+        TWO,
+
+        /**
+         * THREE consistency.
+         */
+        THREE,
+
+        /**
+         * QUORUM consistency.
+         */
+        QUORUM,
+
+        /**
+         * ALL consistency.
+         */
+        ALL,
+
+        /**
+         * LOCAL_QUORUM consistency.
+         */
+        LOCAL_QUORUM,
+
+        /**
+         * EACH_QUORUM consistency.
+         */
+        EACH_QUORUM,
+
+        /**
+         * SERIAL consistency.
+         */
+        SERIAL,
+
+        /**
+         * LOCAL_SERIAL consistency.
+         */
+        LOCAL_SERIAL,
+
+        /**
+         * LOCAL_ONE consistency.
+         */
+        LOCAL_ONE,
+
+        /**
+         * Consistency level is unknown.
+         */
+        UNKNOWN
+    }
+
     private long startTimeInMilliseconds;
     private long executionTimeInMilliseconds;
     private String clientAddress;
@@ -32,6 +97,7 @@ public class Query {
     private String keyspace;
     private String tableName;
     private String statement;
+    private ConsistencyLevel consistencyLevel;
 
     /**
      * Query's execution start time.
@@ -105,9 +171,18 @@ public class Query {
         return statement;
     }
 
+    /**
+     * Consistency level.
+     *
+     * @return consistencyLevel
+     */
+    public ConsistencyLevel consistencyLevel() {
+        return consistencyLevel;
+    }
+
     private Query(final long startTimeInMilliseconds, final long executionTimeInMilliseconds,
             final String clientAddress, final StatementType statementType, final String keyspace,
-            final String tableName, final String statement) {
+            final String tableName, final String statement, final ConsistencyLevel consistencyLevel) {
         this.startTimeInMilliseconds = startTimeInMilliseconds;
         this.executionTimeInMilliseconds = executionTimeInMilliseconds;
         this.clientAddress = clientAddress;
@@ -115,6 +190,7 @@ public class Query {
         this.keyspace = keyspace;
         this.tableName = tableName;
         this.statement = statement;
+        this.consistencyLevel = consistencyLevel;
     }
 
     /**
@@ -127,20 +203,22 @@ public class Query {
      * @param keyspace                    query's key space
      * @param tableName                   query's table name
      * @param statement                   query's CQL statement
+     * @param consistencyLevel            query's consistencyLevel
      * @return a new Query instance
      */
     public static Query create(final long startTimeInMilliseconds, final long executionTimeInMilliseconds,
             final String clientAddress, final StatementType statementType, final String keyspace,
-            final String tableName, final String statement) {
+            final String tableName, final String statement, final ConsistencyLevel consistencyLevel) {
         return new Query(startTimeInMilliseconds, executionTimeInMilliseconds, clientAddress, statementType, keyspace,
-                tableName, statement);
+                tableName, statement, consistencyLevel);
     }
 
     @Override
     public String toString() {
         return "Query [ " + "startTimeInMilliseconds=" + startTimeInMilliseconds + ", executionTimeInMilliseconds="
                 + executionTimeInMilliseconds + ", clientAddress=" + clientAddress + ", statementType=" + statementType
-                .name() + ", statement=" + statement + ", keyspace=" + keyspace + ", tableName=" + tableName + " ]";
+                .name() + ", statement=" + statement + ", keyspace=" + keyspace + ", tableName=" + tableName  + ", "
+                + "consistencyLevel=" + consistencyLevel.name() + " ]";
     }
 
 }

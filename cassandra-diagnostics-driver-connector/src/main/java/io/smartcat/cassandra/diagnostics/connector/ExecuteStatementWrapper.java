@@ -11,6 +11,7 @@ import com.datastax.driver.core.Statement;
 
 import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.Query.ConsistencyLevel;
 
 /**
  * This class is a Diagnostics wrapper for driver session manager execute async method.
@@ -76,7 +77,8 @@ public class ExecuteStatementWrapper extends AbstractEventProcessor {
     private Query extractQuery(final long startTime, final long execTime, final Statement statement) {
         final String queryString = statementQueryString(statement);
         final Query.StatementType queryType = queryType(queryString);
-        return Query.create(startTime, execTime, host, queryType, statement.getKeyspace(), "", queryString);
+        return Query.create(startTime, execTime, host, queryType, statement.getKeyspace(), "", queryString,
+                extractConsistencyLevel(statement));
     }
 
     private String statementQueryString(final Statement statement) {
@@ -123,5 +125,22 @@ public class ExecuteStatementWrapper extends AbstractEventProcessor {
             type = Query.StatementType.UNKNOWN;
         }
         return type;
+    }
+
+    private ConsistencyLevel extractConsistencyLevel(final Statement statement) {
+        if (statement.getConsistencyLevel() == null) {
+            return ConsistencyLevel.UNKNOWN;
+        }
+
+        ConsistencyLevel queryConsistencyLevel = ConsistencyLevel.UNKNOWN;
+
+        for (ConsistencyLevel consistencyLevel : ConsistencyLevel.values()) {
+            if (consistencyLevel.name().equals(statement.getConsistencyLevel().name())) {
+                queryConsistencyLevel = consistencyLevel;
+                break;
+            }
+        }
+
+        return queryConsistencyLevel;
     }
 }

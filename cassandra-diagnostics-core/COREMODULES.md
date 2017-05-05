@@ -58,7 +58,7 @@ Request Rate Module counts request rate of executed queries. Rates are reported 
 
 #### Configuration
 
-Measurement name is by default `request_rate` with `_update` and `_select` suffixes for upsert and select statements respectively. For precise measurements use a default reporting period of 1 second. If higher reporting period is used reported value represents average requests/second for the reporting period.
+Measurement name is by default `request_rate`. You can configure which requests to report with `requestsToReport` which is a list of statement type - consistency level pairs. By default if you do not specify anything `*:*` will be used which counts all requests ignoring separation per statement type and consistency levels. You can configure only specific statement type ignoring consistency level with `SELECT:*` or you can opt to track all statament types of specific consistency level with `*:ONE`. For precise measurements use a default reporting period of 1 second. If higher reporting period is used reported value represents average requests/second for the reporting period.
 
 ```
 - module: io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateModule
@@ -66,6 +66,9 @@ Measurement name is by default `request_rate` with `_update` and `_select` suffi
   options:
     period: 1 #optional
     timeunit: SECONDS #optional
+    requestsToReport: # optional
+      - SELECT:ALL
+      - UPDATE:*
   reporters:
     - io.smartcat.cassandra.diagnostics.reporter.LogReporter
 ```
@@ -88,7 +91,8 @@ Minimal configuration requires specifying `metricsPatterns` with required metric
     jmxSslEnabled: false #optional
     jmxSslUsername: username #optional, set if ssl enabled
     jmxSslPassword: password #optional, set if ssl enabled
-    metricsPackageName: "org.apache.cassandra.metrics" #optional
+    metricsPackageNames:
+      - "org.apache.cassandra.metrics" #optional
     metricsSeparator: "_" # optional, metrics measurement name separator
     metricsPatterns:
       - "^org.apache.cassandra.metrics.Cache.+"

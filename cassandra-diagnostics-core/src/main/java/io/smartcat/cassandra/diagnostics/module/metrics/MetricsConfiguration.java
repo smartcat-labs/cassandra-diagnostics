@@ -1,6 +1,7 @@
 package io.smartcat.cassandra.diagnostics.module.metrics;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -25,8 +26,8 @@ public class MetricsConfiguration {
         private static final boolean DEFAULT_JMX_SSL_ENABLED = false;
         private static final String DEFAULT_JMX_SSL_USERNAME = null;
         private static final String DEFAULT_JMX_SSL_PASSWORD = null;
-        private static final String DEFAULT_METRICS_PACKAGE_NAME = "org.apache.cassandra.metrics";
-        private static final String DEFAULT_METRICS_SEPARATOR = "_";
+        private static final List<String> DEFAULT_METRICS_PACKAGE_NAMES = Arrays.asList("org.apache.cassandra.metrics");
+        private static final String DEFAULT_METRICS_SEPARATOR = ".";
         private static final List<String> DEFAULT_METRICS_PATTERNS = new ArrayList<String>();
 
         /**
@@ -67,7 +68,7 @@ public class MetricsConfiguration {
         /**
          * Metrics package name.
          */
-        public String metricsPackageName = DEFAULT_METRICS_PACKAGE_NAME;
+        public List<String> metricsPackageNames = DEFAULT_METRICS_PACKAGE_NAMES;
 
         /**
          * Metrics measurement name separator.
@@ -174,12 +175,12 @@ public class MetricsConfiguration {
     }
 
     /**
-     * Metrics package name. Defaults to org.apache.cassandra.metrics:*.
+     * Metrics package names. Defaults to org.apache.cassandra.metrics:*.
      *
-     * @return metrics package name
+     * @return metrics package names
      */
-    public String metricsPackageName() {
-        return values.metricsPackageName;
+    public List<String> metricsPackageNames() {
+        return values.metricsPackageNames;
     }
 
     /**

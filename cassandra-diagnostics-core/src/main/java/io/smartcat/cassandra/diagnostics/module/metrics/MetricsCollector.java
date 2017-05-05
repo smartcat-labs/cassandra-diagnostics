@@ -42,6 +42,8 @@ public class MetricsCollector {
 
     private static final String DEFAULT_SOCKET_FACTORY = "com.sun.jndi.rmi.factory.socket";
 
+    private final String service;
+
     private final MetricsConfiguration config;
 
     private final GlobalConfiguration globalConfiguration;
@@ -50,15 +52,18 @@ public class MetricsCollector {
 
     private MBeanServerConnection mbeanServerConn;
 
-    private Set<MetricsMBean> mbeans;
+    private Set<MetricsMBean> mbeans = new HashSet<>();
 
     /**
      * Constructor.
      *
-     * @param config metrics configuration
+     * @param service             service name for measurements
+     * @param config              metrics configuration
      * @param globalConfiguration Global diagnostics configuration
      */
-    public MetricsCollector(final MetricsConfiguration config, final GlobalConfiguration globalConfiguration) {
+    public MetricsCollector(final String service, final MetricsConfiguration config,
+            final GlobalConfiguration globalConfiguration) {
+        this.service = service;
         this.config = config;
         this.globalConfiguration = globalConfiguration;
     }
@@ -98,8 +103,10 @@ public class MetricsCollector {
             jmxc = JMXConnectorFactory.connect(jmxUrl, env);
             mbeanServerConn = jmxc.getMBeanServerConnection();
 
-            String queryName = String.format("%s:*", config.metricsPackageName());
-            mbeans = filterMBeans(mbeanServerConn.queryMBeans(new ObjectName(queryName), null));
+            for (String packageName : config.metricsPackageNames()) {
+                String queryName = String.format("%s:*", packageName);
+                mbeans.addAll(filterMBeans(packageName, mbeanServerConn.queryMBeans(new ObjectName(queryName), null)));
+            }
 
             return true;
         } catch (IOException e) {
@@ -129,7 +136,8 @@ public class MetricsCollector {
 
                     if (value != null) {
                         measurements.add(createMeasurement(
-                                mbean.getMeasurementName() + config.metricsSeparator() + attribute.getName(),
+                                service + config.metricsSeparator() + mbean.getMeasurementName()
+                                + config.metricsSeparator() + attribute.getName(),
                                 Double.parseDouble(value.toString())));
                     }
 
@@ -143,15 +151,15 @@ public class MetricsCollector {
         return measurements;
     }
 
-    private Measurement createMeasurement(String service, double value) {
-        final Map<String, String> tags = new HashMap<>(1);
+    private Measurement createMeasurement(final String service, final double value) {
+        final Map<String, String> tags = new HashMap<>(2);
         tags.put("host", globalConfiguration.hostname);
         tags.put("systemName", globalConfiguration.systemName);
         return Measurement.create(service, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
                 new HashMap<String, String>());
     }
 
-    private Set<MetricsMBean> filterMBeans(final Set<ObjectInstance> mbeanObjectInstances)
+    private Set<MetricsMBean> filterMBeans(final String packageName, final Set<ObjectInstance> mbeanObjectInstances)
             throws IntrospectionException, ReflectionException, InstanceNotFoundException, IOException {
         Set<MetricsMBean> results = new HashSet<MetricsMBean>();
         List<Pattern> patterns = new ArrayList<Pattern>();
@@ -178,7 +186,7 @@ public class MetricsCollector {
                 }
             }
 
-            MetricsMBean mbean = new MetricsMBean(config, objectInstance, filteredAttributes);
+            MetricsMBean mbean = new MetricsMBean(packageName, config, objectInstance, filteredAttributes);
 
             boolean matches = false;
             if (patterns.isEmpty()) {

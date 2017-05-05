@@ -24,14 +24,15 @@ public class MetricsMBean {
     /**
      * Constructor.
      *
+     * @param packageName     metrics package name
      * @param config          metrics configuration
      * @param mbean           mbean object instance
      * @param mbeanAttributes mbean attributes
      */
-    public MetricsMBean(final MetricsConfiguration config, final ObjectInstance mbean,
+    public MetricsMBean(final String packageName, final MetricsConfiguration config, final ObjectInstance mbean,
             final List<MBeanAttributeInfo> mbeanAttributes) {
-        this.mbeanName = getMBeanName(config.metricsPackageName(), mbean);
-        this.measurementName = nameBuilder(config.metricsPackageName(), mbean, config.metricsSeparator());
+        this.mbeanName = buildMBeanName(packageName, mbean);
+        this.measurementName = buildMeasurementName(packageName, mbean, config.metricsSeparator());
         this.mbean = mbean;
         this.mbeanAttributes = mbeanAttributes;
     }
@@ -72,25 +73,17 @@ public class MetricsMBean {
         return mbeanAttributes;
     }
 
-    /**
-     * Get mbean measurement names based on the metrics package naming pattern.
-     * <p>
-     * Everything is named based on this pattern:
-     * <p>
-     * type=*, scope=*, name=*
-     * type=ThreadPools, path=*, scope=*, name=*
-     * type=ColumnFamily, keyspace=*, scope=*, name=*
-     * type=Keyspace, keyspace=*, name=*
-     *
-     * @param metricsPackageName metrics package name
-     * @param mbean              MBean object instance
-     * @return mbean measurement name
-     */
-    private String getMBeanName(final String metricsPackageName, final ObjectInstance mbean) {
-        return nameBuilder(metricsPackageName, mbean, METRICS_PACKAGE_SEPARATOR);
+    private String buildMBeanName(final String metricsPackageName, final ObjectInstance mbean) {
+        return nameBuilder(metricsPackageName, mbean, METRICS_PACKAGE_SEPARATOR, true);
     }
 
-    private String nameBuilder(final String metricsPackageName, final ObjectInstance mbean, final String separator) {
+    private String buildMeasurementName(final String metricsPackageName, final ObjectInstance mbean,
+            final String separator) {
+        return nameBuilder(metricsPackageName, mbean, separator, false);
+    }
+
+    private String nameBuilder(final String metricsPackageName, final ObjectInstance mbean, final String separator,
+            final boolean isMBeanName) {
         final String type = mbean.getObjectName().getKeyProperty("type");
         final String path = mbean.getObjectName().getKeyProperty("path");
         final String keyspace = mbean.getObjectName().getKeyProperty("keyspace");
@@ -99,8 +92,10 @@ public class MetricsMBean {
         final String packageName = metricsPackageName.replace(".", separator);
 
         StringBuilder nameBuilder = new StringBuilder();
-        nameBuilder.append(packageName);
-        nameBuilder.append(separator);
+        if (isMBeanName) {
+            nameBuilder.append(packageName);
+            nameBuilder.append(separator);
+        }
         nameBuilder.append(type);
         if (path != null && !path.isEmpty()) {
             nameBuilder.append(separator);

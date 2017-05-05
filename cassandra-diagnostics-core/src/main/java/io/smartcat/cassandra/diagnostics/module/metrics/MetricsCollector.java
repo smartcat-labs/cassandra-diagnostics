@@ -42,6 +42,8 @@ public class MetricsCollector {
 
     private static final String DEFAULT_SOCKET_FACTORY = "com.sun.jndi.rmi.factory.socket";
 
+    private static final String METRICS_PREFIX = "metrics";
+
     private final MetricsConfiguration config;
 
     private final GlobalConfiguration globalConfiguration;
@@ -131,6 +133,7 @@ public class MetricsCollector {
 
                     if (value != null) {
                         measurements.add(createMeasurement(
+                                METRICS_PREFIX + config.metricsSeparator() +
                                 mbean.getMeasurementName() + config.metricsSeparator() + attribute.getName(),
                                 Double.parseDouble(value.toString())));
                     }

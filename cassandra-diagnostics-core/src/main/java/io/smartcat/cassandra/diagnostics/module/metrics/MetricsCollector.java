@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMISocketFactory;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -123,7 +122,6 @@ public class MetricsCollector {
      */
     public List<Measurement> collectMeasurements() {
         List<Measurement> measurements = new ArrayList<Measurement>();
-        final Map<String, String> fields = new HashMap<>();
 
         for (final MetricsMBean mbean : mbeans) {
             for (final MBeanAttributeInfo attribute : mbean.getMBeanAttributes()) {
@@ -132,8 +130,9 @@ public class MetricsCollector {
                             .getAttribute(mbean.getMBean().getObjectName(), attribute.getName());
 
                     if (value != null) {
-                        fields.put(mbean.getMeasurementName() + config.metricsSeparator() + attribute.getName(),
-                                value.toString());
+                        measurements.add(createMeasurement(
+                                mbean.getMeasurementName() + config.metricsSeparator() + attribute.getName(),
+                                Double.parseDouble(value.toString())));
                     }
 
                 } catch (Exception e) {
@@ -143,14 +142,15 @@ public class MetricsCollector {
             }
         }
 
-        return Arrays.asList(createMeasurement("metrics", fields));
+        return measurements;
     }
 
-    private Measurement createMeasurement(final String service, final Map<String, String> fields) {
-        final Map<String, String> tags = new HashMap<>(1);
+    private Measurement createMeasurement(final String service, final double value) {
+        final Map<String, String> tags = new HashMap<>(2);
         tags.put("host", globalConfiguration.hostname);
         tags.put("systemName", globalConfiguration.systemName);
-        return Measurement.create(service, null, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement.create(service, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
+                new HashMap<String, String>());
     }
 
     private Set<MetricsMBean> filterMBeans(final String packageName, final Set<ObjectInstance> mbeanObjectInstances)

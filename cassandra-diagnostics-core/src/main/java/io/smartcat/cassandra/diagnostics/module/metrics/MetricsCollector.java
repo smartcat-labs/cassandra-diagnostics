@@ -42,6 +42,8 @@ public class MetricsCollector {
 
     private static final String DEFAULT_SOCKET_FACTORY = "com.sun.jndi.rmi.factory.socket";
 
+    private final String service;
+
     private final MetricsConfiguration config;
 
     private final GlobalConfiguration globalConfiguration;
@@ -49,8 +51,6 @@ public class MetricsCollector {
     private JMXConnector jmxc;
 
     private MBeanServerConnection mbeanServerConn;
-
-    private String service;
 
     private Set<MetricsMBean> mbeans = new HashSet<>();
 

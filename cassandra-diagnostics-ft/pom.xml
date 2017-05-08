@@ -12,8 +12,21 @@
 
     <properties>
         <version.cassandra.driver>2.1.10.3</version.cassandra.driver>
-        <version.plugin.docker-maven-plugin>0.15.4</version.plugin.docker-maven-plugin>
+        <version.plugin.docker-maven-plugin>0.20.1</version.plugin.docker-maven-plugin>
         <version.influxdb-java>2.5</version.influxdb-java>
+
+        <functional.test>basic</functional.test>
+        <basedir>/cassandra-diagnostics</basedir>
+        <cassandra.docker.name>cassandra:2.1.14</cassandra.docker.name>
+        <cassandra.docker.alias>cassandra-ft</cassandra.docker.alias>
+        <cassandra.docker.ports.1>+cassandra.host:cassandra.port:9042</cassandra.docker.ports.1>
+        <cassandra.docker.volumes.1>${basedir}/src/functional-test/resources/${functional.test}/cassandra-env.sh:/etc/cassandra/cassandra-env.sh</cassandra.docker.volumes.1>
+        <cassandra.docker.volumes.2>${basedir}/src/functional-test/resources/${functional.test}/cassandra-diagnostics.yml:/etc/cassandra/cassandra-diagnostics.yml</cassandra.docker.volumes.2>
+        <cassandra.docker.volumes.3>${basedir}/src/functional-test/resources:/var/log/cassandra</cassandra.docker.volumes.3>
+        <cassandra.docker.volumesFrom.1>cassandra-diagnostics-ft-basic</cassandra.docker.volumesFrom.1>
+        <cassandra.docker.wait.time>120000</cassandra.docker.wait.time>
+        <cassandra.docker.wait.log>Starting listening for CQL clients</cassandra.docker.wait.log>
+        <cassandra.docker.wait.exec.postStart>sleep 60s</cassandra.docker.wait.exec.postStart>
     </properties>
 
     <dependencies>
@@ -158,30 +171,10 @@
                                     </build>
                                 </image>
                                 <image>
-                                    <name>cassandra:2.1.14</name>
-                                    <alias>cassandra-ft</alias>
-                                    <run>
-                                        <ports>
-                                            <port>+cassandra.host:cassandra.port:9042</port>
-                                        </ports>
-                                        <volumes>
-                                            <bind>
-                                                <volume>${basedir}/src/functional-test/resources/${functional.test}/cassandra-env.sh:/etc/cassandra/cassandra-env.sh</volume>
-                                                <volume>${basedir}/src/functional-test/resources/${functional.test}/cassandra-diagnostics.yml:/etc/cassandra/cassandra-diagnostics.yml</volume>
-                                                <volume>${project.build.directory}:/var/log/cassandra</volume>
-                                            </bind>
-                                            <from>
-                                                <image>cassandra-diagnostics-ft-basic</image>
-                                            </from>
-                                        </volumes>
-                                        <wait>
-                                            <time>120000</time>
-                                            <log>Starting listening for CQL clients</log>
-                                            <exec>
-                                                <postStart>sleep 60s</postStart>
-                                            </exec>
-                                        </wait>
-                                    </run>
+                                    <external>
+                                        <type>properties</type>
+                                        <prefix>cassandra.docker</prefix>
+                                    </external>
                                 </image>
                             </images>
                         </configuration>

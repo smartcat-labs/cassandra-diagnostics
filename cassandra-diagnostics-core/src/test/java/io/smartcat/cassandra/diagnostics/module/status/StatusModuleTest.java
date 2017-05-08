@@ -21,6 +21,7 @@ import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
 import io.smartcat.cassandra.diagnostics.info.CompactionSettingsInfo;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
+import io.smartcat.cassandra.diagnostics.info.NodeInfo;
 import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
 import io.smartcat.cassandra.diagnostics.module.LatchTestReporter;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
@@ -143,10 +144,11 @@ public class StatusModuleTest {
     }
 
     @Test
-    public void should_not_report_native_transport_active_when_disabled()
+    public void should_not_report_node_info_when_disabled()
             throws ConfigurationException, InterruptedException {
         InfoProvider infoProvider = mock(InfoProvider.class);
-        when(infoProvider.getNativeTransportActive()).thenReturn(true);
+        NodeInfo nodeInfo = new NodeInfo(false, false, false, 0);
+        when(infoProvider.getNodeInfo()).thenReturn(nodeInfo);
         PowerMockito.mockStatic(DiagnosticsAgent.class);
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
 
@@ -167,10 +169,11 @@ public class StatusModuleTest {
     }
 
     @Test
-    public void should_report_native_transport_active_when_enabled()
+    public void should_report_node_info_when_enabled()
             throws ConfigurationException, InterruptedException {
         InfoProvider infoProvider = mock(InfoProvider.class);
-        when(infoProvider.getNativeTransportActive()).thenReturn(true);
+        NodeInfo nodeInfo = new NodeInfo(true, false, true, 10);
+        when(infoProvider.getNodeInfo()).thenReturn(nodeInfo);
         PowerMockito.mockStatic(DiagnosticsAgent.class);
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
 
@@ -200,7 +203,7 @@ public class StatusModuleTest {
         configuration.options.put("compactionsEnabled", compactionsEnabled);
         configuration.options.put("tpStatsEnabled", tpStatsEnabled);
         configuration.options.put("repairsEnabled", repairsEnabled);
-        configuration.options.put("nativeTransportActiveEnabled", nativeTransportActiveEnabled);
+        configuration.options.put("nodeInfoEnabled", nativeTransportActiveEnabled);
         return configuration;
     }
 

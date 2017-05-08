@@ -43,10 +43,10 @@ public interface InfoProvider {
     List<String> getUnreachableNodes();
 
     /**
-     * Get the information if the native transport is active on the node.
+     * Get the information about node such as which protocols are active and uptime.
      *
-     * @return true iff native transport is active
+     * @return NodeInfo for node
      */
-    boolean getNativeTransportActive();
+    NodeInfo getNodeInfo();
 
 }

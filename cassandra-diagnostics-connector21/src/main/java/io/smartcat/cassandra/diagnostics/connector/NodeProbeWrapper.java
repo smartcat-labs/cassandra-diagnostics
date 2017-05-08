@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
 import io.smartcat.cassandra.diagnostics.info.CompactionSettingsInfo;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
+import io.smartcat.cassandra.diagnostics.info.NodeInfo;
 import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
 
 /**
@@ -133,11 +134,14 @@ public class NodeProbeWrapper implements InfoProvider {
     }
     /**
      * Get the information if the native transport is active on the node.
+     * Get the information about node such as which protocols are active and uptime.
      *
-     * @return true iff native transport is active
+     * @return NodeInfo for the node
      */
     @Override
-    public boolean getNativeTransportActive() {
-        return this.nodeProbe.isNativeTransportRunning();
+    public NodeInfo getNodeInfo() {
+        NodeInfo nodeInfo = new NodeInfo(this.nodeProbe.isGossipRunning(), this.nodeProbe.isThriftServerRunning(),
+                this.nodeProbe.isNativeTransportRunning(), this.nodeProbe.getUptime());
+        return nodeInfo;
     }
 }

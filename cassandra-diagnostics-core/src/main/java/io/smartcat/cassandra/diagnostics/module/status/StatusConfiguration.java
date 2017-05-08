@@ -21,7 +21,7 @@ public class StatusConfiguration {
         private static final boolean DEFAULT_COMPACTIONS_ENABLED = false;
         private static final boolean DEFAULT_TPSTATS_ENABLED = false;
         private static final boolean DEFAULT_REPAIRS_ENABLED = false;
-        private static final boolean DEFAULT_NATIVE_TRANSPORT_ACTIVE_ENABLED = false;
+        private static final boolean DEFAULT_NODE_INFO_ENABLED = false;
 
         /**
          * Status reporting period.
@@ -49,9 +49,9 @@ public class StatusConfiguration {
         public boolean repairsEnabled = DEFAULT_REPAIRS_ENABLED;
 
         /**
-         * Status of native transport.
+         * Node related information.
          */
-        public boolean nativeTransportActiveEnabled = DEFAULT_NATIVE_TRANSPORT_ACTIVE_ENABLED;
+        public boolean nodeInfoEnabled = DEFAULT_NODE_INFO_ENABLED;
     }
 
     private Values values = new Values();
@@ -130,12 +130,12 @@ public class StatusConfiguration {
     }
 
     /**
-     * Status of native transport (active or not) for the node.
+     * Node information.
      *
-     * @return true iff native transport is active
+     * @return true iff node info is enabled.
      */
-    public boolean nativeTransportActiveEnabled() {
-        return values.nativeTransportActiveEnabled;
+    public boolean nodeInfoEnabled() {
+        return values.nodeInfoEnabled;
     }
 
 }

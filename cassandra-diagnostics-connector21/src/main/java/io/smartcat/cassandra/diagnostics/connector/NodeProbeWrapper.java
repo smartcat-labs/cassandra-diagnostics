@@ -132,6 +132,7 @@ public class NodeProbeWrapper implements InfoProvider {
                 nodeProbe.getCompactionManagerProxy().getMaximumValidatorThreads());
 
     }
+
     /**
      * Get the information if the native transport is active on the node.
      * Get the information about node such as which protocols are active and uptime.

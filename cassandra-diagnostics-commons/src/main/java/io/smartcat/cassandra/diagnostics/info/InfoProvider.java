@@ -29,6 +29,13 @@ public interface InfoProvider {
     long getRepairSessions();
 
     /**
+     * Get compaction settings info for specific node.
+     *
+     * @return compaction settings info
+     */
+    CompactionSettingsInfo getCompactionSettingsInfo();
+
+    /**
      * Get the list of unreachable nodes.
      * @return unreachable nodes list
      */

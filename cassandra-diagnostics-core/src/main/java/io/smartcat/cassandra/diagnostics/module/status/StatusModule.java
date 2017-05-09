@@ -15,7 +15,9 @@ import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
+import io.smartcat.cassandra.diagnostics.info.CompactionSettingsInfo;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
+import io.smartcat.cassandra.diagnostics.info.NodeInfo;
 import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
 import io.smartcat.cassandra.diagnostics.module.Module;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
@@ -32,7 +34,11 @@ public class StatusModule extends Module {
 
     private static final String DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME = "compaction_info";
 
+    private static final String DEFAULT_COMPACTION_SETTINGS_INFO_MEASUREMENT_NAME = "compaction_settings_info";
+
     private static final String DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME = "repair_sessions";
+
+    private static final String DEFAULT_NODE_INFO_MEASUREMENT_NAME = "node_info";
 
     private final int period;
 
@@ -44,6 +50,8 @@ public class StatusModule extends Module {
 
     private final boolean repairsEnabled;
 
+    private final boolean nodeInfoEnabled;
+
     private final Timer timer;
 
     private final InfoProvider infoProvider;
@@ -51,9 +59,9 @@ public class StatusModule extends Module {
     /**
      * Constructor.
      *
-     * @param configuration        Module configuration
-     * @param reporters            Reporter list
-     * @param globalConfiguration  Global diagnostics configuration
+     * @param configuration Module configuration
+     * @param reporters Reporter list
+     * @param globalConfiguration Global diagnostics configuration
      * @throws ConfigurationException configuration parsing exception
      */
     public StatusModule(ModuleConfiguration configuration, List<Reporter> reporters,
@@ -66,6 +74,7 @@ public class StatusModule extends Module {
         compactionsEnabled = config.compactionsEnabled();
         tpStatsEnabled = config.tpStatsEnabled();
         repairsEnabled = config.repairsEnabled();
+        nodeInfoEnabled = config.nodeInfoEnabled();
 
         infoProvider = DiagnosticsAgent.getInfoProvider();
         if (infoProvider == null) {
@@ -90,6 +99,7 @@ public class StatusModule extends Module {
         @Override
         public void run() {
             if (compactionsEnabled) {
+                report(createMeasurement(infoProvider.getCompactionSettingsInfo()));
                 for (CompactionInfo compactionInfo : infoProvider.getCompactions()) {
                     report(createMeasurement(compactionInfo));
                 }
@@ -100,9 +110,30 @@ public class StatusModule extends Module {
                 }
             }
             if (repairsEnabled) {
-                report(createMeasurement(infoProvider.getRepairSessions()));
+                report(createSimpleMeasurement(DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME,
+                        (double) infoProvider.getRepairSessions()));
+            }
+            if (nodeInfoEnabled) {
+                NodeInfo nodeInfo = infoProvider.getNodeInfo();
+                report(createMeasurement(nodeInfo));
             }
         }
+    }
+
+    private Measurement createMeasurement(CompactionSettingsInfo compactionSettingsInfo) {
+        final Map<String, String> tags = new HashMap<>(4);
+        tags.put("host", globalConfiguration.hostname);
+        tags.put("systemName", globalConfiguration.systemName);
+
+        final Map<String, String> fields = new HashMap<>(5);
+        fields.put("compactionThroughput", Integer.toString(compactionSettingsInfo.compactionThroughput));
+        fields.put("coreCompactorThreads", Integer.toString(compactionSettingsInfo.coreCompactorThreads));
+        fields.put("maximumCompactorThreads", Integer.toString(compactionSettingsInfo.maximumCompactorThreads));
+        fields.put("coreValidatorThreads", Integer.toString(compactionSettingsInfo.coreValidatorThreads));
+        fields.put("maximumValidatorThreads", Integer.toString(compactionSettingsInfo.maximumValidatorThreads));
+
+        return Measurement.create(DEFAULT_COMPACTION_SETTINGS_INFO_MEASUREMENT_NAME, null, System.currentTimeMillis(),
+                TimeUnit.MILLISECONDS, tags, fields);
     }
 
     private Measurement createMeasurement(CompactionInfo compactionInfo) {
@@ -136,20 +167,33 @@ public class StatusModule extends Module {
         fields.put("currentlyBlockedTasks", Long.toString(tpStatsInfo.currentlyBlockedTasks));
         fields.put("totalBlockedTasks", Long.toString(tpStatsInfo.totalBlockedTasks));
 
-        return Measurement
-                .create(tpStatsInfo.threadPool, null, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement.create(tpStatsInfo.threadPool, null, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
+                fields);
     }
 
-    private Measurement createMeasurement(long repairSessions) {
+    private Measurement createSimpleMeasurement(String name, double value) {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", globalConfiguration.hostname);
         tags.put("systemName", globalConfiguration.systemName);
 
         final Map<String, String> fields = new HashMap<>();
 
-        return Measurement
-                .create(DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME, (double) repairSessions, System.currentTimeMillis(),
-                        TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement.create(name, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+    }
+
+    private Measurement createMeasurement(NodeInfo nodeInfo) {
+        final Map<String, String> tags = new HashMap<>(1);
+        tags.put("host", globalConfiguration.hostname);
+        tags.put("systemName", globalConfiguration.systemName);
+
+        final Map<String, String> fields = new HashMap<>(5);
+        fields.put("gossipActive", Integer.toString(nodeInfo.isGossipActive()));
+        fields.put("thriftActive", Integer.toString(nodeInfo.isThriftActive()));
+        fields.put("nativeTransportActive", Integer.toString(nodeInfo.isNativeTransportActive()));
+        fields.put("uptimeInSeconds", Long.toString(nodeInfo.uptimeInSeconds));
+
+        return Measurement.create(DEFAULT_NODE_INFO_MEASUREMENT_NAME, null, System.currentTimeMillis(),
+                TimeUnit.MILLISECONDS, tags, fields);
     }
 
 }

@@ -121,6 +121,7 @@ Status module is used to report Cassandra information exposed over JMX. It repor
 Compaction info measurement name is by default `compaction_info`.
 Thread pool info measurement name is by default `tpstats_info`.
 Repair info measurement name is by default `repair_info`.
+Measurement with information about node status (such as which protocols are enabled, or node's uptime) is by default named `node_info`
 Reporting period is by default 1 minute and more frequent updates should be considered heavy on the node.
 
 ```
@@ -131,6 +132,7 @@ Reporting period is by default 1 minute and more frequent updates should be cons
     compactionsEnabled: false #optional
     tpStatsEnabled: false #optional
     repairsEnabled: false #optional
+    nodeInfoEnabled: false #optional
   reporters:
     - io.smartcat.cassandra.diagnostics.reporter.LogReporter
 ```

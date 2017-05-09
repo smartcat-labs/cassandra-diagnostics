@@ -21,6 +21,7 @@ public class StatusConfiguration {
         private static final boolean DEFAULT_COMPACTIONS_ENABLED = false;
         private static final boolean DEFAULT_TPSTATS_ENABLED = false;
         private static final boolean DEFAULT_REPAIRS_ENABLED = false;
+        private static final boolean DEFAULT_NODE_INFO_ENABLED = false;
 
         /**
          * Status reporting period.
@@ -46,6 +47,11 @@ public class StatusConfiguration {
          * Status of repairs.
          */
         public boolean repairsEnabled = DEFAULT_REPAIRS_ENABLED;
+
+        /**
+         * Node related information.
+         */
+        public boolean nodeInfoEnabled = DEFAULT_NODE_INFO_ENABLED;
     }
 
     private Values values = new Values();
@@ -121,6 +127,15 @@ public class StatusConfiguration {
      */
     public boolean repairsEnabled() {
         return values.repairsEnabled;
+    }
+
+    /**
+     * Node information.
+     *
+     * @return true iff node info is enabled.
+     */
+    public boolean nodeInfoEnabled() {
+        return values.nodeInfoEnabled;
     }
 
 }

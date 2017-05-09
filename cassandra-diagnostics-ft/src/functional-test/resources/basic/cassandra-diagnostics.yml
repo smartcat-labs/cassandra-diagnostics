@@ -37,6 +37,7 @@ modules:
       compactionsEnabled: true
       tpStatsEnabled: true
       repairsEnabled: true
+      nodeInfoEnabled: true
     reporters:
       - io.smartcat.cassandra.diagnostics.reporter.LogReporter
   - module: io.smartcat.cassandra.diagnostics.module.health.ClusterHealthModule

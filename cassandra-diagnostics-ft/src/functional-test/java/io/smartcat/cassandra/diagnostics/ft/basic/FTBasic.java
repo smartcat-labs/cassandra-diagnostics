@@ -81,7 +81,7 @@ public class FTBasic {
         boolean heartbeatFound = false;
         boolean requestRateFound = false;
         boolean repairSessionsFound = false;
-        boolean compactionInfoFound = false;
+        boolean compactionSettingsInfoFound = false;
         boolean numberOfUnreachableNodesFound = false;
         while ((line = reader.readLine()) != null) {
             if (line.matches(".* QUERYREPORT_COUNT.*")) {
@@ -104,8 +104,8 @@ public class FTBasic {
                 repairSessionsFound = true;
                 continue;
             }
-            if (line.matches(".* COMPACTION_INFO.*")) {
-                compactionInfoFound = true;
+            if (line.matches(".* COMPACTION_SETTINGS_INFO.*")) {
+                compactionSettingsInfoFound = true;
                 continue;
             }
             if (line.matches(".* NUMBER_OF_UNREACHABLE_NODES.*")) {
@@ -120,7 +120,7 @@ public class FTBasic {
         Assertions.assertThat(heartbeatFound).isTrue();
         Assertions.assertThat(requestRateFound).isTrue();
         Assertions.assertThat(repairSessionsFound).isTrue();
-        // TODO: fix compaction info for 2.1 Assertions.assertThat(compactionInfoFound).isTrue();
+        Assertions.assertThat(compactionSettingsInfoFound).isTrue();
         Assertions.assertThat(numberOfUnreachableNodesFound).isTrue();
     }
 

@@ -19,6 +19,7 @@ import io.smartcat.cassandra.diagnostics.DiagnosticsAgent;
 import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
+import io.smartcat.cassandra.diagnostics.info.CompactionSettingsInfo;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
 import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
 import io.smartcat.cassandra.diagnostics.module.LatchTestReporter;
@@ -37,6 +38,7 @@ public class StatusModuleTest {
     public void should_load_default_configuration_and_initialize() throws ConfigurationException {
         InfoProvider infoProvider = mock(InfoProvider.class);
         when(infoProvider.getCompactions()).thenReturn(new ArrayList<CompactionInfo>());
+        when(infoProvider.getCompactionSettingsInfo()).thenReturn(getCompactionSettingsInfo());
         PowerMockito.mockStatic(DiagnosticsAgent.class);
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
 
@@ -51,10 +53,11 @@ public class StatusModuleTest {
     public void should_report_compaction_info_when_started() throws ConfigurationException, InterruptedException {
         InfoProvider infoProvider = mock(InfoProvider.class);
         when(infoProvider.getCompactions()).thenReturn(getCompactions());
+        when(infoProvider.getCompactionSettingsInfo()).thenReturn(getCompactionSettingsInfo());
         PowerMockito.mockStatic(DiagnosticsAgent.class);
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
 
-        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch latch = new CountDownLatch(2);
         final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {
@@ -67,7 +70,7 @@ public class StatusModuleTest {
         boolean wait = latch.await(1000, TimeUnit.MILLISECONDS);
         module.stop();
         assertThat(wait).isTrue();
-        assertThat(testReporter.getReported().size()).isEqualTo(1);
+        assertThat(testReporter.getReported().size()).isEqualTo(2);
     }
 
     @Test
@@ -168,6 +171,10 @@ public class StatusModuleTest {
                 add(compactionInfo);
             }
         };
+    }
+
+    private CompactionSettingsInfo getCompactionSettingsInfo() {
+        return new CompactionSettingsInfo(16, 1, 1, 1, 1);
     }
 
     private List<TPStatsInfo> getTPStats() {

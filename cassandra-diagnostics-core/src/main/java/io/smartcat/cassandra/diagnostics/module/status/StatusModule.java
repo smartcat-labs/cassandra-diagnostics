@@ -15,6 +15,7 @@ import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
+import io.smartcat.cassandra.diagnostics.info.CompactionSettingsInfo;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
 import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
 import io.smartcat.cassandra.diagnostics.module.Module;
@@ -31,6 +32,8 @@ public class StatusModule extends Module {
     private static final String STATUS_THREAD_NAME = "status-module";
 
     private static final String DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME = "compaction_info";
+
+    private static final String DEFAULT_COMPACTION_SETTINGS_INFO_MEASUREMENT_NAME = "compaction_settings_info";
 
     private static final String DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME = "repair_sessions";
 
@@ -90,6 +93,7 @@ public class StatusModule extends Module {
         @Override
         public void run() {
             if (compactionsEnabled) {
+                report(createMeasurement(infoProvider.getCompactionSettingsInfo()));
                 for (CompactionInfo compactionInfo : infoProvider.getCompactions()) {
                     report(createMeasurement(compactionInfo));
                 }
@@ -103,6 +107,22 @@ public class StatusModule extends Module {
                 report(createMeasurement(infoProvider.getRepairSessions()));
             }
         }
+    }
+
+    private Measurement createMeasurement(CompactionSettingsInfo compactionSettingsInfo) {
+        final Map<String, String> tags = new HashMap<>(4);
+        tags.put("host", globalConfiguration.hostname);
+        tags.put("systemName", globalConfiguration.systemName);
+
+        final Map<String, String> fields = new HashMap<>(5);
+        fields.put("compactionThroughput", Integer.toString(compactionSettingsInfo.compactionThroughput));
+        fields.put("coreCompactorThreads", Integer.toString(compactionSettingsInfo.coreCompactorThreads));
+        fields.put("maximumCompactorThreads", Integer.toString(compactionSettingsInfo.maximumCompactorThreads));
+        fields.put("coreValidatorThreads", Integer.toString(compactionSettingsInfo.coreValidatorThreads));
+        fields.put("maximumValidatorThreads", Integer.toString(compactionSettingsInfo.maximumValidatorThreads));
+
+        return Measurement.create(DEFAULT_COMPACTION_SETTINGS_INFO_MEASUREMENT_NAME, null, System.currentTimeMillis(),
+                TimeUnit.MILLISECONDS, tags, fields);
     }
 
     private Measurement createMeasurement(CompactionInfo compactionInfo) {

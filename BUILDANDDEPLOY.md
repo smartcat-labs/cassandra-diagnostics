@@ -15,21 +15,22 @@ In Cassandra Diagnostics projects, integration and functional tests kept separat
 The `integration-test` profile has to be activated in order to execute integration tests (quite unexpected, right?). This profile is executed by `maven-failsafe-plugin` in maven `verify` phase. The maven command to execute integration tests:
 
 ```
-$ mvn verify -P integration-test
+$ mvn clean verify -P integration-test
 ```
 
-The `functional-test` profile has to be activated in order to execute functional tests in the `verify` maven phase. The maven command line for this:
+The `functional-test` profile has to be activated in order to execute functional tests in the `verify` maven phase. Along with `functional-test` profile, name of the particular functional test should also be provided as a profile. Available functional test are: 
+
+- `basic-ft`
+- `tracing-ft`
+- `influx`
+- `riemann`
+- `telegraf`
+
+The maven command for running functional tests is `mvn clean verify -P functional-test,[NAME_OF_THE_FUNCTIONAL_TEST]`. For example to run tests from `basic-ft` profile following command should be run:
 
 ```
-$ mvn verify -P functional-test
+$ mvn clean verify -P functional-test,basic-ft
 ```
-
-`functional-test` activates by default the basic functional test (`basic` profile). Another available functional tests could be activated by specifying the respective maven profile (from `cassandra-diagnostics-ft.pom`) explicitly. For example:
-
-```
-$ mvn verify -P functional-test,influx
-```  
-
 
 ## Releasing
 

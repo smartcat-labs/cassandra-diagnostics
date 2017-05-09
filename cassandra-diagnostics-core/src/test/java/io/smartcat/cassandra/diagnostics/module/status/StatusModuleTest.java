@@ -21,6 +21,7 @@ import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
 import io.smartcat.cassandra.diagnostics.info.CompactionSettingsInfo;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
+import io.smartcat.cassandra.diagnostics.info.NodeInfo;
 import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
 import io.smartcat.cassandra.diagnostics.module.LatchTestReporter;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
@@ -42,7 +43,7 @@ public class StatusModuleTest {
         PowerMockito.mockStatic(DiagnosticsAgent.class);
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
 
-        final StatusModule module = new StatusModule(testConfiguration(1, true, true, true), testReporters(),
+        final StatusModule module = new StatusModule(testConfiguration(1, true, true, true, true), testReporters(),
                 GlobalConfiguration.getDefault());
         module.stop();
 
@@ -65,7 +66,7 @@ public class StatusModuleTest {
             }
         };
 
-        final StatusModule module = new StatusModule(testConfiguration(1, true, false, false), reporters,
+        final StatusModule module = new StatusModule(testConfiguration(1, true, false, false, false), reporters,
                 GlobalConfiguration.getDefault());
         boolean wait = latch.await(1000, TimeUnit.MILLISECONDS);
         module.stop();
@@ -88,7 +89,7 @@ public class StatusModuleTest {
             }
         };
 
-        final StatusModule module = new StatusModule(testConfiguration(1, false, true, false), reporters,
+        final StatusModule module = new StatusModule(testConfiguration(1, false, true, false, false), reporters,
                 GlobalConfiguration.getDefault());
         boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
         module.stop();
@@ -111,7 +112,7 @@ public class StatusModuleTest {
             }
         };
 
-        final StatusModule module = new StatusModule(testConfiguration(1, false, false, true), reporters,
+        final StatusModule module = new StatusModule(testConfiguration(1, false, false, true, false), reporters,
                 GlobalConfiguration.getDefault());
         boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
         module.stop();
@@ -134,7 +135,7 @@ public class StatusModuleTest {
             }
         };
 
-        final StatusModule module = new StatusModule(testConfiguration(1, false, false, false), reporters,
+        final StatusModule module = new StatusModule(testConfiguration(1, false, false, false, false), reporters,
                 GlobalConfiguration.getDefault());
         boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
         module.stop();
@@ -142,8 +143,58 @@ public class StatusModuleTest {
         assertThat(testReporter.getReported().size()).isEqualTo(0);
     }
 
+    @Test
+    public void should_not_report_node_info_when_disabled()
+            throws ConfigurationException, InterruptedException {
+        InfoProvider infoProvider = mock(InfoProvider.class);
+        NodeInfo nodeInfo = new NodeInfo(false, false, false, 0);
+        when(infoProvider.getNodeInfo()).thenReturn(nodeInfo);
+        PowerMockito.mockStatic(DiagnosticsAgent.class);
+        PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
+        final List<Reporter> reporters = new ArrayList<Reporter>() {
+            {
+                add(testReporter);
+            }
+        };
+
+        final StatusModule module = new StatusModule(testConfiguration(1, false, false, false, false), reporters,
+                GlobalConfiguration.getDefault());
+        boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
+        module.stop();
+        assertThat(wait).isFalse();
+        assertThat(testReporter.getReported().size()).isEqualTo(0);
+    }
+
+    @Test
+    public void should_report_node_info_when_enabled()
+            throws ConfigurationException, InterruptedException {
+        InfoProvider infoProvider = mock(InfoProvider.class);
+        NodeInfo nodeInfo = new NodeInfo(true, false, true, 10);
+        when(infoProvider.getNodeInfo()).thenReturn(nodeInfo);
+        PowerMockito.mockStatic(DiagnosticsAgent.class);
+        PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
+        final List<Reporter> reporters = new ArrayList<Reporter>() {
+            {
+                add(testReporter);
+            }
+        };
+
+        final StatusModule module = new StatusModule(testConfiguration(1, false, false, false, true), reporters,
+                GlobalConfiguration.getDefault());
+        boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
+        module.stop();
+        assertThat(wait).isTrue();
+        assertThat(testReporter.getReported().size()).isEqualTo(1);
+    }
+
     private ModuleConfiguration testConfiguration(final int period, final boolean compactionsEnabled,
-            final boolean tpStatsEnabled, final boolean repairsEnabled) {
+            final boolean tpStatsEnabled, final boolean repairsEnabled, final boolean nodeInfoEnabled) {
         final ModuleConfiguration configuration = new ModuleConfiguration();
         configuration.measurement = "test_measurement";
         configuration.module = "io.smartcat.cassandra.diagnostics.module.status.StatusModule";
@@ -152,6 +203,7 @@ public class StatusModuleTest {
         configuration.options.put("compactionsEnabled", compactionsEnabled);
         configuration.options.put("tpStatsEnabled", tpStatsEnabled);
         configuration.options.put("repairsEnabled", repairsEnabled);
+        configuration.options.put("nodeInfoEnabled", nodeInfoEnabled);
         return configuration;
     }
 

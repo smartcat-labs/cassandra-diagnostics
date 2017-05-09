@@ -11,21 +11,16 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.cassandra.cql3.CQLStatement;
 import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.cassandra.utils.MD5Digest;
 import org.apache.thrift.transport.TTransportException;
 import org.assertj.core.api.Assertions;
-import org.junit.BeforeClass;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 
 import io.netty.util.internal.SystemPropertyUtil;
@@ -83,6 +78,7 @@ public class FTBasic {
         boolean repairSessionsFound = false;
         boolean compactionSettingsInfoFound = false;
         boolean numberOfUnreachableNodesFound = false;
+        boolean nodeInfoFound = false;
         while ((line = reader.readLine()) != null) {
             if (line.matches(".* QUERYREPORT_COUNT.*")) {
                 queryCountFound = true;
@@ -112,6 +108,10 @@ public class FTBasic {
                 numberOfUnreachableNodesFound = true;
                 continue;
             }
+            if (line.matches(".* NODE_INFO.*")) {
+                nodeInfoFound = true;
+                continue;
+            }
         }
         reader.close();
 
@@ -122,6 +122,7 @@ public class FTBasic {
         Assertions.assertThat(repairSessionsFound).isTrue();
         Assertions.assertThat(compactionSettingsInfoFound).isTrue();
         Assertions.assertThat(numberOfUnreachableNodesFound).isTrue();
+        Assertions.assertThat(nodeInfoFound).isTrue();
     }
 
     public void verifyLogFileIsChanged() throws Exception {

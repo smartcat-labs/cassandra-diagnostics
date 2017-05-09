@@ -187,9 +187,9 @@ public class StatusModule extends Module {
         tags.put("systemName", globalConfiguration.systemName);
 
         final Map<String, String> fields = new HashMap<>(5);
-        fields.put("gossipActive", Boolean.toString(nodeInfo.gossipActive));
-        fields.put("thriftActive", Boolean.toString(nodeInfo.thriftActive));
-        fields.put("nativeTransportActive", Boolean.toString(nodeInfo.nativeTransportActive));
+        fields.put("gossipActive", Integer.toString(nodeInfo.isGossipActive()));
+        fields.put("thriftActive", Integer.toString(nodeInfo.isThriftActive()));
+        fields.put("nativeTransportActive", Integer.toString(nodeInfo.isNativeTransportActive()));
         fields.put("uptimeInSeconds", Long.toString(nodeInfo.uptimeInSeconds));
 
         return Measurement.create(DEFAULT_NODE_INFO_MEASUREMENT_NAME, null, System.currentTimeMillis(),

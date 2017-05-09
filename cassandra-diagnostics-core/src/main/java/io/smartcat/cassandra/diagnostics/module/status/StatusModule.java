@@ -50,7 +50,7 @@ public class StatusModule extends Module {
 
     private final boolean repairsEnabled;
 
-    private final boolean nativeTransportActiveEnabled;
+    private final boolean nodeInfoEnabled;
 
     private final Timer timer;
 
@@ -74,7 +74,7 @@ public class StatusModule extends Module {
         compactionsEnabled = config.compactionsEnabled();
         tpStatsEnabled = config.tpStatsEnabled();
         repairsEnabled = config.repairsEnabled();
-        nativeTransportActiveEnabled = config.nodeInfoEnabled();
+        nodeInfoEnabled = config.nodeInfoEnabled();
 
         infoProvider = DiagnosticsAgent.getInfoProvider();
         if (infoProvider == null) {
@@ -113,7 +113,7 @@ public class StatusModule extends Module {
                 report(createSimpleMeasurement(DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME,
                         (double) infoProvider.getRepairSessions()));
             }
-            if (nativeTransportActiveEnabled) {
+            if (nodeInfoEnabled) {
                 NodeInfo nodeInfo = infoProvider.getNodeInfo();
                 report(createMeasurement(nodeInfo));
             }

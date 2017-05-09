@@ -194,7 +194,7 @@ public class StatusModuleTest {
     }
 
     private ModuleConfiguration testConfiguration(final int period, final boolean compactionsEnabled,
-            final boolean tpStatsEnabled, final boolean repairsEnabled, final boolean nativeTransportActiveEnabled) {
+            final boolean tpStatsEnabled, final boolean repairsEnabled, final boolean nodeInfoEnabled) {
         final ModuleConfiguration configuration = new ModuleConfiguration();
         configuration.measurement = "test_measurement";
         configuration.module = "io.smartcat.cassandra.diagnostics.module.status.StatusModule";
@@ -203,7 +203,7 @@ public class StatusModuleTest {
         configuration.options.put("compactionsEnabled", compactionsEnabled);
         configuration.options.put("tpStatsEnabled", tpStatsEnabled);
         configuration.options.put("repairsEnabled", repairsEnabled);
-        configuration.options.put("nodeInfoEnabled", nativeTransportActiveEnabled);
+        configuration.options.put("nodeInfoEnabled", nodeInfoEnabled);
         return configuration;
     }
 

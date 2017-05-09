@@ -57,7 +57,7 @@ public class StatusModuleTest {
         PowerMockito.mockStatic(DiagnosticsAgent.class);
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
 
-        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch latch = new CountDownLatch(2);
         final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
         final List<Reporter> reporters = new ArrayList<Reporter>() {
             {

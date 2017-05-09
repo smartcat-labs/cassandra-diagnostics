@@ -9,6 +9,7 @@ public class NodeInfo {
      * Information about status of the gossip (active or not).
      */
     public final boolean gossipActive;
+
     /**
      * Information about status of the thrift (active or not).
      */
@@ -36,6 +37,33 @@ public class NodeInfo {
         this.thriftActive = thriftActive;
         this.nativeTransportActive = nativeTransportActive;
         this.uptimeInSeconds = uptimeInSeconds;
+    }
+
+    /**
+     * Return info about Gossip protocol.
+     *
+     * @return 1 in case gossip is active, 0 otherwise.
+     */
+    public int isGossipActive() {
+        return gossipActive ? 1 : 0;
+    }
+
+    /**
+     * Return info about Thrift protocol.
+     *
+     * @return 1 in case thrift is active, 0 otherwise.
+     */
+    public int isThriftActive() {
+        return thriftActive ? 1 : 0;
+    }
+
+    /**
+     * Return info about native transport protocol.
+     *
+     * @return 1 in case native transport is active, 0 otherwise.
+     */
+    public int isNativeTransportActive() {
+        return nativeTransportActive ? 1 : 0;
     }
 
 }

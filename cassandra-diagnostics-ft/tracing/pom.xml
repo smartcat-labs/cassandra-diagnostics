@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.smartcat</groupId>
         <artifactId>cassandra-diagnostics-ft</artifactId>
-        <version>1.4.5-SNAPSHOT</version>
+        <version>1.4.6-SNAPSHOT</version>
     </parent>
     <artifactId>cassandra-diagnostics-ft-tracing</artifactId>
     <description>Cassandra Diagnostics functional test for query tracing feature</description>

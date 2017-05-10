@@ -21,13 +21,13 @@
         <module>cassandra-diagnostics-embedded-cassandra</module>
         <module>cassandra-diagnostics-connector21</module>
         <module>cassandra-diagnostics-connector30</module>
-        <module>cassandra-diagnostics-ft</module>
         <module>cassandra-diagnostics-driver-connector</module>
         <module>cassandra-diagnostics-reporter-influx</module>
         <module>cassandra-diagnostics-reporter-riemann</module>
         <module>cassandra-diagnostics-reporter-telegraf</module>
         <module>cassandra-diagnostics-reporter-kafka</module>
         <module>cassandra-diagnostics-reporter-datadog</module>
+        <module>cassandra-diagnostics-ft</module>        
     </modules>
 
     <licenses>
@@ -399,6 +399,7 @@
                         <version>${version.plugin.checkstyle}</version>
                         <executions>
                             <execution>
+                                <id>checkstyle-check</id>
                                 <phase>validate</phase>
                                 <goals>
                                     <goal>check</goal>

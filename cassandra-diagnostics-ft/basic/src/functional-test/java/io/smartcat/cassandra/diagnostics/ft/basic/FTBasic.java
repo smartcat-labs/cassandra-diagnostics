@@ -11,21 +11,16 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.cassandra.cql3.CQLStatement;
 import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.cassandra.utils.MD5Digest;
 import org.apache.thrift.transport.TTransportException;
 import org.assertj.core.api.Assertions;
-import org.junit.BeforeClass;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 
 import io.netty.util.internal.SystemPropertyUtil;
@@ -81,8 +76,9 @@ public class FTBasic {
         boolean heartbeatFound = false;
         boolean requestRateFound = false;
         boolean repairSessionsFound = false;
-        boolean compactionInfoFound = false;
+        boolean compactionSettingsInfoFound = false;
         boolean numberOfUnreachableNodesFound = false;
+        boolean nodeInfoFound = false;
         while ((line = reader.readLine()) != null) {
             if (line.matches(".* QUERYREPORT_COUNT.*")) {
                 queryCountFound = true;
@@ -104,12 +100,16 @@ public class FTBasic {
                 repairSessionsFound = true;
                 continue;
             }
-            if (line.matches(".* COMPACTION_INFO.*")) {
-                compactionInfoFound = true;
+            if (line.matches(".* COMPACTION_SETTINGS_INFO.*")) {
+                compactionSettingsInfoFound = true;
                 continue;
             }
             if (line.matches(".* NUMBER_OF_UNREACHABLE_NODES.*")) {
                 numberOfUnreachableNodesFound = true;
+                continue;
+            }
+            if (line.matches(".* NODE_INFO.*")) {
+                nodeInfoFound = true;
                 continue;
             }
         }
@@ -120,8 +120,9 @@ public class FTBasic {
         Assertions.assertThat(heartbeatFound).isTrue();
         Assertions.assertThat(requestRateFound).isTrue();
         Assertions.assertThat(repairSessionsFound).isTrue();
-        // TODO: fix compaction info for 2.1 Assertions.assertThat(compactionInfoFound).isTrue();
+        Assertions.assertThat(compactionSettingsInfoFound).isTrue();
         Assertions.assertThat(numberOfUnreachableNodesFound).isTrue();
+        Assertions.assertThat(nodeInfoFound).isTrue();
     }
 
     public void verifyLogFileIsChanged() throws Exception {

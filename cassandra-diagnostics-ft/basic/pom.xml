@@ -22,7 +22,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                    </plugin>                                                     
+                    </plugin>
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
@@ -72,15 +72,12 @@
                                         <wait>
                                             <time>120000</time>
                                             <log>Starting listening for CQL clients</log>
-                                            <exec>
-                                                <postStart>sleep 60s</postStart>
-                                            </exec>
                                         </wait>
                                     </run>
                                 </image>
                             </images>
                         </configuration>
-                    </plugin>                    
+                    </plugin>
                 </plugins>
             </build>
         </profile>

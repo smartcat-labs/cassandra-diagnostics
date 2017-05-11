@@ -123,9 +123,6 @@
                                         <wait>
                                             <time>120000</time>
                                             <log>Starting listening for CQL clients</log>
-                                            <exec>
-                                                <postStart>sleep 60s</postStart>
-                                            </exec>
                                         </wait>
                                     </run>
                                 </image>

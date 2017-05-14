@@ -1,0 +1,19 @@
+reporters:
+  - reporter: io.smartcat.cassandra.diagnostics.reporter.LogReporter
+
+modules:
+  - module: io.smartcat.cassandra.diagnostics.module.metrics.MetricsModule
+    measurement: metrics
+    options:
+      period: 1
+      timeunit: SECONDS
+      metricsPatterns:
+        - "^org.apache.cassandra.metrics.Cache.+"
+        - "^org.apache.cassandra.metrics.Keyspace.rts.+"
+        - "^org.apache.cassandra.metrics.ThreadPools.+"
+        - "^org.apache.cassandra.metrics.Compaction.+"
+        - "^org.apache.cassandra.metrics.CommitLog.TotalCommitLogSize"
+        - "^org.apache.cassandra.metrics.DroppedMessage.+"
+        - "^org.apache.cassandra.metrics.Client.+"
+    reporters:
+      - io.smartcat.cassandra.diagnostics.reporter.LogReporter

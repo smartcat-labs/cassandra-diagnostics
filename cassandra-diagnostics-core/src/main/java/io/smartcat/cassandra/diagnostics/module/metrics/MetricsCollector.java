@@ -131,14 +131,16 @@ public class MetricsCollector {
         for (final MetricsMBean mbean : mbeans) {
             for (final MBeanAttributeInfo attribute : mbean.getMBeanAttributes()) {
                 try {
-                    final Object value = mbeanServerConn
-                            .getAttribute(mbean.getMBean().getObjectName(), attribute.getName());
+                    final ObjectName mbeanObjectName = mbean.getMBean().getObjectName();
+                    if (mbeanServerConn.isRegistered(mbeanObjectName)) {
+                        final Object value = mbeanServerConn.getAttribute(mbeanObjectName, attribute.getName());
 
-                    if (value != null) {
-                        measurements.add(createMeasurement(
-                                service + config.metricsSeparator() + mbean.getMeasurementName()
-                                + config.metricsSeparator() + attribute.getName(),
-                                Double.parseDouble(value.toString())));
+                        if (value != null) {
+                            measurements.add(createMeasurement(
+                                    service + config.metricsSeparator() + mbean.getMeasurementName()
+                                            + config.metricsSeparator() + attribute.getName(),
+                                    Double.parseDouble(value.toString())));
+                        }
                     }
 
                 } catch (Exception e) {

@@ -84,6 +84,7 @@
         <module>riemann</module>
         <module>telegraf</module>
         <module>tracing</module>
+        <module>metrics</module>
     </modules>
 
     <profiles>

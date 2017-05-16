@@ -1,4 +1,4 @@
-package io.smartcat.cassandra.diagnostics.ft.basic;
+package io.smartcat.cassandra.diagnostics.ft.basic2;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -25,7 +25,7 @@ import com.datastax.driver.core.Session;
 
 import io.netty.util.internal.SystemPropertyUtil;
 
-public class FTBasic {
+public class FTBasic2 {
 
     private static final String SELECT_QUERY = "SELECT * FROM test_keyspace.test_table";
     private static final String CASSANDRA_LOG = "system.log";

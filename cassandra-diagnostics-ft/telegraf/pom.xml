@@ -10,6 +10,14 @@
     <description>Cassandra Diagnostics functional test for Telegraf integration</description>
     <packaging>jar</packaging>
 
+    <dependencies>
+        <dependency>
+            <groupId>io.smartcat</groupId>
+            <artifactId>cassandra-diagnostics-connector30</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+    </dependencies>
+
     <profiles>
         <profile>
             <id>telegraf-ft</id>
@@ -44,7 +52,7 @@
                                                     <dependencySet>
                                                         <outputFileNameMapping>cassandra-diagnostics-connector.jar</outputFileNameMapping>
                                                         <includes>
-                                                            <include>io.smartcat:cassandra-diagnostics-connector21:*</include>
+                                                            <include>io.smartcat:cassandra-diagnostics-connector30:*</include>
                                                         </includes>
                                                     </dependencySet>
                                                     <dependencySet>
@@ -101,7 +109,7 @@
                                     </run>
                                 </image>
                                 <image>
-                                    <name>cassandra:2.1.14</name>
+                                    <name>cassandra:3.0.13</name>
                                     <alias>cassandra-ft</alias>
                                     <run>
                                         <ports>

@@ -11,8 +11,8 @@
     <packaging>pom</packaging>
 
     <properties>
-        <version.cassandra.driver>2.1.10.3</version.cassandra.driver>
-        <version.plugin.docker-maven-plugin>0.15.4</version.plugin.docker-maven-plugin>
+        <version.cassandra.driver>3.2.0</version.cassandra.driver>
+        <version.plugin.docker-maven-plugin>0.20.1</version.plugin.docker-maven-plugin>
         <version.influxdb-java>2.5</version.influxdb-java>
         <basedir>/cassandra-diagnostics</basedir>
     </properties>
@@ -21,11 +21,6 @@
         <dependency>
             <groupId>io.smartcat</groupId>
             <artifactId>cassandra-diagnostics-core</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.smartcat</groupId>
-            <artifactId>cassandra-diagnostics-connector21</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
@@ -79,7 +74,8 @@
     </dependencies>
 
     <modules>
-        <module>basic</module>
+        <module>basic2</module>
+        <module>basic3</module>
         <module>influx</module>
         <module>riemann</module>
         <module>telegraf</module>

@@ -6,13 +6,21 @@
         <artifactId>cassandra-diagnostics-ft</artifactId>
         <version>1.4.6-SNAPSHOT</version>
     </parent>
-    <artifactId>cassandra-diagnostics-ft-basic</artifactId>
-    <description>Cassandra Diagnostics basic functional test</description>
+    <artifactId>cassandra-diagnostics-ft-basic-2</artifactId>
+    <description>Cassandra Diagnostics basic functional test for 2.x version</description>
     <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.smartcat</groupId>
+            <artifactId>cassandra-diagnostics-connector21</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+    </dependencies>
 
     <profiles>
         <profile>
-            <id>basic-ft</id>
+            <id>basic2-ft</id>
             <build>
                 <plugins>
                     <plugin>

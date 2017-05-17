@@ -23,7 +23,11 @@ Requirements for building installer script:
 
 # Usage
 
-Current implementation is non-interactive, and supports following input switches:
+First checkout _**bash-installer**_ and put it on Cassandra node where you want to install Cassandra diagnostics.
+
+Prepare _**cassandra-diagnostics.yml**_ (most basic configuration file can be seen on this [link](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-core/src/main/resources/cassandra-diagnostics-default.yml) and some examples are in [core module readme](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-core/COREMODULES.md).
+
+Run _**cassandra-diagnostics-installer.sh**_ shell script with following switches:
 
 * _-c, --cassandra-conf-dir_               - location of Cassandra configuration directory
 * _-l, --cassandra-lib-dir_                - location of Cassandra library directory
@@ -32,9 +36,11 @@ Current implementation is non-interactive, and supports following input switches
 * _-C, --cassandra-diagnostics-conf-file_  - location of cassandra-diagnostics configuration (YAML) file
 * _-h, --help_                             - show help message
 
-All parameters except "-h, --help" are mandatory. 
+All parameters except "-h, --help" are mandatory.
 
 When invoked with all of mandatory parameters, installer will extract itself to _**/tmp/cassandra-diagnostics-installer.XXXXXX**_ (XXXXXX is random alphanumeric string), and execute _**main.sh**_ script, which will carry on the installation.
+
+Here is example of command _**sudo ./cassandra-diagnostics-installer.sh -c /etc/cassandra/ -l /usr/share/cassandra/lib/ -v 3.0.12 -V 1.4.6 -C ./cassandra-diagnostics.yml**_.
 
 # Building self-extracting installer script
 

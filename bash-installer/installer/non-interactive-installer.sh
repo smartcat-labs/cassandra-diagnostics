@@ -68,6 +68,9 @@ remove_installed_cassandra_diagnostics_libraries
 print_info "Moving cassandra-diagnostics libraries to $CASSANDRA_LIB_DIR..."
 move_diagnostics_libraries_to_lib_dir
 
+print_info "Copying cassandra-diagnostics configuration file to $CASSANDRA_CONF_DIR"
+copy_diagnostics_configuration_to_conf_dir
+
 find_and_remove_diagnostics_configuration_from_cassandra_env
 
 print_info "Appending cassandra-diagnostics configuration to $CASSANDRA_ENV_SCRIPT_NAME."

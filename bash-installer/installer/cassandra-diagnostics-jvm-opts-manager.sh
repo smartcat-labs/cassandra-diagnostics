@@ -4,11 +4,12 @@
 
 DIAGNOSTICS_JVM_OPTIONS_HEADER="### Begin cassandra-diagnostics-installer managed configuration. DO NOT EDIT! ###"
 DIAGNOSTICS_JVM_OPTIONS_FOOTER="#### End cassandra-diagnostics-installer managed configuration. DO NOT EDIT! ####"
-DIAGNOSTICS_JVM_OPTIONS_YAML_OPTION="JVM_OPTS=\"\$JVM_OPTS -Dcassandra.diagnostics.config="$(absolute_path_of "$CASSANDRA_DIAGNOSTICS_CONF_FILE")"\""
+DIAGNOSTICS_JVM_OPTIONS_YAML_OPTION="JVM_OPTS=\"\$JVM_OPTS -Dcassandra.diagnostics.config=$COPY_OF_CASSANDRA_DIAGNOSTICS_CONF_FILE_IN_CONF_DIR\""
 DIAGNOSTICS_JVM_OPTIONS_AGENT_OPTION="JVM_OPTS=\"\$JVM_OPTS -javaagent:"$(absolute_path_of "$CASSANDRA_LIB_DIR")"/cassandra-diagnostics-core-$CASSANDRA_DIAGNOSTICS_VERSION.jar\""
 CASSANDRA_ENV_SCRIPT_BACKUP_EXTENSION=".old"
 
-INVALID_CONFIGURATION_EXIT_CODE=60
+let INVALID_CONFIGURATION_EXIT_CODE=60
+let FAILED_TO_COPY_CONFIGURATION_FILE_EXIT_CODE=61
 
 # Appends cassandra-diagnostics JVM options to end of cassandra-env.sh script.
 #
@@ -259,4 +260,26 @@ function find_and_remove_diagnostics_configuration_from_cassandra_env() {
     fi
 
     print_info "No cassandra-diagnostics configuration detected in $CASSANDRA_ENV_SCRIPT_NAME."
+}
+
+# Copies cassandra-diagnostics configuration file to cassandra configuration directory.
+#
+# Uses global variables:
+#   - CASSANDRA_DIAGNOSTICS_CONF_FILE
+#   - CASSANDRA_CONF_DIR
+#
+# Exits:
+#   - with $FAILED_TO_COPY_CONFIGURATION_FILE_EXIT_CODE, if configuration file copying fails.
+function copy_diagnostics_configuration_to_conf_dir() {
+  local absolute_path_of_conf_file="$(absolute_path_of $CASSANDRA_DIAGNOSTICS_CONF_FILE)"
+  if [ "$absolute_path_of_conf_file" == "$COPY_OF_CASSANDRA_DIAGNOSTICS_CONF_FILE_IN_CONF_DIR" ]; then
+    print_info "Provided diagnostics configuration file is already in Cassandra conf dir. Skipping."
+  else
+    cp "$(absolute_path_of $CASSANDRA_DIAGNOSTICS_CONF_FILE)" "$CASSANDRA_CONF_DIR" -f > /dev/null
+    if [ $? -ne 0 ]; then
+      print_error "Failed to copy diagnostics configuration file to Cassandra conf dir. Exiting."
+
+      exit $FAILED_TO_COPY_CONFIGURATION_FILE_EXIT_CODE
+    fi
+  fi
 }

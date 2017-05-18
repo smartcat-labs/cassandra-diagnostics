@@ -8,7 +8,7 @@ INSTALLER_ARCHIVE=`awk '/^__INSTALLER_ARCHIVE__/ {print NR + 1; exit 0; }' $0`
 
 tail -n+$INSTALLER_ARCHIVE $0 | tar xz -C $TMPDIR > /dev/null
 
-"$TMPDIR"/main.sh $@
+TMPDIR="$TMPDIR" "$TMPDIR"/main.sh $@
 rm -rf $TMPDIR
 
 exit 0

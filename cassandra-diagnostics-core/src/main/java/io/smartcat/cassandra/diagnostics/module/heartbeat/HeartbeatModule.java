@@ -65,7 +65,6 @@ public class HeartbeatModule extends Module {
     private class HeartbeatTask extends TimerTask {
         @Override
         public void run() {
-            logger.info("Heartbeat signal.");
             report(createMeasurement());
         }
     }

@@ -79,7 +79,7 @@ function create_global_variables_from_input_arguments() {
 # 2.1.3 -> 21
 # 3.0.5 -> 30
 # etc.
-# 
+#
 # Parameters:
 #   $1 - version number
 #
@@ -124,22 +124,22 @@ function check_mandatory_parameters_are_set() {
         print_error "Cassandra configuration directory location is not specified."
         exit $MANDATORY_ARGUMENT_MISSING
     fi
-    
+
     if [ -z $CASSANDRA_LIB_DIR ]; then
         print_error "Cassandra library directory location is not specified."
         exit $MANDATORY_ARGUMENT_MISSING
     fi
-    
+
     if [ -z $CASSANDRA_VERSION ]; then
         print_error "Cassandra version is not specified."
         exit $MANDATORY_ARGUMENT_MISSING
     fi
-    
+
     if [ -z $CASSANDRA_DIAGNOSTICS_VERSION ]; then
         print_error "Cassandra diagnostics version is not specified."
         exit $MANDATORY_ARGUMENT_MISSING
     fi
-    
+
     if [ -z $CASSANDRA_DIAGNOSTICS_CONF_FILE ]; then
         print_error "Cassandra diagnostics configuration file location is not specified."
         exit $MANDATORY_ARGUMENT_MISSING
@@ -150,7 +150,10 @@ function check_mandatory_parameters_are_set() {
 #
 # Creates global variables:
 #   - CASSANDRA_ENV_SCRIPT
+#   - LIBRARIES_DOWNLOAD_DIR
+#   - COPY_OF_CASSANDRA_DIAGNOSTICS_CONF_FILE_IN_CONF_DIR
 function create_additional_variables() {
     CASSANDRA_ENV_SCRIPT="$CASSANDRA_CONF_DIR/$CASSANDRA_ENV_SCRIPT_NAME"
     LIBRARIES_DOWNLOAD_DIR="$TMPDIR/libraries"
+    COPY_OF_CASSANDRA_DIAGNOSTICS_CONF_FILE_IN_CONF_DIR="$CASSANDRA_CONF_DIR/$(basename $CASSANDRA_DIAGNOSTICS_CONF_FILE)"
 }

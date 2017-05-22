@@ -5,6 +5,8 @@
 BEGIN {
     reporters_block_indentation = 0
     in_reporters_block = 0
+    reporters_block_items_indentation = 0
+    should_detect_reporters_block_items_indentation = 0
     reporters = ""
     ignore_reporter = "LogReporter"
 }
@@ -19,13 +21,24 @@ BEGIN {
 
     if(reporters_block_starts_on(current_line)) {
         in_reporters_block = 1
+        should_detect_reporters_block_items_indentation = 1
         reporters_block_indentation = indentation_level_of(current_line)
     } else {
+      if(should_detect_reporters_block_items_indentation) {
+        reporters_block_items_indentation = indentation_level_of(current_line)
+        should_detect_reporters_block_items_indentation = 0
+      }
+
         if(in_reporters_block) {
             if(indentation_level_of(current_line) <= reporters_block_indentation) {
                 in_reporters_block = 0
+                reporters_block_items_indentation = 0
+            } else if(indentation_level_of(current_line) > reporters_block_items_indentation) {
+              next
+            } else if(starts_with_dash(current_line)) {
+              reporters = find_reporters_using(reporters, current_line)
             } else {
-                reporters = find_reporters_using(reporters, current_line)
+              next
             }
         }
     }
@@ -53,6 +66,10 @@ function indentation_level_of(line) {
 
 function is_commented_out(line) {
     return match(current_line, "\\W#.")
+}
+
+function starts_with_dash(line) {
+  return match(current_line, "\\W-.")
 }
 
 function char_at(string, i) {

@@ -165,7 +165,7 @@ public class RequestRateModule extends Module {
         tags.put("systemName", globalConfiguration.systemName);
         tags.put("statementType", statementType);
         tags.put("consistencyLevel", consistencyLevel);
-        return Measurement.create(service, rate, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
+        return Measurement.createSimple(service, rate, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
                 new HashMap<String, String>());
     }
 }

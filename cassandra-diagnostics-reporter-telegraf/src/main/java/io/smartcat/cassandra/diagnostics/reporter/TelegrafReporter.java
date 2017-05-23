@@ -116,8 +116,9 @@ public class TelegrafReporter extends Reporter {
             builder.time(measurement.time(), measurement.timeUnit());
 
             builder.tag(measurement.tags());
+            builder.tag("type", measurement.type().toString());
 
-            if (measurement.hasValue()) {
+            if (measurement.isSimple()) {
                 builder.addField("value", measurement.getValue());
             }
 

@@ -75,7 +75,7 @@ public class DatadogReporter extends Reporter {
         }
 
         try {
-            if (measurement.hasValue()) {
+            if (measurement.isSimple()) {
                 client.recordGaugeValue(measurement.name(), measurement.getValue(), convertTagsMap(measurement.tags()));
                 logger.debug("Reporting measurement {}, value {} and tags {}", measurement.name(),
                         measurement.getValue(), convertTagsMap(measurement.tags()));

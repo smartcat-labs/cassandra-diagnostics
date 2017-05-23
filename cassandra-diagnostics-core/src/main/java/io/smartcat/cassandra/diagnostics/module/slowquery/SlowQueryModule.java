@@ -106,8 +106,9 @@ public class SlowQueryModule extends Module {
             fields.put("statement", query.statement());
             fields.put("consistencyLevel", query.consistencyLevel().name());
 
-            final Measurement measurement = Measurement.create(service, (double) query.executionTimeInMilliseconds(),
-                    query.startTimeInMilliseconds(), TimeUnit.MILLISECONDS, tags, fields);
+            final Measurement measurement = Measurement.createSimple(service,
+                    (double) query.executionTimeInMilliseconds(), query.startTimeInMilliseconds(),
+                    TimeUnit.MILLISECONDS, tags, fields);
 
             logger.trace("Measurement transformed: {}", measurement);
             report(measurement);
@@ -140,7 +141,7 @@ public class SlowQueryModule extends Module {
         tags.put("host", globalConfiguration.hostname);
         tags.put("systemName", globalConfiguration.systemName);
         tags.put("statementType", statementType.toString());
-        return Measurement.create(slowQueryCountMeasurementName, count, System.currentTimeMillis(),
+        return Measurement.createSimple(slowQueryCountMeasurementName, count, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, new HashMap<String, String>());
     }
 }

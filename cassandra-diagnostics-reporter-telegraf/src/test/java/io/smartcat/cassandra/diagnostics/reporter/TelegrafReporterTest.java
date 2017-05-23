@@ -62,10 +62,10 @@ public class TelegrafReporterTest {
 
         Map<String, String> fields = new HashMap<>();
         fields.put("v2", "abc");
-        Measurement measurement = Measurement.create("m1", 1.0, 1434055662, TimeUnit.SECONDS, tags, fields);
+        Measurement measurement = Measurement.createSimple("m1", 1.0, 1434055662, TimeUnit.SECONDS, tags, fields);
 
         reporter.report(measurement);
-        assertThat(line).isEqualTo("m1,tag1=tv1,tag2=tv2 v2=\"abc\",value=1.0 1434055662000000000\r\n");
+        assertThat(line).isEqualTo("m1,tag1=tv1,tag2=tv2,type=SIMPLE v2=\"abc\",value=1.0 1434055662000000000\r\n");
 
     }
 }

@@ -14,7 +14,24 @@ import io.smartcat.cassandra.diagnostics.utils.Option;
  * Measurement type is differentiated by actually holding a scalar value.
  */
 public class Measurement {
+
+    /**
+     * Defines possible measurement types.
+     */
+    public enum MeasurementType {
+        /**
+         * Simple measurement holds timestamp and value.
+         */
+        SIMPLE,
+
+        /**
+         * Complex measurement is a group of measurements which are in fields and have names and values.
+         */
+        COMPLEX
+    }
+
     private final String name;
+    private final MeasurementType type;
     private final Option<Double> value;
     private final long time;
     private final TimeUnit timeUnit;
@@ -31,12 +48,30 @@ public class Measurement {
     }
 
     /**
-     * Defines if measurement has a value making it a simple measurement.
+     * Measurements type.
+     *
+     * @return type of measurement
+     */
+    public MeasurementType type() {
+        return type;
+    }
+
+    /**
+     * Check if measurement is simple measurement.
      *
      * @return has value
      */
-    public boolean hasValue() {
-        return value.hasValue();
+    public boolean isSimple() {
+        return type.equals(MeasurementType.SIMPLE);
+    }
+
+    /**
+     * Check if measurement is complex measurement.
+     *
+     * @return has value
+     */
+    public boolean isComplex() {
+        return type.equals(MeasurementType.COMPLEX);
     }
 
     /**
@@ -45,6 +80,10 @@ public class Measurement {
      * @return measurement value
      */
     public double getValue() {
+        if (isComplex()) {
+            throw new IllegalStateException("Complex measurement does not have value.");
+        }
+
         return value.getValue();
     }
 
@@ -94,9 +133,10 @@ public class Measurement {
         return fields;
     }
 
-    private Measurement(final String name, final Double value, final long time, final TimeUnit timeUnit,
-            final Map<String, String> tags, final Map<String, String> fields) {
+    private Measurement(final String name, final MeasurementType type, final Double value, final long time,
+            final TimeUnit timeUnit, final Map<String, String> tags, final Map<String, String> fields) {
         this.name = name;
+        this.type = type;
         this.value = Option.ofNullable(value);
         this.time = time;
         this.timeUnit = timeUnit;
@@ -105,7 +145,7 @@ public class Measurement {
     }
 
     /**
-     * Create a measurement object.
+     * Create a simple measurement object.
      *
      * @param name     Measurement name
      * @param value    Measurement value
@@ -115,15 +155,35 @@ public class Measurement {
      * @param fields   Field name value pairs
      * @return Measurement object
      */
-    public static Measurement create(final String name, final Double value, final long time, final TimeUnit timeUnit,
+    public static Measurement createSimple(final String name, final Double value, final long time,
+            final TimeUnit timeUnit, final Map<String, String> tags, final Map<String, String> fields) {
+        if (value == null) {
+            throw new IllegalArgumentException("Simple measurement must have a value.");
+        }
+
+        return new Measurement(name, MeasurementType.SIMPLE, value, time, timeUnit, tags, fields);
+    }
+
+    /**
+     * Create a complex measurement object (it does not have value and measurements are in fields as key value pairs).
+     *
+     * @param name     Measurement name
+     * @param time     Measurement time
+     * @param timeUnit Measurement time unit
+     * @param tags     Tag name value pairs
+     * @param fields   Field name value pairs
+     * @return Measurement object
+     */
+    public static Measurement createComplex(final String name, final long time, final TimeUnit timeUnit,
             final Map<String, String> tags, final Map<String, String> fields) {
-        return new Measurement(name, value, time, timeUnit, tags, fields);
+        return new Measurement(name, MeasurementType.COMPLEX, null, time, timeUnit, tags, fields);
     }
 
     @Override
     public String toString() {
-        return "Measurement [ " + "name=" + name + ", value=" + (value.hasValue() ? value.getValue() : "null")
-                + ", time=" + time + ", timeUnit=" + timeUnit + ", tags: " + tags + ", fields: " + fields + " ]";
+        return "Measurement [ " + "name=" + name + ", type=" + type + ", value="
+                + (value.hasValue() ? value.getValue() : "null") + ", time=" + time + ", timeUnit=" + timeUnit
+                + ", tags: " + tags + ", fields: " + fields + " ]";
     }
 
     /**
@@ -132,9 +192,9 @@ public class Measurement {
      * @return JSON-formatted string representation of measurement.
      */
     public String toJson() {
-        return "{\"name\":\"" + name + "\"" + ",\"value\":" + (value.hasValue() ? value.getValue() : "null")
-                + ",\"time\":" + time + ",\"timeUnit\":\"" + timeUnit + "\"" + ",\"tags\":" + appendMap(tags)
-                + ",\"fields\":" + appendMap(fields) + "}";
+        return "{\"name\":\"" + name + "\"" + ",\"type\":\"" + type + "\"" + ",\"value\":"
+                + (value.hasValue() ? value.getValue() : "null") + ",\"time\":" + time + ",\"timeUnit\":\"" + timeUnit
+                + "\"" + ",\"tags\":" + appendMap(tags) + ",\"fields\":" + appendMap(fields) + "}";
     }
 
     private String appendMap(Map<String, String> map) {

@@ -105,7 +105,7 @@ public class RiemannReporter extends Reporter {
         final EventDSL event = riemannClient.event();
         event.service(measurement.name());
         event.state("ok");
-        if (measurement.hasValue()) {
+        if (measurement.isSimple()) {
             event.metric(measurement.getValue());
         }
         event.time(measurement.time());
@@ -114,6 +114,8 @@ public class RiemannReporter extends Reporter {
             event.tag(tag.getKey());
             event.attribute(tag.getKey(), tag.getValue());
         }
+        event.tag("type");
+        event.attribute("type", measurement.type().toString());
         for (Map.Entry<String, String> field : measurement.fields().entrySet()) {
             event.attribute(field.getKey(), field.getValue());
         }

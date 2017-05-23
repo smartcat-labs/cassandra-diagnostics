@@ -20,7 +20,7 @@ public class LogReporter extends Reporter {
     /**
      * String template for logging query report.
      */
-    private static final String LOG_TEMPLATE = "Measurement {} [time={}, value={}, tags={}, fields={}]";
+    private static final String LOG_TEMPLATE = "{} Measurement {} [time={}, value={}, tags={}, fields={}]";
 
     /**
      * Constructor.
@@ -34,8 +34,8 @@ public class LogReporter extends Reporter {
 
     @Override
     public void report(Measurement measurement) {
-        logger.info(LOG_TEMPLATE, measurement.name().toUpperCase(), measurement.time(), measurement.getOrDefault(0d),
-                measurement.tags().toString(), measurement.fields().toString());
+        logger.info(LOG_TEMPLATE, measurement.type().toString(), measurement.name().toUpperCase(), measurement.time(),
+                measurement.getOrDefault(0d), measurement.tags().toString(), measurement.fields().toString());
     }
 
 }

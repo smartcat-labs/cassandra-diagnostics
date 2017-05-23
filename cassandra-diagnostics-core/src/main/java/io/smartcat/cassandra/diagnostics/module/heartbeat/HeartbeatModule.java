@@ -74,7 +74,7 @@ public class HeartbeatModule extends Module {
         tags.put("host", globalConfiguration.hostname);
         tags.put("systemName", globalConfiguration.systemName);
         Measurement measurement = Measurement
-                .create(service, 1.0, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
+                .createSimple(service, 1.0, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
                         new HashMap<String, String>());
         return measurement;
     }

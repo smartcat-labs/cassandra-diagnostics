@@ -108,13 +108,14 @@ public class InfluxReporter extends Reporter {
         try {
             final Point.Builder builder = Point.measurement(measurement.name());
             builder.time(measurement.time(), measurement.timeUnit());
+            builder.tag("type", measurement.type().toString());
             for (Map.Entry<String, String> tag : measurement.tags().entrySet()) {
                 builder.tag(tag.getKey(), tag.getValue());
             }
             for (Map.Entry<String, String> field : measurement.fields().entrySet()) {
                 builder.addField(field.getKey(), field.getValue());
             }
-            if (measurement.hasValue()) {
+            if (measurement.isSimple()) {
                 builder.addField("value", measurement.getValue());
             }
 

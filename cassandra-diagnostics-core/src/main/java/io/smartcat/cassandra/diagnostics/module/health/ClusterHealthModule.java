@@ -93,7 +93,7 @@ public class ClusterHealthModule extends Module {
 
         final Map<String, String> fields = new HashMap<>();
 
-        return Measurement.create(DEFAULT_NUMBER_OF_UNREACHABLE_NODES_MEASUREMENT_NAME,
+        return Measurement.createSimple(DEFAULT_NUMBER_OF_UNREACHABLE_NODES_MEASUREMENT_NAME,
                 (double) numberOfUnreachableNode, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
     }
 

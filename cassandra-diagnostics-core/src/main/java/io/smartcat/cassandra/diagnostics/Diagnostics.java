@@ -51,7 +51,7 @@ public class Diagnostics implements QueryReporter {
      */
     public Diagnostics() {
         config = loadConfiguration();
-        if (config.global.hostname != null && !config.global.hostname.isEmpty()) {
+        if (config.global.hostname == null || config.global.hostname.isEmpty()) {
             config.global.hostname = Utils.resolveHostname();
         }
     }

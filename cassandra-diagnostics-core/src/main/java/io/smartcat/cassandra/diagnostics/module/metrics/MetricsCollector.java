@@ -157,7 +157,7 @@ public class MetricsCollector {
         final Map<String, String> tags = new HashMap<>(2);
         tags.put("host", globalConfiguration.hostname);
         tags.put("systemName", globalConfiguration.systemName);
-        return Measurement.create(service, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
+        return Measurement.createSimple(service, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
                 new HashMap<String, String>());
     }
 

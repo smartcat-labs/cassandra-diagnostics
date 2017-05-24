@@ -132,7 +132,7 @@ public class StatusModule extends Module {
         fields.put("coreValidatorThreads", Integer.toString(compactionSettingsInfo.coreValidatorThreads));
         fields.put("maximumValidatorThreads", Integer.toString(compactionSettingsInfo.maximumValidatorThreads));
 
-        return Measurement.create(DEFAULT_COMPACTION_SETTINGS_INFO_MEASUREMENT_NAME, null, System.currentTimeMillis(),
+        return Measurement.createComplex(DEFAULT_COMPACTION_SETTINGS_INFO_MEASUREMENT_NAME, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, fields);
     }
 
@@ -151,7 +151,7 @@ public class StatusModule extends Module {
         fields.put("completed", Long.toString(compactionInfo.completed));
         fields.put("completedPercentage", Double.toString(compactionInfo.completedPercentage));
 
-        return Measurement.create(DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME, null, System.currentTimeMillis(),
+        return Measurement.createComplex(DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, fields);
     }
 
@@ -167,8 +167,8 @@ public class StatusModule extends Module {
         fields.put("currentlyBlockedTasks", Long.toString(tpStatsInfo.currentlyBlockedTasks));
         fields.put("totalBlockedTasks", Long.toString(tpStatsInfo.totalBlockedTasks));
 
-        return Measurement.create(tpStatsInfo.threadPool, null, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
-                fields);
+        return Measurement.createComplex(tpStatsInfo.threadPool, System.currentTimeMillis(), TimeUnit.MILLISECONDS,
+                tags, fields);
     }
 
     private Measurement createSimpleMeasurement(String name, double value) {
@@ -178,7 +178,7 @@ public class StatusModule extends Module {
 
         final Map<String, String> fields = new HashMap<>();
 
-        return Measurement.create(name, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement.createSimple(name, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
     }
 
     private Measurement createMeasurement(NodeInfo nodeInfo) {
@@ -192,7 +192,7 @@ public class StatusModule extends Module {
         fields.put("nativeTransportActive", Integer.toString(nodeInfo.isNativeTransportActive()));
         fields.put("uptimeInSeconds", Long.toString(nodeInfo.uptimeInSeconds));
 
-        return Measurement.create(DEFAULT_NODE_INFO_MEASUREMENT_NAME, null, System.currentTimeMillis(),
+        return Measurement.createComplex(DEFAULT_NODE_INFO_MEASUREMENT_NAME, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, fields);
     }
 

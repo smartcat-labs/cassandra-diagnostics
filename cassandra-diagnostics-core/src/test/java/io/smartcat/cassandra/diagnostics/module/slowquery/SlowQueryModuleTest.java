@@ -49,7 +49,7 @@ public class SlowQueryModuleTest {
         assertThat(measurement.fields().get("statement")).isEqualTo("select count(*) from keyspace.table");
         assertThat(measurement.fields().get("client")).isEqualTo("/127.0.0.1:40042");
         assertThat(measurement.fields().get("consistencyLevel")).isEqualTo("ONE");
-        assertThat(measurement.hasValue()).isTrue();
+        assertThat(measurement.isSimple()).isTrue();
         assertThat(measurement.getValue()).isEqualTo(234);
 
         assertThat(measurement.tags().keySet()).isEqualTo(Sets.newSet("host", "statementType", "systemName"));

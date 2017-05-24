@@ -88,7 +88,7 @@ public class DatadogReporterTest {
         fields.put("v2", "abc");
 
         final Measurement measurement = Measurement
-                .create("test-metric", 909.0, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+                .createSimple("test-metric", 909.0, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
 
         datadogReporterWithMockClient.report(measurement);
 
@@ -109,7 +109,7 @@ public class DatadogReporterTest {
         fields.put("v4", "1234.0");
 
         final Measurement measurement = Measurement
-                .create("test-metric", null, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+                .createComplex("test-metric", System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
 
         datadogReporterWithMockClient.report(measurement);
 
@@ -130,7 +130,7 @@ public class DatadogReporterTest {
         fields.put("v5", "-");
 
         final Measurement measurement = Measurement
-                .create("test-metric", null, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+                .createComplex("test-metric", System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
 
         datadogReporterWithMockClient.report(measurement);
 

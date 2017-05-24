@@ -77,7 +77,7 @@ public class KafkaReporterTest {
         Map<String, String> fields = new HashMap<>();
         fields.put("v2", "abc");
 
-        Measurement measurement = Measurement.create("m1", 1.0, 1434055662, TimeUnit.SECONDS, tags, fields);
+        Measurement measurement = Measurement.createSimple("m1", 1.0, 1434055662, TimeUnit.SECONDS, tags, fields);
         reporter.report(measurement);
 
         // setup consumer

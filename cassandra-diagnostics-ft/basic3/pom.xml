@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.smartcat</groupId>
         <artifactId>cassandra-diagnostics-ft</artifactId>
-        <version>1.4.7</version>
+        <version>1.4.8-snapshot</version>
     </parent>
     <artifactId>cassandra-diagnostics-ft-basic-3</artifactId>
     <description>Cassandra Diagnostics basic functional test for 3.x version</description>

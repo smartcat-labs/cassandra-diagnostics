@@ -79,6 +79,7 @@ public class FTBasic2 {
         boolean compactionSettingsInfoFound = false;
         boolean numberOfUnreachableNodesFound = false;
         boolean nodeInfoFound = false;
+        boolean hiccupFound = false;
         while ((line = reader.readLine()) != null) {
             if (line.matches(".* QUERYREPORT_COUNT.*")) {
                 queryCountFound = true;
@@ -112,6 +113,10 @@ public class FTBasic2 {
                 nodeInfoFound = true;
                 continue;
             }
+            if (line.matches(".* HICCUP.*")) {
+                hiccupFound = true;
+                continue;
+            }
         }
         reader.close();
 
@@ -123,6 +128,7 @@ public class FTBasic2 {
         Assertions.assertThat(compactionSettingsInfoFound).isTrue();
         Assertions.assertThat(numberOfUnreachableNodesFound).isTrue();
         Assertions.assertThat(nodeInfoFound).isTrue();
+        Assertions.assertThat(hiccupFound).isTrue();
     }
 
     public void verifyLogFileIsChanged() throws Exception {

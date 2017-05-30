@@ -14,9 +14,29 @@
         <version.commons.lang3>3.4</version.commons.lang3>
         <version.nanohttpd>2.3.1</version.nanohttpd>
         <version.powermock>1.6.5</version.powermock>
+        <version.akka>2.5.2</version.akka>
+        <version.logback>1.2.3</version.logback>
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor_2.11</artifactId>
+            <version>${version.akka}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-slf4j_2.11</artifactId>
+            <version>${version.akka}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${version.logback}</version>
+        </dependency>
+
+
         <dependency>
             <groupId>io.smartcat</groupId>
             <artifactId>cassandra-diagnostics-commons</artifactId>

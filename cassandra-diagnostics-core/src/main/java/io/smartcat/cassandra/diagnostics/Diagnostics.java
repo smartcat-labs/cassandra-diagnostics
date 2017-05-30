@@ -2,6 +2,7 @@ package io.smartcat.cassandra.diagnostics;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -16,7 +17,15 @@ import javax.management.StandardMBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
+import akka.actor.Props;
+import akka.dispatch.OnSuccess;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
 import fi.iki.elonen.NanoHTTPD;
+import io.smartcat.cassandra.diagnostics.actor.GracefulShutdown;
+import io.smartcat.cassandra.diagnostics.actor.NodeGuardianActor;
 import io.smartcat.cassandra.diagnostics.api.DiagnosticsApi;
 import io.smartcat.cassandra.diagnostics.api.DiagnosticsApiImpl;
 import io.smartcat.cassandra.diagnostics.api.HttpHandler;
@@ -46,13 +55,37 @@ public class Diagnostics implements QueryReporter {
 
     private HttpHandler httpApi;
 
+    private final ActorSystem system;
+
+    private final ActorRef nodeGuardian;
+
+    private final Timeout timeout = new Timeout(5, TimeUnit.SECONDS);
+
+    private final AtomicBoolean isTerminated = new AtomicBoolean(false);
+
     /**
      * Constructor.
      */
     public Diagnostics() {
+        system = ActorSystem.create("cassandra-diagnostics");
+        system.registerOnTermination(this::shutdown);
+
+        nodeGuardian = system.actorOf(Props.create(NodeGuardianActor.class), "node-guardian");
+
         config = loadConfiguration();
         if (config.global.hostname == null || config.global.hostname.isEmpty()) {
             config.global.hostname = Utils.resolveHostname();
+        }
+    }
+
+    private void shutdown() {
+        if (isTerminated.compareAndSet(false, true)) {
+            Patterns.ask(nodeGuardian, new GracefulShutdown(), timeout).onComplete(new OnSuccess() {
+                @Override
+                public void onSuccess(Object result) throws Throwable {
+                    system.terminate();
+                }
+            }, system.dispatcher());
         }
     }
 

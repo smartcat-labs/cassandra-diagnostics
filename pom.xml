@@ -74,8 +74,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <source.level>1.7</source.level>
-        <code.level>1.7</code.level>
+        <source.level>1.8</source.level>
+        <code.level>1.8</code.level>
         <version.junit>4.12</version.junit>
         <version.assertj>2.4.1</version.assertj>
         <version.mockito>1.10.19</version.mockito>

@@ -72,6 +72,10 @@ Default reporting interval is 1 minute.
 Cluster health module is used to report the health status of the nodes such as which nodes are marked as DOWN by gossiper. It uses the information exposed over JMX.
 Default reporting interval is 10 seconds.
 
+#### Hiccup Module
+
+Module based on [jHiccup](https://github.com/giltene/jHiccup) that logs and reports platform hiccups including JVM stalls. Default reporting period is 5 seconds and reporter values and percentiles from 90 to 100 and Mean and Max values.
+
 ### Reporters
 
 Reporters take measurement from core and wrap them up in implementation specific format so it can be sent to reporters target (i.e. Influx reporter transforms measurement to influx query and stores it to InfluxDB).

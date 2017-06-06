@@ -6,73 +6,81 @@ import static io.smartcat.cassandra.diagnostics.module.requestrate.RequestRateCo
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.actor.ModuleActor;
+import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.AtomicCounter;
-import io.smartcat.cassandra.diagnostics.module.Module;
-import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
-import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 
 /**
  * Request rate module providing request rates at defined intervals. Request rates can be total or separate for read
  * and write.
  */
-public class RequestRateModule extends Module {
-
-    private static final Logger logger = LoggerFactory.getLogger(RequestRateModule.class);
+public class RequestRateModule extends ModuleActor {
 
     private static final String DEFAULT_MEASUREMENT_NAME = "request_rate";
 
     private static final String REQUEST_RATE_THREAD_NAME = "request-rate-timer";
 
+    private final RequestRateConfiguration config;
+
     private final Set<RequestRate> requestRates;
 
     private final String service;
 
-    private final int period;
-
-    private final TimeUnit timeunit;
-
     private final long rateFactor;
 
-    private final Timer timer;
+    private Timer timer;
 
     /**
      * Constructor.
      *
-     * @param configuration       Module configuration
-     * @param reporters           Reporter list
-     * @param globalConfiguration Global diagnostics configuration
-     * @throws ConfigurationException in case the provided module configuration is not valid
+     * @param moduleName    Module class name
+     * @param configuration configuration
+     * @throws ConfigurationException configuration parsing exception
      */
-    public RequestRateModule(ModuleConfiguration configuration, List<Reporter> reporters,
-            final GlobalConfiguration globalConfiguration) throws ConfigurationException {
-        super(configuration, reporters, globalConfiguration);
+    public RequestRateModule(final String moduleName, final Configuration configuration) throws ConfigurationException {
+        super(moduleName, configuration);
 
-        RequestRateConfiguration config = RequestRateConfiguration.create(configuration.options);
-        service = configuration.getMeasurementOrDefault(DEFAULT_MEASUREMENT_NAME);
-        period = config.period();
-        timeunit = config.timeunit();
-        rateFactor = timeunit.toSeconds(period);
+        config = RequestRateConfiguration.create(moduleConfiguration.options);
+        service = moduleConfiguration.getMeasurementOrDefault(DEFAULT_MEASUREMENT_NAME);
+        rateFactor = config.timeunit().toSeconds(config.period());
         requestRates = initRequestRates(config);
 
-        logger.info("RequestRate module initialized with {} {} reporting period and requests to report: {}.", period,
-                timeunit.name(), config.requestsToReport());
+        logger.info("RequestRate module initialized with {} {} reporting period and requests to report: {}.", config.period(),
+                config.timeunit().name(), config.requestsToReport());
+    }
 
+    @Override
+    protected void start() {
         timer = new Timer(REQUEST_RATE_THREAD_NAME);
         timer.schedule(new RequestRateTask(), 0, config.reportingRateInMillis());
+    }
+
+    @Override
+    public void stop() {
+        logger.debug("Stopping request rate module.");
+        timer.cancel();
+    }
+
+    @Override
+    public void process(Query query) {
+        final String statementType = query.statementType().name();
+        final String consistencyLevel = query.consistencyLevel().name();
+
+        for (RequestRate requestRate : requestRates) {
+            if (statementMatches(statementType, requestRate)
+                    && consistencyLevelMatches(consistencyLevel, requestRate)) {
+                requestRate.increment();
+            }
+        }
     }
 
     /**
@@ -103,19 +111,6 @@ public class RequestRateModule extends Module {
         }
     }
 
-    @Override
-    public void process(Query query) {
-        final String statementType = query.statementType().name();
-        final String consistencyLevel = query.consistencyLevel().name();
-
-        for (RequestRate requestRate : requestRates) {
-            if (statementMatches(statementType, requestRate)
-                    && consistencyLevelMatches(consistencyLevel, requestRate)) {
-                requestRate.increment();
-            }
-        }
-    }
-
     private boolean consistencyLevelMatches(final String consistencyLevel, RequestRate requestRate) {
         return requestRate.consistencyLevel.equals(ALL_CONSISTENCY_LEVELS)
                 || requestRate.consistencyLevel.equals(consistencyLevel);
@@ -124,12 +119,6 @@ public class RequestRateModule extends Module {
     private boolean statementMatches(final String statementType, RequestRate requestRate) {
         return requestRate.statementType.equals(ALL_STATEMENT_TYPES)
                 || requestRate.statementType.equals(statementType);
-    }
-
-    @Override
-    public void stop() {
-        logger.trace("Stopping request rate module.");
-        timer.cancel();
     }
 
     private Set<RequestRate> initRequestRates(RequestRateConfiguration config) {
@@ -161,11 +150,11 @@ public class RequestRateModule extends Module {
 
     private Measurement createMeasurement(String service, String statementType, String consistencyLevel, double rate) {
         final Map<String, String> tags = new HashMap<>(1);
-        tags.put("host", globalConfiguration.hostname);
-        tags.put("systemName", globalConfiguration.systemName);
+        tags.put("host", configuration.global.hostname);
+        tags.put("systemName", configuration.global.systemName);
         tags.put("statementType", statementType);
         tags.put("consistencyLevel", consistencyLevel);
         return Measurement.createSimple(service, rate, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
-                new HashMap<String, String>());
+                new HashMap<>());
     }
 }

@@ -1,12 +1,9 @@
 package io.smartcat.cassandra.diagnostics.actor;
 
 import akka.actor.ActorRef;
-import akka.event.Logging;
-import akka.event.LoggingAdapter;
 import akka.routing.ActorRefRoutee;
 import akka.routing.BroadcastRoutingLogic;
 import akka.routing.Router;
-import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 
 /**
@@ -15,33 +12,31 @@ import io.smartcat.cassandra.diagnostics.config.Configuration;
  */
 public class ReporterGuardianActor extends BaseActor {
 
-    private final LoggingAdapter logger = Logging.getLogger(getContext().system(), this);
-
     private Router router = new Router(new BroadcastRoutingLogic());
 
+    /**
+     * Build actor's receive pattern.
+     *
+     * @return receive pattern
+     */
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Measurement.class, this::routeMeasurement)
                 .match(Configuration.class, this::configure)
                 .build();
     }
 
     private void configure(final Configuration configuration) {
+        logger.debug("Received configuration");
         configuration.reporters.stream().forEach((reporterConfig) -> {
             try {
-                ActorRef reporter = getContext().actorOf(ActorFactory.props(reporterConfig.reporter));
-                reporter.tell(reporterConfig, self());
-
+                ActorRef reporter = getContext().actorOf(ReporterActor.props(reporterConfig));
                 getContext().watch(reporter);
-                router.addRoutee(new ActorRefRoutee(reporter));
+                router = router.addRoutee(new ActorRefRoutee(reporter));
             } catch (Exception e) {
                 logger.warning("Failed to create reporter by class name " + reporterConfig.reporter, e);
             }
         });
     }
 
-    private void routeMeasurement(final Measurement measurement) {
-        router.route(measurement, getSender());
-    }
 }

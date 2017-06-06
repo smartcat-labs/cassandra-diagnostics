@@ -1,31 +1,23 @@
 package io.smartcat.cassandra.diagnostics.module.slowquery;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.Query;
 import io.smartcat.cassandra.diagnostics.Query.StatementType;
+import io.smartcat.cassandra.diagnostics.actor.ModuleActor;
+import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.module.AtomicCounter;
-import io.smartcat.cassandra.diagnostics.module.Module;
-import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
-import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 
 /**
  * Slow query module providing reports of query execution times over a defined threshold.
  */
-public class SlowQueryModule extends Module {
-
-    private static final Logger logger = LoggerFactory.getLogger(SlowQueryModule.class);
+public class SlowQueryModule extends ModuleActor {
 
     private static final String DEFAULT_MEASUREMENT_NAME = "slow_query";
 
@@ -43,36 +35,45 @@ public class SlowQueryModule extends Module {
 
     private final Map<StatementType, AtomicCounter> slowQueryCounts;
 
-    private final Timer timer;
+    private Timer timer;
 
     /**
      * Constructor.
      *
-     * @param configuration        Module configuration
-     * @param reporters            Reporter list
-     * @param globalConfiguration  Global diagnostics configuration
-     * @throws ConfigurationException in case the provided module configuration is not valid
+     * @param moduleName    Module class name
+     * @param configuration configuration
+     * @throws ConfigurationException configuration parsing exception
      */
-    public SlowQueryModule(ModuleConfiguration configuration, List<Reporter> reporters,
-            final GlobalConfiguration globalConfiguration) throws ConfigurationException {
-        super(configuration, reporters, globalConfiguration);
-        config = SlowQueryConfiguration.create(configuration.options);
+    public SlowQueryModule(final String moduleName, final Configuration configuration) throws ConfigurationException {
+        super(moduleName, configuration);
 
-        service = configuration.getMeasurementOrDefault(DEFAULT_MEASUREMENT_NAME);
+        config = SlowQueryConfiguration.create(moduleConfiguration.options);
+        service = moduleConfiguration.getMeasurementOrDefault(DEFAULT_MEASUREMENT_NAME);
         slowQueryCountMeasurementName = service + SLOW_QUERY_COUNT_SUFFIX;
 
         slowQueryLogDecider = SlowQueryLogDecider.create(config);
-
         slowQueryCounts = new HashMap<>();
+
         for (StatementType statementType : StatementType.values()) {
             slowQueryCounts.put(statementType, new AtomicCounter());
         }
+    }
 
+    @Override
+    protected void start() {
         if (config.slowQueryCountReportEnabled()) {
             timer = new Timer(SLOW_QUERY_COUNT_THREAD_NAME);
             timer.schedule(new SlowQueryReportTask(), 0, config.slowQueryCountReportingRateInMillis());
         } else {
             timer = null;
+        }
+    }
+
+    @Override
+    public void stop() {
+        logger.debug("Stopping slow query module.");
+        if (timer != null) {
+            timer.cancel();
         }
     }
 
@@ -86,7 +87,7 @@ public class SlowQueryModule extends Module {
             return;
         }
 
-        if (globalConfiguration.hostname == null) {
+        if (configuration.global.hostname == null) {
             logger.error("Cannot log slow query because hostname is not resolved");
             throw new IllegalArgumentException("Cannot log slow query because hostname is not resolved.");
         }
@@ -97,8 +98,8 @@ public class SlowQueryModule extends Module {
 
         if (config.slowQueryReportEnabled()) {
             final Map<String, String> tags = new HashMap<>(4);
-            tags.put("host", globalConfiguration.hostname);
-            tags.put("systemName", globalConfiguration.systemName);
+            tags.put("host", configuration.global.hostname);
+            tags.put("systemName", configuration.global.systemName);
             tags.put("statementType", query.statementType().toString());
 
             final Map<String, String> fields = new HashMap<>(4);
@@ -110,15 +111,8 @@ public class SlowQueryModule extends Module {
                     (double) query.executionTimeInMilliseconds(), query.startTimeInMilliseconds(),
                     TimeUnit.MILLISECONDS, tags, fields);
 
-            logger.trace("Measurement transformed: {}", measurement);
+            logger.debug("Measurement transformed: {}", measurement);
             report(measurement);
-        }
-    }
-
-    @Override
-    public void stop() {
-        if (timer != null) {
-            timer.cancel();
         }
     }
 
@@ -138,8 +132,8 @@ public class SlowQueryModule extends Module {
 
     private Measurement createSlowQueryCountMeasurement(double count, StatementType statementType) {
         final Map<String, String> tags = new HashMap<>(2);
-        tags.put("host", globalConfiguration.hostname);
-        tags.put("systemName", globalConfiguration.systemName);
+        tags.put("host", configuration.global.hostname);
+        tags.put("systemName", configuration.global.systemName);
         tags.put("statementType", statementType.toString());
         return Measurement.createSimple(slowQueryCountMeasurementName, count, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, new HashMap<String, String>());

@@ -1,66 +1,51 @@
 package io.smartcat.cassandra.diagnostics.module.health;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.smartcat.cassandra.diagnostics.DiagnosticsAgent;
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.actor.ModuleActor;
+import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
-import io.smartcat.cassandra.diagnostics.module.Module;
-import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
-import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 
 /**
  * Cluster health module collecting information about the liveness of the nodes in the cluster.
  */
-public class ClusterHealthModule extends Module {
-
-    private static final Logger logger = LoggerFactory.getLogger(ClusterHealthModule.class);
+public class ClusterHealthModule extends ModuleActor {
 
     private static final String STATUS_THREAD_NAME = "unreachable-nodes-module";
 
     private static final String DEFAULT_NUMBER_OF_UNREACHABLE_NODES_MEASUREMENT_NAME = "number_of_unreachable_nodes";
 
-    private final int period;
+    private ClusterHealthConfiguration config;
 
-    private final TimeUnit timeunit;
+    private Timer timer;
 
-    private final boolean numberOfUnreachableNodesEnabled;
-
-    private final Timer timer;
-
-    private final InfoProvider infoProvider;
+    private InfoProvider infoProvider;
 
     /**
      * Constructor.
      *
-     * @param configuration        Module configuration
-     * @param reporters            Reporter list
-     * @param globalConfiguration  Global diagnostics configuration
+     * @param moduleName    Module class name
+     * @param configuration configuration
      * @throws ConfigurationException configuration parsing exception
      */
-    public ClusterHealthModule(ModuleConfiguration configuration, List<Reporter> reporters,
-            final GlobalConfiguration globalConfiguration)
-            throws ConfigurationException {
-        super(configuration, reporters, globalConfiguration);
+    public ClusterHealthModule(final String moduleName, final Configuration configuration) throws ConfigurationException {
+        super(moduleName, configuration);
 
-        ClusterHealthConfiguration config = ClusterHealthConfiguration.create(configuration.options);
-        period = config.period();
-        timeunit = config.timeunit();
-        numberOfUnreachableNodesEnabled = config.numberOfUnreachableNodesEnabled();
+        config = ClusterHealthConfiguration.create(moduleConfiguration.options);
+    }
 
+    @Override
+    protected void start() {
         infoProvider = DiagnosticsAgent.getInfoProvider();
         if (infoProvider == null) {
-            logger.warn("Failed to initialize StatusModule. Info provider is null");
+            logger.warning("Failed to initialize StatusModule. Info provider is null");
             timer = null;
         } else {
             timer = new Timer(STATUS_THREAD_NAME);
@@ -69,8 +54,8 @@ public class ClusterHealthModule extends Module {
     }
 
     @Override
-    public void stop() {
-        logger.trace("Stopping status module.");
+    protected void stop() {
+        logger.debug("Stopping status module.");
         timer.cancel();
     }
 
@@ -80,7 +65,7 @@ public class ClusterHealthModule extends Module {
     private class ClusterHealthTask extends TimerTask {
         @Override
         public void run() {
-            if (numberOfUnreachableNodesEnabled) {
+            if (config.numberOfUnreachableNodesEnabled()) {
                 report(createMeasurement(infoProvider.getUnreachableNodes().size()));
             }
         }
@@ -88,8 +73,8 @@ public class ClusterHealthModule extends Module {
 
     private Measurement createMeasurement(long numberOfUnreachableNode) {
         final Map<String, String> tags = new HashMap<>(1);
-        tags.put("host", globalConfiguration.hostname);
-        tags.put("systemName", globalConfiguration.systemName);
+        tags.put("host", configuration.global.hostname);
+        tags.put("systemName", configuration.global.systemName);
 
         final Map<String, String> fields = new HashMap<>();
 

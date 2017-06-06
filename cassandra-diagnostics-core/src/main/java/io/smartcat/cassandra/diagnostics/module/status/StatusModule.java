@@ -1,34 +1,26 @@
 package io.smartcat.cassandra.diagnostics.module.status;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.smartcat.cassandra.diagnostics.DiagnosticsAgent;
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.actor.ModuleActor;
+import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
 import io.smartcat.cassandra.diagnostics.info.CompactionSettingsInfo;
 import io.smartcat.cassandra.diagnostics.info.InfoProvider;
 import io.smartcat.cassandra.diagnostics.info.NodeInfo;
 import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
-import io.smartcat.cassandra.diagnostics.module.Module;
-import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
-import io.smartcat.cassandra.diagnostics.reporter.Reporter;
 
 /**
  * Status module collecting node status information.
  */
-public class StatusModule extends Module {
-
-    private static final Logger logger = LoggerFactory.getLogger(StatusModule.class);
+public class StatusModule extends ModuleActor {
 
     private static final String STATUS_THREAD_NAME = "status-module";
 
@@ -40,45 +32,30 @@ public class StatusModule extends Module {
 
     private static final String DEFAULT_NODE_INFO_MEASUREMENT_NAME = "node_info";
 
-    private final int period;
+    private StatusConfiguration config;
 
-    private final TimeUnit timeunit;
+    private InfoProvider infoProvider;
 
-    private final boolean compactionsEnabled;
-
-    private final boolean tpStatsEnabled;
-
-    private final boolean repairsEnabled;
-
-    private final boolean nodeInfoEnabled;
-
-    private final Timer timer;
-
-    private final InfoProvider infoProvider;
+    private Timer timer;
 
     /**
      * Constructor.
      *
-     * @param configuration Module configuration
-     * @param reporters Reporter list
-     * @param globalConfiguration Global diagnostics configuration
+     * @param moduleName    Module class name
+     * @param configuration configuration
      * @throws ConfigurationException configuration parsing exception
      */
-    public StatusModule(ModuleConfiguration configuration, List<Reporter> reporters,
-            final GlobalConfiguration globalConfiguration) throws ConfigurationException {
-        super(configuration, reporters, globalConfiguration);
+    public StatusModule(final String moduleName, final Configuration configuration) throws ConfigurationException {
+        super(moduleName, configuration);
 
-        StatusConfiguration config = StatusConfiguration.create(configuration.options);
-        period = config.period();
-        timeunit = config.timeunit();
-        compactionsEnabled = config.compactionsEnabled();
-        tpStatsEnabled = config.tpStatsEnabled();
-        repairsEnabled = config.repairsEnabled();
-        nodeInfoEnabled = config.nodeInfoEnabled();
-
+        config = StatusConfiguration.create(moduleConfiguration.options);
         infoProvider = DiagnosticsAgent.getInfoProvider();
+    }
+
+    @Override
+    protected void start() {
         if (infoProvider == null) {
-            logger.warn("Failed to initialize StatusModule. Info provider is null");
+            logger.warning("Failed to initialize StatusModule. Info provider is null");
             timer = null;
         } else {
             timer = new Timer(STATUS_THREAD_NAME);
@@ -87,9 +64,11 @@ public class StatusModule extends Module {
     }
 
     @Override
-    public void stop() {
-        logger.trace("Stopping status module.");
-        timer.cancel();
+    protected void stop() {
+        logger.debug("Stopping status module.");
+        if (timer != null) {
+            timer.cancel();
+        }
     }
 
     /**
@@ -98,22 +77,22 @@ public class StatusModule extends Module {
     private class StatusTask extends TimerTask {
         @Override
         public void run() {
-            if (compactionsEnabled) {
+            if (config.compactionsEnabled()) {
                 report(createMeasurement(infoProvider.getCompactionSettingsInfo()));
                 for (CompactionInfo compactionInfo : infoProvider.getCompactions()) {
                     report(createMeasurement(compactionInfo));
                 }
             }
-            if (tpStatsEnabled) {
+            if (config.tpStatsEnabled()) {
                 for (TPStatsInfo tpStatsInfo : infoProvider.getTPStats()) {
                     report(createMeasurement(tpStatsInfo));
                 }
             }
-            if (repairsEnabled) {
+            if (config.repairsEnabled()) {
                 report(createSimpleMeasurement(DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME,
                         (double) infoProvider.getRepairSessions()));
             }
-            if (nodeInfoEnabled) {
+            if (config.nodeInfoEnabled()) {
                 NodeInfo nodeInfo = infoProvider.getNodeInfo();
                 report(createMeasurement(nodeInfo));
             }
@@ -122,8 +101,8 @@ public class StatusModule extends Module {
 
     private Measurement createMeasurement(CompactionSettingsInfo compactionSettingsInfo) {
         final Map<String, String> tags = new HashMap<>(4);
-        tags.put("host", globalConfiguration.hostname);
-        tags.put("systemName", globalConfiguration.systemName);
+        tags.put("host", configuration.global.hostname);
+        tags.put("systemName", configuration.global.systemName);
 
         final Map<String, String> fields = new HashMap<>(5);
         fields.put("compactionThroughput", Integer.toString(compactionSettingsInfo.compactionThroughput));
@@ -138,8 +117,8 @@ public class StatusModule extends Module {
 
     private Measurement createMeasurement(CompactionInfo compactionInfo) {
         final Map<String, String> tags = new HashMap<>(4);
-        tags.put("host", globalConfiguration.hostname);
-        tags.put("systemName", globalConfiguration.systemName);
+        tags.put("host", configuration.global.hostname);
+        tags.put("systemName", configuration.global.systemName);
         tags.put("keyspace", compactionInfo.keyspace);
         tags.put("columnfamily", compactionInfo.columnFamily);
         tags.put("taskType", compactionInfo.taskType);
@@ -157,8 +136,8 @@ public class StatusModule extends Module {
 
     private Measurement createMeasurement(TPStatsInfo tpStatsInfo) {
         final Map<String, String> tags = new HashMap<>(1);
-        tags.put("host", globalConfiguration.hostname);
-        tags.put("systemName", globalConfiguration.systemName);
+        tags.put("host", configuration.global.hostname);
+        tags.put("systemName", configuration.global.systemName);
 
         final Map<String, String> fields = new HashMap<>(5);
         fields.put("activeTasks", Long.toString(tpStatsInfo.activeTasks));
@@ -167,14 +146,14 @@ public class StatusModule extends Module {
         fields.put("currentlyBlockedTasks", Long.toString(tpStatsInfo.currentlyBlockedTasks));
         fields.put("totalBlockedTasks", Long.toString(tpStatsInfo.totalBlockedTasks));
 
-        return Measurement.createComplex(tpStatsInfo.threadPool, System.currentTimeMillis(), TimeUnit.MILLISECONDS,
-                tags, fields);
+        return Measurement
+                .createComplex(tpStatsInfo.threadPool, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
     }
 
     private Measurement createSimpleMeasurement(String name, double value) {
         final Map<String, String> tags = new HashMap<>(1);
-        tags.put("host", globalConfiguration.hostname);
-        tags.put("systemName", globalConfiguration.systemName);
+        tags.put("host", configuration.global.hostname);
+        tags.put("systemName", configuration.global.systemName);
 
         final Map<String, String> fields = new HashMap<>();
 
@@ -183,8 +162,8 @@ public class StatusModule extends Module {
 
     private Measurement createMeasurement(NodeInfo nodeInfo) {
         final Map<String, String> tags = new HashMap<>(1);
-        tags.put("host", globalConfiguration.hostname);
-        tags.put("systemName", globalConfiguration.systemName);
+        tags.put("host", configuration.global.hostname);
+        tags.put("systemName", configuration.global.systemName);
 
         final Map<String, String> fields = new HashMap<>(5);
         fields.put("gossipActive", Integer.toString(nodeInfo.isGossipActive()));
@@ -192,8 +171,9 @@ public class StatusModule extends Module {
         fields.put("nativeTransportActive", Integer.toString(nodeInfo.isNativeTransportActive()));
         fields.put("uptimeInSeconds", Long.toString(nodeInfo.uptimeInSeconds));
 
-        return Measurement.createComplex(DEFAULT_NODE_INFO_MEASUREMENT_NAME, System.currentTimeMillis(),
-                TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement
+                .createComplex(DEFAULT_NODE_INFO_MEASUREMENT_NAME, System.currentTimeMillis(), TimeUnit.MILLISECONDS,
+                        tags, fields);
     }
 
 }

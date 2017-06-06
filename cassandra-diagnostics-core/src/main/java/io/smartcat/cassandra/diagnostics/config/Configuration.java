@@ -74,11 +74,11 @@ public class Configuration {
         sb.append(", httpApiEnabled: " + global.httpApiEnabled);
         sb.append(", httpApiPort: " + global.httpApiPort);
         sb.append(", reporters: ");
-        for (ReporterConfiguration reporter: reporters) {
+        for (ReporterConfiguration reporter : reporters) {
             sb.append(reporter.toString());
         }
         sb.append(", modules: ");
-        for (ModuleConfiguration module: modules) {
+        for (ModuleConfiguration module : modules) {
             sb.append(module.toString());
         }
         sb.append(" }");

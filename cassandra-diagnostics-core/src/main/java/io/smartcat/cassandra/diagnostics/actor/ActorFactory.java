@@ -2,7 +2,6 @@ package io.smartcat.cassandra.diagnostics.actor;
 
 import java.lang.reflect.Constructor;
 
-import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.japi.Creator;
 
@@ -21,10 +20,10 @@ public class ActorFactory {
      * @param className Class name
      * @param <T>       Actor type
      * @return T Actor instance
-     * @throws ClassNotFoundException
-     * @throws NoSuchMethodException
+     * @throws ClassNotFoundException no class found
+     * @throws NoSuchMethodException  no such method
      */
-    public static <T extends AbstractActor> Props props(final String className)
+    public static <T extends BaseActor> Props props(final String className)
             throws ClassNotFoundException, NoSuchMethodException {
         Constructor<?> constructor = Class.forName(className).getConstructor();
         return Props.create(new Creator<T>() {

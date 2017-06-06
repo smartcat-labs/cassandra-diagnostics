@@ -20,11 +20,12 @@ import org.slf4j.LoggerFactory;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import akka.cluster.Cluster;
 import akka.dispatch.OnSuccess;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import fi.iki.elonen.NanoHTTPD;
-import io.smartcat.cassandra.diagnostics.actor.GracefulShutdown;
+import io.smartcat.cassandra.diagnostics.actor.Messages;
 import io.smartcat.cassandra.diagnostics.actor.NodeGuardianActor;
 import io.smartcat.cassandra.diagnostics.api.DiagnosticsApi;
 import io.smartcat.cassandra.diagnostics.api.DiagnosticsApiImpl;
@@ -57,6 +58,8 @@ public class Diagnostics implements QueryReporter {
 
     private final ActorSystem system;
 
+    private final Cluster cluster;
+
     private final ActorRef nodeGuardian;
 
     private final Timeout timeout = new Timeout(5, TimeUnit.SECONDS);
@@ -67,20 +70,22 @@ public class Diagnostics implements QueryReporter {
      * Constructor.
      */
     public Diagnostics() {
-        system = ActorSystem.create("cassandra-diagnostics");
+        system = ActorSystem.create("diagnostics-system");
         system.registerOnTermination(this::shutdown);
-
-        nodeGuardian = system.actorOf(Props.create(NodeGuardianActor.class), "node-guardian");
+        cluster = Cluster.get(system);
 
         config = loadConfiguration();
         if (config.global.hostname == null || config.global.hostname.isEmpty()) {
             config.global.hostname = Utils.resolveHostname();
         }
+
+        nodeGuardian = system.actorOf(Props.create(NodeGuardianActor.class), "node-guardian");
+        nodeGuardian.tell(config, null);
     }
 
     private void shutdown() {
         if (isTerminated.compareAndSet(false, true)) {
-            Patterns.ask(nodeGuardian, new GracefulShutdown(), timeout).onComplete(new OnSuccess() {
+            Patterns.ask(nodeGuardian, new Messages.GracefulShutdown(), timeout).onComplete(new OnSuccess() {
                 @Override
                 public void onSuccess(Object result) throws Throwable {
                     system.terminate();
@@ -102,9 +107,11 @@ public class Diagnostics implements QueryReporter {
      * Completes the initialization and activates the query processing.
      */
     public void activate() {
-        this.diagnosticsProcessor = new DiagnosticsProcessor(config);
-        this.isRunning.set(true);
-        initEndpoints();
+        nodeGuardian.tell(new Messages.Start(), null);
+
+        //        this.diagnosticsProcessor = new DiagnosticsProcessor(config);
+        //        this.isRunning.set(true);
+        //        initEndpoints();
     }
 
     private Configuration loadConfiguration() {

@@ -4,15 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
-import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.Query;
-import io.smartcat.cassandra.diagnostics.Query.StatementType;
-import io.smartcat.cassandra.diagnostics.actor.ModuleActor;
+import io.smartcat.cassandra.diagnostics.module.ModuleActor;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 import io.smartcat.cassandra.diagnostics.module.AtomicCounter;
+import io.smartcat.cassandra.diagnostics.query.Query;
+import io.smartcat.cassandra.diagnostics.query.Query.StatementType;
 
 /**
  * Slow query module providing reports of query execution times over a defined threshold.
@@ -107,9 +106,9 @@ public class SlowQueryModule extends ModuleActor {
             fields.put("statement", query.statement());
             fields.put("consistencyLevel", query.consistencyLevel().name());
 
-            final Measurement measurement = Measurement.createSimple(service,
-                    (double) query.executionTimeInMilliseconds(), query.startTimeInMilliseconds(),
-                    TimeUnit.MILLISECONDS, tags, fields);
+            final Measurement measurement = Measurement
+                    .createSimple(service, (double) query.executionTimeInMilliseconds(),
+                            query.startTimeInMilliseconds(), tags, fields);
 
             logger.debug("Measurement transformed: {}", measurement);
             report(measurement);
@@ -135,7 +134,6 @@ public class SlowQueryModule extends ModuleActor {
         tags.put("host", configuration.global.hostname);
         tags.put("systemName", configuration.global.systemName);
         tags.put("statementType", statementType.toString());
-        return Measurement.createSimple(slowQueryCountMeasurementName, count, System.currentTimeMillis(),
-                TimeUnit.MILLISECONDS, tags, new HashMap<String, String>());
+        return Measurement.createSimple(slowQueryCountMeasurementName, count, System.currentTimeMillis(), tags);
     }
 }

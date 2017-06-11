@@ -6,23 +6,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.cassandra.tools.NodeProbe;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Multimap;
 
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
 import io.smartcat.cassandra.diagnostics.info.CompactionSettingsInfo;
-import io.smartcat.cassandra.diagnostics.info.InfoProvider;
+import io.smartcat.cassandra.diagnostics.info.InfoProviderActor;
 import io.smartcat.cassandra.diagnostics.info.NodeInfo;
 import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
 
 /**
  * NodeProbe class wrapper that exposes data and action functions.
  */
-public class NodeProbeWrapper implements InfoProvider {
-
-    private static final Logger logger = LoggerFactory.getLogger(NodeProbeWrapper.class);
+public class NodeProbeWrapper extends InfoProviderActor {
 
     private final NodeProbe nodeProbe;
 
@@ -31,25 +27,18 @@ public class NodeProbeWrapper implements InfoProvider {
     /**
      * NodeProbe constructor.
      *
-     * @param host cassandra jmx host
-     * @param port cassandra jmx port
+     * @param configuration Connector configuration
      * @throws IOException JMX connection exception
      */
-    public NodeProbeWrapper(String host, int port) throws IOException {
-        this.nodeProbe = new NodeProbe(host, port);
-    }
+    public NodeProbeWrapper(final ConnectorConfiguration configuration) throws IOException {
+        super(configuration);
 
-    /**
-     * NodeProbe constructor.
-     *
-     * @param host cassandra jmx host
-     * @param port cassandra jmx port
-     * @param username cassandra jmx username (optional)
-     * @param password cassandra jmx password (optional)
-     * @throws IOException JMX connection exception
-     */
-    public NodeProbeWrapper(String host, int port, String username, String password) throws IOException {
-        this.nodeProbe = new NodeProbe(host, port, username, password);
+        if (configuration.jmxAuthEnabled) {
+            this.nodeProbe = new NodeProbe(configuration.jmxHost, configuration.jmxPort, configuration.jmxUsername,
+                    configuration.jmxPassword);
+        } else {
+            this.nodeProbe = new NodeProbe(configuration.jmxHost, configuration.jmxPort);
+        }
     }
 
     /**
@@ -57,6 +46,7 @@ public class NodeProbeWrapper implements InfoProvider {
      *
      * @return compaction info list
      */
+    @Override
     public List<CompactionInfo> getCompactions() {
         List<CompactionInfo> compactions = new ArrayList<>();
         for (Map<String, String> compaction : this.nodeProbe.getCompactionManagerProxy().getCompactions()) {
@@ -72,6 +62,7 @@ public class NodeProbeWrapper implements InfoProvider {
      *
      * @return thread pools info list
      */
+    @Override
     public List<TPStatsInfo> getTPStats() {
         List<TPStatsInfo> tpstats = new ArrayList<>();
         Multimap<String, String> threadPools = nodeProbe.getThreadPools();
@@ -92,16 +83,17 @@ public class NodeProbeWrapper implements InfoProvider {
      *
      * @return repair sessions info
      */
+    @Override
     public long getRepairSessions() {
         long repairSessions = 0;
 
         Multimap<String, String> threadPools = nodeProbe.getThreadPools();
         for (Map.Entry<String, String> tpool : threadPools.entries()) {
             if (tpool.getValue().startsWith(REPAIR_THREAD_POOL_PREFIX)) {
-                int activeRepairSessions = (int) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(),
-                        "ActiveTasks");
-                long pendingRepairSessions = (long) nodeProbe.getThreadPoolMetric(tpool.getKey(), tpool.getValue(),
-                        "PendingTasks");
+                int activeRepairSessions = (int) nodeProbe
+                        .getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "ActiveTasks");
+                long pendingRepairSessions = (long) nodeProbe
+                        .getThreadPoolMetric(tpool.getKey(), tpool.getValue(), "PendingTasks");
                 repairSessions = activeRepairSessions + pendingRepairSessions;
             }
         }

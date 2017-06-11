@@ -1,4 +1,4 @@
-package io.smartcat.cassandra.diagnostics;
+package io.smartcat.cassandra.diagnostics.query;
 
 /**
  * This class represents a query report.

@@ -4,20 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.reporter.Reporter;
-import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
+import io.smartcat.cassandra.diagnostics.config.Configuration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
+import io.smartcat.cassandra.diagnostics.reporter.ReporterActor;
 
-public class LatchTestReporter extends Reporter {
+public class LatchTestReporter extends ReporterActor {
 
     private CountDownLatch latch;
 
     private final List<Measurement> reported = new ArrayList<>();
 
-    public LatchTestReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration,
-            CountDownLatch latch) {
-        super(configuration, globalConfiguration);
+    public LatchTestReporter(Configuration configuration, CountDownLatch latch) {
+        super("latch-test-reporter", configuration);
         this.latch = latch;
     }
 

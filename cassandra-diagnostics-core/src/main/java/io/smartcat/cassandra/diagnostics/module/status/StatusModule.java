@@ -6,16 +6,23 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import io.smartcat.cassandra.diagnostics.DiagnosticsAgent;
-import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.actor.ModuleActor;
+import akka.actor.ActorRef;
+import akka.cluster.pubsub.DistributedPubSubMediator;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
+import io.smartcat.cassandra.diagnostics.actor.Topics;
+import io.smartcat.cassandra.diagnostics.actor.messages.Query;
+import io.smartcat.cassandra.diagnostics.actor.messages.QueryResponse;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
 import io.smartcat.cassandra.diagnostics.info.CompactionSettingsInfo;
-import io.smartcat.cassandra.diagnostics.info.InfoProvider;
 import io.smartcat.cassandra.diagnostics.info.NodeInfo;
 import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
+import io.smartcat.cassandra.diagnostics.module.ModuleActor;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
 
 /**
  * Status module collecting node status information.
@@ -32,9 +39,11 @@ public class StatusModule extends ModuleActor {
 
     private static final String DEFAULT_NODE_INFO_MEASUREMENT_NAME = "node_info";
 
+    private final Timeout timeout = new Timeout(500, TimeUnit.MILLISECONDS);
+
     private StatusConfiguration config;
 
-    private InfoProvider infoProvider;
+    private ActorRef infoProvider;
 
     private Timer timer;
 
@@ -49,18 +58,17 @@ public class StatusModule extends ModuleActor {
         super(moduleName, configuration);
 
         config = StatusConfiguration.create(moduleConfiguration.options);
-        infoProvider = DiagnosticsAgent.getInfoProvider();
+    }
+
+    @Override
+    public Receive createReceive() {
+        return defaultReceive().match(QueryResponse.InfoProviderRef.class, this::infoProviderResponse).build();
     }
 
     @Override
     protected void start() {
-        if (infoProvider == null) {
-            logger.warning("Failed to initialize StatusModule. Info provider is null");
-            timer = null;
-        } else {
-            timer = new Timer(STATUS_THREAD_NAME);
-            timer.scheduleAtFixedRate(new StatusTask(), 0, config.reportingRateInMillis());
-        }
+        mediator.tell(new DistributedPubSubMediator.Publish(Topics.INFO_PROVIDER_TOPIC, new Query.InfoProviderRef()),
+                getSelf());
     }
 
     @Override
@@ -71,6 +79,13 @@ public class StatusModule extends ModuleActor {
         }
     }
 
+    private void infoProviderResponse(final QueryResponse.InfoProviderRef response) {
+        this.infoProvider = response.infoProvider;
+
+        timer = new Timer(STATUS_THREAD_NAME);
+        timer.scheduleAtFixedRate(new StatusTask(), 0, config.reportingRateInMillis());
+    }
+
     /**
      * Status collector task that's executed at configured period.
      */
@@ -78,23 +93,65 @@ public class StatusModule extends ModuleActor {
         @Override
         public void run() {
             if (config.compactionsEnabled()) {
-                report(createMeasurement(infoProvider.getCompactionSettingsInfo()));
-                for (CompactionInfo compactionInfo : infoProvider.getCompactions()) {
-                    report(createMeasurement(compactionInfo));
-                }
+                queryCompactions();
             }
             if (config.tpStatsEnabled()) {
-                for (TPStatsInfo tpStatsInfo : infoProvider.getTPStats()) {
-                    report(createMeasurement(tpStatsInfo));
-                }
+                queryTPStats();
             }
             if (config.repairsEnabled()) {
-                report(createSimpleMeasurement(DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME,
-                        (double) infoProvider.getRepairSessions()));
+                queryRepairSessions();
             }
             if (config.nodeInfoEnabled()) {
-                NodeInfo nodeInfo = infoProvider.getNodeInfo();
-                report(createMeasurement(nodeInfo));
+                queryNodeInfo();
+            }
+        }
+
+        private void queryCompactions() {
+            final Future<Object> future = Patterns.ask(infoProvider, new Query.CompactionSettingsInfo(), timeout);
+            try {
+                final QueryResponse.CompactionsResp result = (QueryResponse.CompactionsResp) Await
+                        .result(future, timeout.duration());
+                for (CompactionInfo compactionInfo : result.compactionInfo) {
+                    report(createMeasurement(compactionInfo));
+                }
+            } catch (Exception e) {
+                logger.error("Failed to query/report compaction info from info provider.");
+            }
+        }
+
+        private void queryTPStats() {
+            final Future<Object> future = Patterns.ask(infoProvider, new Query.TPStats(), timeout);
+            try {
+                final QueryResponse.TPStatsResp result = (QueryResponse.TPStatsResp) Await
+                        .result(future, timeout.duration());
+                for (TPStatsInfo tpStatsInfo : result.tpStatsInfo) {
+                    report(createMeasurement(tpStatsInfo));
+                }
+            } catch (Exception e) {
+                logger.error("Failed to query/report thread pool stats from info provider.");
+            }
+        }
+
+        private void queryRepairSessions() {
+            final Future<Object> future = Patterns.ask(infoProvider, new Query.RepairSessions(), timeout);
+            try {
+                final QueryResponse.RepairSessionsResp result = (QueryResponse.RepairSessionsResp) Await
+                        .result(future, timeout.duration());
+                report(createSimpleMeasurement(DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME,
+                        (double) result.repairSessions));
+            } catch (Exception e) {
+                logger.error("Failed to query/report repair sessions from info provider.");
+            }
+        }
+
+        private void queryNodeInfo() {
+            final Future<Object> future = Patterns.ask(infoProvider, new Query.NodeInfo(), timeout);
+            try {
+                final QueryResponse.NodeInfoResp result = (QueryResponse.NodeInfoResp) Await
+                        .result(future, timeout.duration());
+                report(createMeasurement(result.nodeInfo));
+            } catch (Exception e) {
+                logger.error("Failed to query/report compaction info from info provider.");
             }
         }
     }
@@ -111,8 +168,9 @@ public class StatusModule extends ModuleActor {
         fields.put("coreValidatorThreads", Integer.toString(compactionSettingsInfo.coreValidatorThreads));
         fields.put("maximumValidatorThreads", Integer.toString(compactionSettingsInfo.maximumValidatorThreads));
 
-        return Measurement.createComplex(DEFAULT_COMPACTION_SETTINGS_INFO_MEASUREMENT_NAME, System.currentTimeMillis(),
-                TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement
+                .createComplex(DEFAULT_COMPACTION_SETTINGS_INFO_MEASUREMENT_NAME, System.currentTimeMillis(), tags,
+                        fields);
     }
 
     private Measurement createMeasurement(CompactionInfo compactionInfo) {
@@ -130,8 +188,8 @@ public class StatusModule extends ModuleActor {
         fields.put("completed", Long.toString(compactionInfo.completed));
         fields.put("completedPercentage", Double.toString(compactionInfo.completedPercentage));
 
-        return Measurement.createComplex(DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME, System.currentTimeMillis(),
-                TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement
+                .createComplex(DEFAULT_COMPACTION_INFO_MEASUREMENT_NAME, System.currentTimeMillis(), tags, fields);
     }
 
     private Measurement createMeasurement(TPStatsInfo tpStatsInfo) {
@@ -146,8 +204,7 @@ public class StatusModule extends ModuleActor {
         fields.put("currentlyBlockedTasks", Long.toString(tpStatsInfo.currentlyBlockedTasks));
         fields.put("totalBlockedTasks", Long.toString(tpStatsInfo.totalBlockedTasks));
 
-        return Measurement
-                .createComplex(tpStatsInfo.threadPool, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement.createComplex(tpStatsInfo.threadPool, System.currentTimeMillis(), tags, fields);
     }
 
     private Measurement createSimpleMeasurement(String name, double value) {
@@ -155,9 +212,7 @@ public class StatusModule extends ModuleActor {
         tags.put("host", configuration.global.hostname);
         tags.put("systemName", configuration.global.systemName);
 
-        final Map<String, String> fields = new HashMap<>();
-
-        return Measurement.createSimple(name, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement.createSimple(name, value, System.currentTimeMillis(), tags);
     }
 
     private Measurement createMeasurement(NodeInfo nodeInfo) {
@@ -171,9 +226,7 @@ public class StatusModule extends ModuleActor {
         fields.put("nativeTransportActive", Integer.toString(nodeInfo.isNativeTransportActive()));
         fields.put("uptimeInSeconds", Long.toString(nodeInfo.uptimeInSeconds));
 
-        return Measurement
-                .createComplex(DEFAULT_NODE_INFO_MEASUREMENT_NAME, System.currentTimeMillis(), TimeUnit.MILLISECONDS,
-                        tags, fields);
+        return Measurement.createComplex(DEFAULT_NODE_INFO_MEASUREMENT_NAME, System.currentTimeMillis(), tags, fields);
     }
 
 }

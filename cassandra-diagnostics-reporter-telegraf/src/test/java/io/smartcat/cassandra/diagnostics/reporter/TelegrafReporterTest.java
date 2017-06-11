@@ -23,8 +23,8 @@ import org.powermock.api.support.membermodification.MemberModifier;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ TelegrafReporter.class })

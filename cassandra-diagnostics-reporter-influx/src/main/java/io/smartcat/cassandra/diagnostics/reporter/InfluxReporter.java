@@ -6,21 +6,14 @@ import java.util.concurrent.TimeUnit;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.config.Configuration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
- * An InfluxDB based {@link Reporter} implementation. Query reports are sent to influxdb.
+ * An InfluxDB based {@link ReporterActor} implementation. Query reports are sent to influxdb.
  */
-public class InfluxReporter extends Reporter {
-
-    /**
-     * Class logger.
-     */
-    private static final Logger logger = LoggerFactory.getLogger(InfluxReporter.class);
+public class InfluxReporter extends ReporterActor {
 
     private static final String ADDRESS_PROP = "influxDbAddress";
 
@@ -59,69 +52,74 @@ public class InfluxReporter extends Reporter {
     /**
      * Constructor.
      *
-     * @param configuration        Reporter configuration
-     * @param globalConfiguration  Global diagnostics configuration
+     * @param reporterName  Reporter class name
+     * @param configuration Configuration
      */
-    public InfluxReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
-        super(configuration, globalConfiguration);
+    public InfluxReporter(final String reporterName, final Configuration configuration) {
+        super(reporterName, configuration);
 
-        if (!configuration.options.containsKey(ADDRESS_PROP)) {
-            logger.warn("Not properly configured. Missing influx address. Aborting initialization.");
+        if (!reporterConfiguration.options.containsKey(ADDRESS_PROP)) {
+            logger.warning("Not properly configured. Missing influx address. Aborting initialization.");
             return;
         }
 
-        if (!configuration.options.containsKey(USERNAME_PROP)) {
-            logger.warn("Not properly configured. Missing influx username. Aborting initialization.");
+        if (!reporterConfiguration.options.containsKey(USERNAME_PROP)) {
+            logger.warning("Not properly configured. Missing influx username. Aborting initialization.");
             return;
         }
 
-        if (!configuration.options.containsKey(DB_NAME_PROP)) {
-            logger.warn("Not properly configured. Missing influx db name. Aborting initialization.");
+        if (!reporterConfiguration.options.containsKey(DB_NAME_PROP)) {
+            logger.warning("Not properly configured. Missing influx db name. Aborting initialization.");
             return;
         }
 
-        dbAddress = configuration.getOption(ADDRESS_PROP);
-        username = configuration.getDefaultOption(USERNAME_PROP, "");
-        password = configuration.getDefaultOption(PASSWORD_PROP, "");
+        dbAddress = reporterConfiguration.getOption(ADDRESS_PROP);
+        username = reporterConfiguration.getDefaultOption(USERNAME_PROP, "");
+        password = reporterConfiguration.getDefaultOption(PASSWORD_PROP, "");
 
-        dbName = configuration.getDefaultOption(DB_NAME_PROP, DEFAULT_DB_NAME);
-        retentionPolicy = configuration.getDefaultOption(RETENTION_POLICY_PROP, DEFAULT_RETENTION_POLICY);
+        dbName = reporterConfiguration.getDefaultOption(DB_NAME_PROP, DEFAULT_DB_NAME);
+        retentionPolicy = reporterConfiguration.getDefaultOption(RETENTION_POLICY_PROP, DEFAULT_RETENTION_POLICY);
 
         influx = InfluxDBFactory.connect(dbAddress, username, password);
         influx.createDatabase(dbName);
 
-        final int pointsInBatch = configuration.getDefaultOption(POINTS_IN_BATCH_PROP, DEFAULT_POINTS_IN_BATCH);
-        final int flushPeriodInSeconds = configuration
+        final int pointsInBatch = reporterConfiguration.getDefaultOption(POINTS_IN_BATCH_PROP, DEFAULT_POINTS_IN_BATCH);
+        final int flushPeriodInSeconds = reporterConfiguration
                 .getDefaultOption(FLUSH_PERIOD_IN_SECONDS_PROP, DEFAULT_FLUSH_PERIOD_IN_SECONDS);
 
         influx.enableBatch(pointsInBatch, flushPeriodInSeconds, TimeUnit.SECONDS);
     }
 
     @Override
-    public void report(Measurement measurement) {
+    protected void stop() {
+        influx.close();
+    }
+
+    @Override
+    protected void report(Measurement measurement) {
         if (influx == null) {
-            logger.warn("InfluxDB client is not initialized");
+            logger.warning("InfluxDB client is not initialized");
             return;
         }
 
         logger.debug("Sending Query: {}", measurement.toString());
         try {
-            final Point.Builder builder = Point.measurement(measurement.name());
-            builder.time(measurement.time(), measurement.timeUnit());
-            builder.tag("type", measurement.type().toString());
-            for (Map.Entry<String, String> tag : measurement.tags().entrySet()) {
+            final Point.Builder builder = Point.measurement(measurement.name);
+            builder.time(measurement.time, TimeUnit.MILLISECONDS);
+            builder.tag("type", measurement.type.toString());
+            for (Map.Entry<String, String> tag : measurement.tags.entrySet()) {
                 builder.tag(tag.getKey(), tag.getValue());
             }
-            for (Map.Entry<String, String> field : measurement.fields().entrySet()) {
+            for (Map.Entry<String, String> field : measurement.fields.entrySet()) {
                 builder.addField(field.getKey(), field.getValue());
             }
             if (measurement.isSimple()) {
-                builder.addField("value", measurement.getValue());
+                builder.addField("value", measurement.value);
             }
 
             influx.write(dbName, retentionPolicy, builder.build());
         } catch (Exception e) {
-            logger.warn("Failed to send report to influx", e);
+            logger.warning("Failed to send report to influx", e);
         }
     }
 

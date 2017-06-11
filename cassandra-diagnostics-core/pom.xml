@@ -14,12 +14,10 @@
         <version.commons.lang3>3.4</version.commons.lang3>
         <version.nanohttpd>2.3.1</version.nanohttpd>
         <version.powermock>1.6.5</version.powermock>
-        <version.akka>2.5.2</version.akka>
-        <version.logback>1.2.3</version.logback>
     </properties>
 
     <dependencies>
-
+        <!--Akka dependencies-->
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-actor_2.12</artifactId>
@@ -39,6 +37,12 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-slf4j_2.12</artifactId>
             <version>${version.akka}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-testkit_2.12</artifactId>
+            <version>${version.akka}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

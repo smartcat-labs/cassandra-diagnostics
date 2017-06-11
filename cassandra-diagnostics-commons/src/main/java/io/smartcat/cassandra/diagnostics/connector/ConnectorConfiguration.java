@@ -6,6 +6,11 @@ package io.smartcat.cassandra.diagnostics.connector;
 public class ConnectorConfiguration {
 
     /**
+     * {@code ConnectorActor} implementation class name.
+     */
+    public String connector = "io.smartcat.cassandra.diagnostics.connector.Connector";
+
+    /**
      * The number of worker threads that asynchronously process
      * diagnostics events.
      */

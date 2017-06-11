@@ -23,8 +23,8 @@ import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 public class KafkaReporterTest {
 

@@ -1,7 +1,7 @@
 package io.smartcat.cassandra.diagnostics.actor;
 
 import akka.actor.ActorRef;
-import akka.actor.Props;
+import io.smartcat.cassandra.diagnostics.actor.messages.Command;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 
 /**
@@ -9,19 +9,32 @@ import io.smartcat.cassandra.diagnostics.config.Configuration;
  */
 public class NodeGuardianActor extends ClusterAware {
 
+    private final Configuration configuration;
+
     private final ActorRef reporterGuardianActor;
 
     private final ActorRef moduleGuardianActor;
 
+    private final ActorRef connector;
+
     /**
      * Constructor.
+     *
+     * @param configuration Configuration
      */
-    public NodeGuardianActor() {
-        reporterGuardianActor = getContext().actorOf(Props.create(ReporterGuardianActor.class));
+    public NodeGuardianActor(final Configuration configuration) {
+        this.configuration = configuration;
+
+        this.reporterGuardianActor = getContext()
+                .actorOf(ActorFactory.props(ReporterGuardianActor.class, configuration));
         getContext().watch(reporterGuardianActor);
 
-        moduleGuardianActor = getContext().actorOf(Props.create(ModuleGuardianActor.class));
+        this.moduleGuardianActor = getContext().actorOf(ActorFactory.props(ModuleGuardianActor.class, configuration));
         getContext().watch(moduleGuardianActor);
+
+        this.connector = getContext()
+                .actorOf(ActorFactory.connectorProps(configuration.connector.connector, configuration));
+        getContext().watch(connector);
 
         logger.debug("NodeGuardian created");
     }
@@ -33,30 +46,21 @@ public class NodeGuardianActor extends ClusterAware {
      */
     @Override
     public Receive createReceive() {
-        return receiveBuilder()
-                .match(Configuration.class, this::configure)
-                .match(Messages.Start.class, this::start)
-                .match(Messages.Stop.class, this::stop)
-                .match(Messages.GracefulShutdown.class, o -> gracefulShutdown(getSender()))
-                .build();
+        return receiveBuilder().match(Command.Start.class, this::start).match(Command.Stop.class, this::stop)
+                .match(Command.GracefulShutdown.class, this::gracefulShutdown).build();
     }
 
-    private void configure(Configuration configuration) {
-        reporterGuardianActor.tell(configuration, getSelf());
-        moduleGuardianActor.tell(configuration, getSelf());
-    }
-
-    private void start(Messages.Start start) {
-//        reporterGuardianActor.tell(start, getSelf());
+    private void start(Command.Start start) {
+        reporterGuardianActor.tell(start, getSelf());
         moduleGuardianActor.tell(start, getSelf());
     }
 
-    private void stop(Messages.Stop stop) {
-//        reporterGuardianActor.tell(stop, getSelf());
+    private void stop(Command.Stop stop) {
+        reporterGuardianActor.tell(stop, getSelf());
         moduleGuardianActor.tell(stop, getSelf());
     }
 
-    private void gracefulShutdown(ActorRef listener) {
+    private void gracefulShutdown(Command.GracefulShutdown shutdown) {
 
     }
 }

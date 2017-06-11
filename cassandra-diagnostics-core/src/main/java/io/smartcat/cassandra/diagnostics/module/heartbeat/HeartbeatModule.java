@@ -4,12 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
-import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.actor.ModuleActor;
+import io.smartcat.cassandra.diagnostics.module.ModuleActor;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
  * Heartbeat module providing logged heartbeats at defined intervals.
@@ -69,8 +68,7 @@ public class HeartbeatModule extends ModuleActor {
         final Map<String, String> tags = new HashMap<>(1);
         tags.put("host", configuration.global.hostname);
         tags.put("systemName", configuration.global.systemName);
-        Measurement measurement = Measurement
-                .createSimple(service, 1.0, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, new HashMap<>());
+        Measurement measurement = Measurement.createSimple(service, 1.0, System.currentTimeMillis(), tags);
         return measurement;
     }
 }

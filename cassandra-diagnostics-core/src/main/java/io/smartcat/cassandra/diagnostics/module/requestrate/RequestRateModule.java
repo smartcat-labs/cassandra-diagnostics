@@ -10,14 +10,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
-import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.Query;
-import io.smartcat.cassandra.diagnostics.actor.ModuleActor;
+import io.smartcat.cassandra.diagnostics.module.ModuleActor;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 import io.smartcat.cassandra.diagnostics.module.AtomicCounter;
+import io.smartcat.cassandra.diagnostics.query.Query;
 
 /**
  * Request rate module providing request rates at defined intervals. Request rates can be total or separate for read
@@ -54,8 +53,8 @@ public class RequestRateModule extends ModuleActor {
         rateFactor = config.timeunit().toSeconds(config.period());
         requestRates = initRequestRates(config);
 
-        logger.info("RequestRate module initialized with {} {} reporting period and requests to report: {}.", config.period(),
-                config.timeunit().name(), config.requestsToReport());
+        logger.info("RequestRate module initialized with {} {} reporting period and requests to report: {}.",
+                config.period(), config.timeunit().name(), config.requestsToReport());
     }
 
     @Override
@@ -76,8 +75,8 @@ public class RequestRateModule extends ModuleActor {
         final String consistencyLevel = query.consistencyLevel().name();
 
         for (RequestRate requestRate : requestRates) {
-            if (statementMatches(statementType, requestRate)
-                    && consistencyLevelMatches(consistencyLevel, requestRate)) {
+            if (statementMatches(statementType, requestRate) && consistencyLevelMatches(consistencyLevel,
+                    requestRate)) {
                 requestRate.increment();
             }
         }
@@ -112,13 +111,12 @@ public class RequestRateModule extends ModuleActor {
     }
 
     private boolean consistencyLevelMatches(final String consistencyLevel, RequestRate requestRate) {
-        return requestRate.consistencyLevel.equals(ALL_CONSISTENCY_LEVELS)
-                || requestRate.consistencyLevel.equals(consistencyLevel);
+        return requestRate.consistencyLevel.equals(ALL_CONSISTENCY_LEVELS) || requestRate.consistencyLevel
+                .equals(consistencyLevel);
     }
 
     private boolean statementMatches(final String statementType, RequestRate requestRate) {
-        return requestRate.statementType.equals(ALL_STATEMENT_TYPES)
-                || requestRate.statementType.equals(statementType);
+        return requestRate.statementType.equals(ALL_STATEMENT_TYPES) || requestRate.statementType.equals(statementType);
     }
 
     private Set<RequestRate> initRequestRates(RequestRateConfiguration config) {
@@ -154,7 +152,6 @@ public class RequestRateModule extends ModuleActor {
         tags.put("systemName", configuration.global.systemName);
         tags.put("statementType", statementType);
         tags.put("consistencyLevel", consistencyLevel);
-        return Measurement.createSimple(service, rate, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
-                new HashMap<>());
+        return Measurement.createSimple(service, rate, System.currentTimeMillis(), tags);
     }
 }

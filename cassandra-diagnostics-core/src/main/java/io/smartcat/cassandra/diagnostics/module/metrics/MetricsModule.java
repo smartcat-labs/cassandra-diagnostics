@@ -3,8 +3,8 @@ package io.smartcat.cassandra.diagnostics.module.metrics;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.actor.ModuleActor;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
+import io.smartcat.cassandra.diagnostics.module.ModuleActor;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 

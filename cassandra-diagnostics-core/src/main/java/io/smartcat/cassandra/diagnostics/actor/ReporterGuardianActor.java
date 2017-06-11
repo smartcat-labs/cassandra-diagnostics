@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import akka.routing.ActorRefRoutee;
 import akka.routing.BroadcastRoutingLogic;
 import akka.routing.Router;
+import io.smartcat.cassandra.diagnostics.actor.messages.Command;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 
 /**
@@ -12,7 +13,29 @@ import io.smartcat.cassandra.diagnostics.config.Configuration;
  */
 public class ReporterGuardianActor extends BaseActor {
 
+    private final Configuration configuration;
+
     private Router router = new Router(new BroadcastRoutingLogic());
+
+    /**
+     * Constructor.
+     *
+     * @param configuration Configuration
+     */
+    public ReporterGuardianActor(final Configuration configuration) {
+        this.configuration = configuration;
+
+        this.configuration.reporters.stream().forEach((reporterConfig) -> {
+            try {
+                ActorRef reporter = getContext()
+                        .actorOf(ActorFactory.reporterProps(reporterConfig.reporter, configuration));
+                getContext().watch(reporter);
+                router = router.addRoutee(new ActorRefRoutee(reporter));
+            } catch (Exception e) {
+                logger.warning("Failed to create reporter by class name " + reporterConfig.reporter, e);
+            }
+        });
+    }
 
     /**
      * Build actor's receive pattern.
@@ -22,21 +45,9 @@ public class ReporterGuardianActor extends BaseActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Configuration.class, this::configure)
+                .match(Command.Start.class, o -> router.route(o, getSelf()))
+                .match(Command.Stop.class, o -> router.route(o, getSelf()))
                 .build();
-    }
-
-    private void configure(final Configuration configuration) {
-        logger.debug("Received configuration");
-        configuration.reporters.stream().forEach((reporterConfig) -> {
-            try {
-                ActorRef reporter = getContext().actorOf(ReporterActor.props(reporterConfig));
-                getContext().watch(reporter);
-                router = router.addRoutee(new ActorRefRoutee(reporter));
-            } catch (Exception e) {
-                logger.warning("Failed to create reporter by class name " + reporterConfig.reporter, e);
-            }
-        });
     }
 
 }

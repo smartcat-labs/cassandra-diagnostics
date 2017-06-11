@@ -17,8 +17,9 @@ import org.slf4j.LoggerFactory;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
-import io.smartcat.cassandra.diagnostics.Query;
-import io.smartcat.cassandra.diagnostics.Query.ConsistencyLevel;
+import akka.actor.ActorRef;
+import io.smartcat.cassandra.diagnostics.query.Query;
+import io.smartcat.cassandra.diagnostics.query.Query.ConsistencyLevel;
 
 /**
  * This class is a Diagnostics wrapper for {@link org.apache.cassandra.cql3.QueryProcessor}.
@@ -34,11 +35,12 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
     /**
      * Constructor.
      *
-     * @param queryReporter QueryReporter used to report queries
+     * @param connector     connectorActor
      * @param configuration Connector configuration
      */
-    public QueryProcessorWrapper(QueryReporter queryReporter, ConnectorConfiguration configuration) {
-        super(queryReporter, configuration);
+    public QueryProcessorWrapper(final ActorRef connector, ConnectorConfiguration configuration) {
+        super(connector, configuration);
+
         slowQueryTracingEnabled = configuration.enableTracing;
     }
 
@@ -47,11 +49,11 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
      * {@link org.apache.cassandra.cql3.QueryProcessor#processPrepared(CQLStatement, QueryState, QueryOptions)} method.
      * This method is invoked after the original method, measures the execution time and reports query.
      *
-     * @param statement  QueryProcessor#processPrepared(CQLStatement, QueryState, QueryOptions)
-     * @param queryState QueryProcessor#processPrepared(CQLStatement, QueryState, QueryOptions)
-     * @param options    QueryProcessor#processPrepared(CQLStatement, QueryState, QueryOptions)
-     * @param startTime  query execution start time
-     * @param result statement execution result
+     * @param statement          QueryProcessor#processPrepared(CQLStatement, QueryState, QueryOptions)
+     * @param queryState         QueryProcessor#processPrepared(CQLStatement, QueryState, QueryOptions)
+     * @param options            QueryProcessor#processPrepared(CQLStatement, QueryState, QueryOptions)
+     * @param startTime          query execution start time
+     * @param result             statement execution result
      * @param preparedStatements QueryProcessor's internal list of prepared statements
      */
     public void processPrepared(CQLStatement statement, QueryState queryState, QueryOptions options, long startTime,
@@ -65,11 +67,11 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
      * {@link org.apache.cassandra.cql3.QueryProcessor#process(String, QueryState, QueryOptions)} method.
      * This method is invoked after the original method, measures the execution time and reports query.
      *
-     * @param queryString  QueryProcessor#process(String, QueryState, QueryOptions)
-     * @param queryState QueryProcessor#process(String, QueryState, QueryOptions)
-     * @param options    QueryProcessor#process(String, QueryState, QueryOptions)
-     * @param startTime  query execution start time
-     * @param result statement execution result
+     * @param queryString QueryProcessor#process(String, QueryState, QueryOptions)
+     * @param queryState  QueryProcessor#process(String, QueryState, QueryOptions)
+     * @param options     QueryProcessor#process(String, QueryState, QueryOptions)
+     * @param startTime   query execution start time
+     * @param result      statement execution result
      */
     public void process(String queryString, QueryState queryState, QueryOptions options, long startTime,
             ResultMessage result) {
@@ -78,19 +80,22 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
     }
 
     /**
-     * Wrapper for
-     * {@link org.apache.cassandra.cql3.QueryProcessor#storePreparedStatement(String, String,
-     * ParsedStatement.Prepared, boolean)} method.
-     * This method is invoked after the original method, measures the execution time and reports query.
+     * Wrapper for {@link org.apache
+     * .cassandra.cql3.QueryProcessor#storePreparedStatement(String, String, * ParsedStatement.Prepared, boolean)}
+     * method. This method is invoked after the original method, measures the
+     * execution time and reports query.
      *
-     * @param queryString QueryProcessor#storePreparedStatement(String, String, ParsedStatement.Prepared, boolean)
-     * @param keyspace    QueryProcessor#storePreparedStatement(String, String, ParsedStatement.Prepared, boolean)
-     * @param forThrift   QueryProcessor#storePreparedStatement(String, String, ParsedStatement.Prepared, boolean)
-     * @param prepared    QueryProcessor#storePreparedStatement(String, String, ParsedStatement.Prepared, boolean)
-     * @param preparedStatements  QueryProcessor#preparedStatements
+     * @param queryString        QueryProcessor#storePreparedStatement(String, String, ParsedStatement.Prepared,
+     *                           boolean)
+     * @param keyspace           QueryProcessor#storePreparedStatement(String, String, ParsedStatement.Prepared,
+     *                           boolean)
+     * @param forThrift          QueryProcessor#storePreparedStatement(String, String, ParsedStatement.Prepared,
+     *                           boolean)
+     * @param prepared           QueryProcessor#storePreparedStatement(String, String, ParsedStatement.Prepared,
+     *                           boolean)
+     * @param preparedStatements QueryProcessor#preparedStatements
      */
-    public void storePrepared(String queryString, String keyspace, boolean forThrift,
-            ParsedStatement.Prepared prepared,
+    public void storePrepared(String queryString, String keyspace, boolean forThrift, ParsedStatement.Prepared prepared,
             ConcurrentLinkedHashMap<MD5Digest, ParsedStatement.Prepared> preparedStatements) {
         for (MD5Digest digest : preparedStatements.keySet()) {
             ParsedStatement.Prepared existingPrepared = preparedStatements.get(digest);
@@ -105,7 +110,6 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
      *
      * @param startTime  execution start time, in milliseconds
      * @param execTime   execution time, in milliseconds
-     * @param preparedStatementKey  prepared statement digest/key
      * @param queryState CQL query state
      * @param options    CQL query options
      */
@@ -147,7 +151,7 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
 
                     Query query = createQuery(startTime, execTime, cqlQuery, cqlStatement, queryState, options);
                     logger.trace("Reporting query: {}.", query);
-                    queryReporter.report(query);
+                    connector.tell(query, null);
                 } catch (Exception e) {
                     logger.warn("An error occured while reporting query", e);
                 }
@@ -159,11 +163,10 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
             final CQLStatement statement, final QueryState queryState, final QueryOptions options) {
         Query query;
         if (statement instanceof SelectStatement) {
-            query = createQuery(startTime, execTime, queryString, (SelectStatement) statement,
-                    queryState, options);
+            query = createQuery(startTime, execTime, queryString, (SelectStatement) statement, queryState, options);
         } else if (statement instanceof ModificationStatement) {
-            query = createQuery(startTime, execTime, queryString, (ModificationStatement) statement,
-                    queryState, options);
+            query = createQuery(startTime, execTime, queryString, (ModificationStatement) statement, queryState,
+                    options);
         } else {
             query = createGenericQuery(startTime, execTime, queryString, statement, queryState, options);
         }

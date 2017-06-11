@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import javax.management.InstanceNotFoundException;
@@ -28,8 +27,8 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.smartcat.cassandra.diagnostics.Measurement;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
  * Metrics collector class. Handles mbeans, jmx connection and collecting metrics.
@@ -157,8 +156,7 @@ public class MetricsCollector {
         final Map<String, String> tags = new HashMap<>(2);
         tags.put("host", configuration.global.hostname);
         tags.put("systemName", configuration.global.systemName);
-        return Measurement.createSimple(service, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
-                new HashMap<>());
+        return Measurement.createSimple(service, value, System.currentTimeMillis(), tags);
     }
 
     private Set<MetricsMBean> filterMBeans(final String packageName, final Set<ObjectInstance> mbeanObjectInstances)

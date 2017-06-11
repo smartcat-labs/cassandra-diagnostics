@@ -19,14 +19,14 @@ import org.slf4j.LoggerFactory;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import akka.actor.Props;
 import akka.cluster.Cluster;
 import akka.dispatch.OnSuccess;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import fi.iki.elonen.NanoHTTPD;
-import io.smartcat.cassandra.diagnostics.actor.Messages;
+import io.smartcat.cassandra.diagnostics.actor.ActorFactory;
 import io.smartcat.cassandra.diagnostics.actor.NodeGuardianActor;
+import io.smartcat.cassandra.diagnostics.actor.messages.Command;
 import io.smartcat.cassandra.diagnostics.api.DiagnosticsApi;
 import io.smartcat.cassandra.diagnostics.api.DiagnosticsApiImpl;
 import io.smartcat.cassandra.diagnostics.api.HttpHandler;
@@ -34,13 +34,13 @@ import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationLoader;
 import io.smartcat.cassandra.diagnostics.config.YamlConfigurationLoader;
-import io.smartcat.cassandra.diagnostics.connector.QueryReporter;
 import io.smartcat.cassandra.diagnostics.utils.Utils;
 
 /**
  * This class implements the Diagnostics module initialization.
  */
-public class Diagnostics implements QueryReporter {
+public class Diagnostics {
+
     /**
      * Class logger.
      */
@@ -79,13 +79,17 @@ public class Diagnostics implements QueryReporter {
             config.global.hostname = Utils.resolveHostname();
         }
 
-        nodeGuardian = system.actorOf(Props.create(NodeGuardianActor.class), "node-guardian");
-        nodeGuardian.tell(config, null);
+        try {
+            nodeGuardian = system.actorOf(ActorFactory.props(NodeGuardianActor.class, config), "node-guardian");
+        } catch (Exception e) {
+            logger.error("Failed to initialize diagnostics", e);
+            throw new RuntimeException("Failed to initialize diagnostics");
+        }
     }
 
     private void shutdown() {
         if (isTerminated.compareAndSet(false, true)) {
-            Patterns.ask(nodeGuardian, new Messages.GracefulShutdown(), timeout).onComplete(new OnSuccess() {
+            Patterns.ask(nodeGuardian, new Command.GracefulShutdown(), timeout).onComplete(new OnSuccess() {
                 @Override
                 public void onSuccess(Object result) throws Throwable {
                     system.terminate();
@@ -107,7 +111,7 @@ public class Diagnostics implements QueryReporter {
      * Completes the initialization and activates the query processing.
      */
     public void activate() {
-        nodeGuardian.tell(new Messages.Start(), null);
+        nodeGuardian.tell(new Command.Start(), null);
 
         //        this.diagnosticsProcessor = new DiagnosticsProcessor(config);
         //        this.isRunning.set(true);
@@ -163,13 +167,6 @@ public class Diagnostics implements QueryReporter {
             server.unregisterMBean(mxbeanName);
         } catch (MBeanRegistrationException | InstanceNotFoundException e) {
             logger.error("Unable to unregister DiagnosticsMBean", e);
-        }
-    }
-
-    @Override
-    public void report(Query query) {
-        if (isRunning.get()) {
-            diagnosticsProcessor.process(query);
         }
     }
 

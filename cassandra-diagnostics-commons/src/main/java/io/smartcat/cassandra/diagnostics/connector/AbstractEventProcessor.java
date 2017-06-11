@@ -9,11 +9,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import akka.actor.ActorRef;
+
 /**
  * An abstract implementation of diagnostics event processor. It implements event queuing,
  * asynchronous execution and throttling.
  */
 public abstract class AbstractEventProcessor {
+
     private static final Logger logger = LoggerFactory.getLogger(AbstractEventProcessor.class);
 
     private static final AtomicLong THREAD_COUNT = new AtomicLong(0);
@@ -24,9 +27,9 @@ public abstract class AbstractEventProcessor {
     private ThreadPoolExecutor executor;
 
     /**
-     * Query reporter.
+     * Connector actor.
      */
-    protected QueryReporter queryReporter;
+    protected ActorRef connector;
 
     /**
      * Connector implementation specific configuration.
@@ -38,11 +41,11 @@ public abstract class AbstractEventProcessor {
     /**
      * Constructor.
      *
-     * @param queryReporter QueryReporter used to report queries
-     * @param configuration Connector configuration
+     * @param connector connector actor
+     * @param configuration connector configuration
      */
-    public AbstractEventProcessor(QueryReporter queryReporter, ConnectorConfiguration configuration) {
-        this.queryReporter = queryReporter;
+    public AbstractEventProcessor(final ActorRef connector, final ConnectorConfiguration configuration) {
+        this.connector = connector;
         this.configuration = configuration;
         executor = new ThreadPoolExecutor(configuration.numWorkerThreads,
                 configuration.numWorkerThreads,

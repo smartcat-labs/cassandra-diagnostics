@@ -6,12 +6,19 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import io.smartcat.cassandra.diagnostics.DiagnosticsAgent;
-import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.actor.ModuleActor;
+import akka.actor.ActorRef;
+import akka.cluster.pubsub.DistributedPubSubMediator;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
+import io.smartcat.cassandra.diagnostics.actor.Topics;
+import io.smartcat.cassandra.diagnostics.actor.messages.Query;
+import io.smartcat.cassandra.diagnostics.actor.messages.QueryResponse;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
-import io.smartcat.cassandra.diagnostics.info.InfoProvider;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
+import io.smartcat.cassandra.diagnostics.module.ModuleActor;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
 
 /**
  * Cluster health module collecting information about the liveness of the nodes in the cluster.
@@ -22,11 +29,13 @@ public class ClusterHealthModule extends ModuleActor {
 
     private static final String DEFAULT_NUMBER_OF_UNREACHABLE_NODES_MEASUREMENT_NAME = "number_of_unreachable_nodes";
 
+    private final Timeout timeout = new Timeout(500, TimeUnit.MILLISECONDS);
+
     private ClusterHealthConfiguration config;
 
-    private Timer timer;
+    private ActorRef infoProvider;
 
-    private InfoProvider infoProvider;
+    private Timer timer;
 
     /**
      * Constructor.
@@ -35,28 +44,35 @@ public class ClusterHealthModule extends ModuleActor {
      * @param configuration configuration
      * @throws ConfigurationException configuration parsing exception
      */
-    public ClusterHealthModule(final String moduleName, final Configuration configuration) throws ConfigurationException {
+    public ClusterHealthModule(final String moduleName, final Configuration configuration)
+            throws ConfigurationException {
         super(moduleName, configuration);
 
         config = ClusterHealthConfiguration.create(moduleConfiguration.options);
     }
 
     @Override
+    public Receive createReceive() {
+        return defaultReceive().match(QueryResponse.InfoProviderRef.class, this::infoProviderResponse).build();
+    }
+
+    @Override
     protected void start() {
-        infoProvider = DiagnosticsAgent.getInfoProvider();
-        if (infoProvider == null) {
-            logger.warning("Failed to initialize StatusModule. Info provider is null");
-            timer = null;
-        } else {
-            timer = new Timer(STATUS_THREAD_NAME);
-            timer.scheduleAtFixedRate(new ClusterHealthTask(), 0, config.reportingRateInMillis());
-        }
+        mediator.tell(new DistributedPubSubMediator.Publish(Topics.INFO_PROVIDER_TOPIC, new Query.InfoProviderRef()),
+                getSelf());
     }
 
     @Override
     protected void stop() {
         logger.debug("Stopping status module.");
         timer.cancel();
+    }
+
+    private void infoProviderResponse(final QueryResponse.InfoProviderRef response) {
+        this.infoProvider = response.infoProvider;
+
+        timer = new Timer(STATUS_THREAD_NAME);
+        timer.scheduleAtFixedRate(new ClusterHealthTask(), 0, config.reportingRateInMillis());
     }
 
     /**
@@ -66,7 +82,18 @@ public class ClusterHealthModule extends ModuleActor {
         @Override
         public void run() {
             if (config.numberOfUnreachableNodesEnabled()) {
-                report(createMeasurement(infoProvider.getUnreachableNodes().size()));
+                queryUnreachableNodes();
+            }
+        }
+
+        private void queryUnreachableNodes() {
+            final Future<Object> future = Patterns.ask(infoProvider, new Query.UnreachableNodes(), timeout);
+            try {
+                final QueryResponse.UnreachableNodesResp result = (QueryResponse.UnreachableNodesResp) Await
+                        .result(future, timeout.duration());
+                report(createMeasurement(result.unreachableNodes.size()));
+            } catch (Exception e) {
+                logger.error("Failed to query/report unreachable nodes from info provider.");
             }
         }
     }
@@ -76,10 +103,9 @@ public class ClusterHealthModule extends ModuleActor {
         tags.put("host", configuration.global.hostname);
         tags.put("systemName", configuration.global.systemName);
 
-        final Map<String, String> fields = new HashMap<>();
-
-        return Measurement.createSimple(DEFAULT_NUMBER_OF_UNREACHABLE_NODES_MEASUREMENT_NAME,
-                (double) numberOfUnreachableNode, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement
+                .createSimple(DEFAULT_NUMBER_OF_UNREACHABLE_NODES_MEASUREMENT_NAME, (double) numberOfUnreachableNode,
+                        System.currentTimeMillis(), tags);
     }
 
 }

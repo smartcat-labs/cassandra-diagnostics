@@ -1,4 +1,4 @@
-package io.smartcat.cassandra.diagnostics;
+package io.smartcat.cassandra.diagnostics.config;
 
 import io.smartcat.cassandra.diagnostics.utils.Utils;
 

@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import akka.routing.ActorRefRoutee;
 import akka.routing.BroadcastRoutingLogic;
 import akka.routing.Router;
+import io.smartcat.cassandra.diagnostics.actor.messages.Command;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
 
 /**
@@ -12,7 +13,29 @@ import io.smartcat.cassandra.diagnostics.config.Configuration;
  */
 public class ModuleGuardianActor extends BaseActor {
 
+    private final Configuration configuration;
+
     private Router router = new Router(new BroadcastRoutingLogic());
+
+    /**
+     * Constructor.
+     *
+     * @param configuration Configuration
+     */
+    public ModuleGuardianActor(final Configuration configuration) {
+        this.configuration = configuration;
+
+        this.configuration.modules.stream().forEach((moduleConfiguration) -> {
+            try {
+                ActorRef module = getContext()
+                        .actorOf(ActorFactory.moduleProps(moduleConfiguration.module, configuration));
+                getContext().watch(module);
+                router = router.addRoutee(new ActorRefRoutee(module));
+            } catch (Exception e) {
+                logger.warning("Failed to create module by class name " + moduleConfiguration.module, e);
+            }
+        });
+    }
 
     /**
      * Build actor's receive pattern.
@@ -21,22 +44,10 @@ public class ModuleGuardianActor extends BaseActor {
      */
     @Override
     public Receive createReceive() {
-        return receiveBuilder().match(Configuration.class, this::configure)
-                .match(Messages.Start.class, o -> router.route(o, getSelf()))
-                .match(Messages.Stop.class, o -> router.route(o, getSelf())).build();
-    }
-
-    private void configure(final Configuration configuration) {
-        logger.debug("Received configuration");
-        configuration.modules.stream().forEach((moduleConfiguration) -> {
-            try {
-                ActorRef module = getContext().actorOf(ModuleActor.props(moduleConfiguration.module, configuration));
-                getContext().watch(module);
-                router = router.addRoutee(new ActorRefRoutee(module));
-            } catch (Exception e) {
-                logger.warning("Failed to create module by class name " + moduleConfiguration.module, e);
-            }
-        });
+        return receiveBuilder()
+                .match(Command.Start.class, o -> router.route(o, getSelf()))
+                .match(Command.Stop.class, o -> router.route(o, getSelf()))
+                .build();
     }
 
 }

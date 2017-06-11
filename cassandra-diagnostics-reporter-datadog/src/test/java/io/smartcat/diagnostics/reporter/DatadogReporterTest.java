@@ -18,8 +18,8 @@ import org.junit.Test;
 
 import com.timgroup.statsd.StatsDClient;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 import io.smartcat.cassandra.diagnostics.reporter.DatadogReporter;
 import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
 

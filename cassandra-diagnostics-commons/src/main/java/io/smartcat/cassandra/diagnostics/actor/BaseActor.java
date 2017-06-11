@@ -3,6 +3,8 @@ package io.smartcat.cassandra.diagnostics.actor;
 import java.util.Optional;
 
 import akka.actor.AbstractActor;
+import akka.actor.ActorRef;
+import akka.cluster.pubsub.DistributedPubSub;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
@@ -11,7 +13,22 @@ import akka.event.LoggingAdapter;
  */
 public abstract class BaseActor extends AbstractActor {
 
+    /**
+     * Mediator actor reference.
+     */
+    protected final ActorRef mediator;
+
+    /**
+     * Base logger.
+     */
     protected LoggingAdapter logger = Logging.getLogger(getContext().getSystem().eventStream(), this);
+
+    /**
+     * Constructor.
+     */
+    public BaseActor() {
+        this.mediator = DistributedPubSub.get(getContext().system()).mediator();
+    }
 
     /**
      * Method executed prior to restart.

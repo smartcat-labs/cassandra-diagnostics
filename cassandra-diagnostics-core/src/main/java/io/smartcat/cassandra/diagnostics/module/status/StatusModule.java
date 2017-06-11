@@ -107,15 +107,16 @@ public class StatusModule extends ModuleActor {
         }
 
         private void queryCompactions() {
-            final Future<Object> future = Patterns.ask(infoProvider, new Query.CompactionSettingsInfo(), timeout);
+            final Future<Object> future = Patterns.ask(infoProvider, new Query.Compactions(), timeout);
             try {
                 final QueryResponse.CompactionsResp result = (QueryResponse.CompactionsResp) Await
                         .result(future, timeout.duration());
+                report(createMeasurement(result.compactionSettingsInfo));
                 for (CompactionInfo compactionInfo : result.compactionInfo) {
                     report(createMeasurement(compactionInfo));
                 }
             } catch (Exception e) {
-                logger.error("Failed to query/report compaction info from info provider.");
+                logger.error("Failed to query/report compaction info from info provider.", e);
             }
         }
 
@@ -128,7 +129,7 @@ public class StatusModule extends ModuleActor {
                     report(createMeasurement(tpStatsInfo));
                 }
             } catch (Exception e) {
-                logger.error("Failed to query/report thread pool stats from info provider.");
+                logger.error("Failed to query/report thread pool stats from info provider.", e);
             }
         }
 
@@ -140,7 +141,7 @@ public class StatusModule extends ModuleActor {
                 report(createSimpleMeasurement(DEFAULT_REPAIR_SESSIONS_MEASUREMENT_NAME,
                         (double) result.repairSessions));
             } catch (Exception e) {
-                logger.error("Failed to query/report repair sessions from info provider.");
+                logger.error("Failed to query/report repair sessions from info provider.", e);
             }
         }
 
@@ -151,7 +152,7 @@ public class StatusModule extends ModuleActor {
                         .result(future, timeout.duration());
                 report(createMeasurement(result.nodeInfo));
             } catch (Exception e) {
-                logger.error("Failed to query/report compaction info from info provider.");
+                logger.error("Failed to query/report compaction info from info provider.", e);
             }
         }
     }

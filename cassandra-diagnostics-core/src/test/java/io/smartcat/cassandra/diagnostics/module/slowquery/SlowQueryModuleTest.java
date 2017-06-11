@@ -4,359 +4,470 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.mockito.internal.util.collections.Sets;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.Query;
-import io.smartcat.cassandra.diagnostics.Query.ConsistencyLevel;
-import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
-import io.smartcat.cassandra.diagnostics.module.LatchTestReporter;
+import akka.testkit.TestActorRef;
+import akka.testkit.javadsl.TestKit;
+import io.smartcat.cassandra.diagnostics.BaseActorTest;
+import io.smartcat.cassandra.diagnostics.actor.ActorFactory;
+import io.smartcat.cassandra.diagnostics.config.Configuration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
 import io.smartcat.cassandra.diagnostics.module.TestReporter;
-import io.smartcat.cassandra.diagnostics.reporter.Reporter;
+import io.smartcat.cassandra.diagnostics.query.Query;
+import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
 
-public class SlowQueryModuleTest {
+public class SlowQueryModuleTest extends BaseActorTest {
 
+    private static final String MODULE_NAME = "io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule";
+    private static final String TEST_REPORTER_NAME = "io.smartcat.cassandra.diagnostics.module.TestReporter";
     private static final String SLOW_QUERY_MESUREMENT_NAME = "slow_query";
-
     private static final String SLOW_QUERY_COUNT_SUFIX = "_count";
 
     @Test
-    public void should_transform() throws ConfigurationException {
-        ModuleConfiguration conf = new ModuleConfiguration();
+    public void should_transform() throws NoSuchMethodException, ClassNotFoundException {
+        final ModuleConfiguration conf = new ModuleConfiguration();
+        conf.module = MODULE_NAME;
         conf.options.put("slowQueryReportEnabled", true);
         conf.options.put("slowQueryCountReportEnabled", false);
-        TestReporter reporter = new TestReporter(null, GlobalConfiguration.getDefault());
-        SlowQueryModule module = new SlowQueryModule(conf, testReporters(reporter), GlobalConfiguration.getDefault());
+        conf.reporters.add(TEST_REPORTER_NAME);
 
-        Query query = Query.create(1474741407205L, 234L, "/127.0.0.1:40042", Query.StatementType.SELECT, "keyspace",
-                "table", "select count(*) from keyspace.table", ConsistencyLevel.ONE);
+        final Configuration configuration = testConfiguration(conf);
 
-        module.process(query);
-        module.stop();
+        new TestKit(system) {{
+            final TestActorRef<TestReporter> testReporter = TestActorRef
+                    .create(system, ActorFactory.reporterProps(TEST_REPORTER_NAME, configuration));
 
-        Measurement measurement = reporter.reported.get(0);
+            final TestActorRef<SlowQueryModule> testModule = TestActorRef
+                    .create(system, ActorFactory.moduleProps(MODULE_NAME, configuration));
 
-        assertThat(measurement.fields().keySet()).isEqualTo(Sets.newSet("statement", "client", "consistencyLevel"));
-        assertThat(measurement.fields().get("statement")).isEqualTo("select count(*) from keyspace.table");
-        assertThat(measurement.fields().get("client")).isEqualTo("/127.0.0.1:40042");
-        assertThat(measurement.fields().get("consistencyLevel")).isEqualTo("ONE");
-        assertThat(measurement.isSimple()).isTrue();
-        assertThat(measurement.getValue()).isEqualTo(234);
+            Query query = Query
+                    .create(1474741407205L, 234L, "/127.0.0.1:40042", Query.StatementType.SELECT, "keyspace", "table",
+                            "select count(*) from keyspace.table", Query.ConsistencyLevel.ONE);
 
-        assertThat(measurement.tags().keySet()).isEqualTo(Sets.newSet("host", "statementType", "systemName"));
-        assertThat(measurement.tags().get("statementType")).isEqualTo("SELECT");
+            final TestKit probe = new TestKit(system);
+            testReporter.tell(probe.getRef(), getRef());
+            expectMsg(duration("1 second"), "done");
+
+            testModule.underlyingActor().process(query);
+
+            within(dilated(duration("1 second")), () -> {
+                probe.expectMsgAnyClassOf(Measurement.class);
+
+                testModule.underlyingActor().stop();
+
+                return null;
+            });
+
+            testModule.underlyingActor().stop();
+
+            final Measurement measurement = testReporter.underlyingActor().getReported().get(0);
+
+            assertThat(measurement.fields.keySet()).isEqualTo(Sets.newSet("statement", "client", "consistencyLevel"));
+            assertThat(measurement.fields.get("statement")).isEqualTo("select count(*) from keyspace.table");
+            assertThat(measurement.fields.get("client")).isEqualTo("/127.0.0.1:40042");
+            assertThat(measurement.fields.get("consistencyLevel")).isEqualTo("ONE");
+            assertThat(measurement.isSimple()).isTrue();
+            assertThat(measurement.value).isEqualTo(234);
+
+            assertThat(measurement.tags.keySet()).isEqualTo(Sets.newSet("host", "statementType", "systemName"));
+            assertThat(measurement.tags.get("statementType")).isEqualTo("SELECT");
+        }};
     }
 
     @Test
-    public void should_report_number_of_slow_queries() throws ConfigurationException, InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(110);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
-                latch);
-        final List<Reporter> reporters = new ArrayList<Reporter>() {
-            {
-                add(latchTestReporter);
+    public void should_report_number_of_slow_queries() throws NoSuchMethodException, ClassNotFoundException {
+        final Configuration configuration = testConfiguration(1);
+
+        new TestKit(system) {{
+            final CountDownLatch latch = new CountDownLatch(110);
+            final TestActorRef<TestReporter> testReporter = TestActorRef
+                    .create(system, ActorFactory.reporterProps(TEST_REPORTER_NAME, configuration));
+            testReporter.underlyingActor().latch = latch;
+
+            final TestActorRef<SlowQueryModule> testModule = TestActorRef
+                    .create(system, ActorFactory.moduleProps(MODULE_NAME, configuration));
+
+            final Query selectQuery = mock(Query.class);
+            when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+            when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+            final Query updateQuery = mock(Query.class);
+            when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+            when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+
+            testModule.underlyingActor().start();
+
+            final long numberOfSlowQueries = 100;
+            for (int i = 0; i < numberOfSlowQueries / 2; i++) {
+                testModule.underlyingActor().process(selectQuery);
+                testModule.underlyingActor().process(updateQuery);
             }
-        };
 
-        final Query selectQuery = mock(Query.class);
-        when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
-        when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
-        final Query updateQuery = mock(Query.class);
-        when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
-        when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+            within(dilated(duration("10 seconds")), () -> {
 
-        final SlowQueryModule module = new SlowQueryModule(testConfiguration(1), reporters,
-                GlobalConfiguration.getDefault());
+                long reportedMeasurementCount = 0;
+                while (reportedMeasurementCount < numberOfSlowQueries) {
+                    reportedMeasurementCount = 0;
+                    for (final Measurement measurement : testReporter.underlyingActor().getReported()) {
+                        if (measurement.name.equals(SLOW_QUERY_MESUREMENT_NAME)) {
+                            reportedMeasurementCount++;
+                        }
+                    }
+                    try {
+                        latch.await(1100, TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException e) {
+                        assert false;
+                    }
+                }
 
-        final long numberOfSlowQueries = 100;
-        for (int i = 0; i < numberOfSlowQueries / 2; i++) {
-            module.process(selectQuery);
-            module.process(updateQuery);
-        }
+                testModule.underlyingActor().stop();
 
-        long reportedMeasurementCount = 0;
-        while (reportedMeasurementCount < numberOfSlowQueries) {
-            reportedMeasurementCount = 0;
-            for (final Measurement measurement : latchTestReporter.getReported()) {
-                if (measurement.name().equals(SLOW_QUERY_MESUREMENT_NAME)) {
+                return null;
+            });
+
+            long reportedMeasurementCount = 0;
+            for (final Measurement measurement : testReporter.underlyingActor().getReported()) {
+                if (measurement.name.equals(SLOW_QUERY_MESUREMENT_NAME)) {
                     reportedMeasurementCount++;
                 }
             }
-            latch.await(1100, TimeUnit.MILLISECONDS);
-        }
 
-        module.stop();
-
-        long slowQueryCounts = 0;
-        for (final Measurement measurement : latchTestReporter.getReported()) {
-            if (measurement.name().equals(SLOW_QUERY_MESUREMENT_NAME + SLOW_QUERY_COUNT_SUFIX)) {
-                slowQueryCounts += measurement.getValue();
+            long slowQueryCounts = 0;
+            for (final Measurement measurement : testReporter.underlyingActor().getReported()) {
+                if (measurement.name.equals(SLOW_QUERY_MESUREMENT_NAME + SLOW_QUERY_COUNT_SUFIX)) {
+                    slowQueryCounts += measurement.value;
+                }
             }
-        }
 
-        assertThat(numberOfSlowQueries).isEqualTo(reportedMeasurementCount);
-        assertThat(numberOfSlowQueries).isEqualTo(slowQueryCounts);
+            assertThat(numberOfSlowQueries).isEqualTo(reportedMeasurementCount);
+            assertThat(numberOfSlowQueries).isEqualTo(slowQueryCounts);
+        }};
     }
 
     @Test
-    public void should_not_report_any_slow_queries() throws InterruptedException, ConfigurationException {
-        final ModuleConfiguration configuration = new ModuleConfiguration();
-        configuration.measurement = SLOW_QUERY_MESUREMENT_NAME;
-        configuration.module = "io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule";
-        configuration.options.put("slowQueryThresholdInMilliseconds", 0);
-        configuration.options.put("slowQueryReportEnabled", false);
-        configuration.options.put("slowQueryCountReportEnabled", false);
+    public void should_not_report_any_slow_queries() throws NoSuchMethodException, ClassNotFoundException {
+        final ModuleConfiguration conf = new ModuleConfiguration();
+        conf.measurement = SLOW_QUERY_MESUREMENT_NAME;
+        conf.module = MODULE_NAME;
+        conf.options.put("slowQueryThresholdInMilliseconds", 0);
+        conf.options.put("slowQueryReportEnabled", false);
+        conf.options.put("slowQueryCountReportEnabled", false);
+        conf.reporters.add(TEST_REPORTER_NAME);
 
-        final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
-                latch);
-        final List<Reporter> reporters = new ArrayList<Reporter>() {
-            {
-                add(latchTestReporter);
+        final Configuration configuration = testConfiguration(conf);
+
+        new TestKit(system) {{
+            final CountDownLatch latch = new CountDownLatch(1);
+            final TestActorRef<TestReporter> testReporter = TestActorRef
+                    .create(system, ActorFactory.reporterProps(TEST_REPORTER_NAME, configuration));
+            testReporter.underlyingActor().latch = latch;
+
+            final TestActorRef<SlowQueryModule> testModule = TestActorRef
+                    .create(system, ActorFactory.moduleProps(MODULE_NAME, configuration));
+
+            final Query selectQuery = mock(Query.class);
+            when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+            when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+            final Query updateQuery = mock(Query.class);
+            when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+            when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+
+            testModule.underlyingActor().start();
+
+            final long numberOfSlowQueries = 100;
+            for (int i = 0; i < numberOfSlowQueries / 2; i++) {
+                testModule.underlyingActor().process(selectQuery);
+                testModule.underlyingActor().process(updateQuery);
             }
-        };
 
-        final Query selectQuery = mock(Query.class);
-        when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
-        when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
-        final Query updateQuery = mock(Query.class);
-        when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
-        when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+            within(dilated(duration("100 milliseconds")), () -> {
+                expectNoMsg();
 
-        final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
+                testModule.underlyingActor().stop();
 
-        final long numberOfSlowQueries = 100;
-        for (int i = 0; i < numberOfSlowQueries / 2; i++) {
-            module.process(selectQuery);
-            module.process(updateQuery);
-        }
+                return null;
+            });
 
-        boolean waited = latch.await(100, TimeUnit.MILLISECONDS);
-        module.stop();
-
-        assertThat(waited).isFalse();
-        assertThat(latchTestReporter.getReported()).isEmpty();
+            assertThat(testReporter.underlyingActor().getReported()).isEmpty();
+        }};
     }
 
     @Test
     public void should_not_log_all_types_if_slow_query_logging_is_disabled()
-            throws InterruptedException, ConfigurationException {
-        final ModuleConfiguration configuration = new ModuleConfiguration();
-        configuration.measurement = SLOW_QUERY_MESUREMENT_NAME;
-        configuration.module = "io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule";
-        configuration.options.put("slowQueryThresholdInMilliseconds", 0);
-        configuration.options.put("slowQueryReportEnabled", false);
-        configuration.options.put("slowQueryCountReportEnabled", false);
-        configuration.options.put("queryTypesToLog", Arrays.asList("ALL"));
+            throws NoSuchMethodException, ClassNotFoundException {
+        final ModuleConfiguration conf = new ModuleConfiguration();
+        conf.measurement = SLOW_QUERY_MESUREMENT_NAME;
+        conf.module = MODULE_NAME;
+        conf.options.put("slowQueryThresholdInMilliseconds", 0);
+        conf.options.put("slowQueryReportEnabled", false);
+        conf.options.put("slowQueryCountReportEnabled", false);
+        conf.options.put("queryTypesToLog", Arrays.asList("ALL"));
+        conf.reporters.add(TEST_REPORTER_NAME);
 
-        final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
-                latch);
-        final List<Reporter> reporters = new ArrayList<Reporter>() {
-            {
-                add(latchTestReporter);
+        final Configuration configuration = testConfiguration(conf);
+
+        new TestKit(system) {{
+            final CountDownLatch latch = new CountDownLatch(1);
+            final TestActorRef<TestReporter> testReporter = TestActorRef
+                    .create(system, ActorFactory.reporterProps(TEST_REPORTER_NAME, configuration));
+            testReporter.underlyingActor().latch = latch;
+
+            final TestActorRef<SlowQueryModule> testModule = TestActorRef
+                    .create(system, ActorFactory.moduleProps(MODULE_NAME, configuration));
+
+            final Query selectQuery = mock(Query.class);
+            when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+            when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+            final Query updateQuery = mock(Query.class);
+            when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+            when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+
+            testModule.underlyingActor().start();
+
+            final long numberOfSlowQueries = 100;
+            for (int i = 0; i < numberOfSlowQueries / 2; i++) {
+                testModule.underlyingActor().process(selectQuery);
+                testModule.underlyingActor().process(updateQuery);
             }
-        };
 
-        final Query selectQuery = mock(Query.class);
-        when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
-        when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
-        final Query updateQuery = mock(Query.class);
-        when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
-        when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+            within(dilated(duration("100 milliseconds")), () -> {
+                expectNoMsg();
 
-        final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
+                testModule.underlyingActor().stop();
 
-        final long numberOfSlowQueries = 100;
-        for (int i = 0; i < numberOfSlowQueries / 2; i++) {
-            module.process(selectQuery);
-            module.process(updateQuery);
-        }
+                return null;
+            });
 
-        boolean waited = latch.await(100, TimeUnit.MILLISECONDS);
-        module.stop();
-
-        assertThat(waited).isFalse();
-        assertThat(latchTestReporter.getReported()).isEmpty();
+            assertThat(testReporter.underlyingActor().getReported()).isEmpty();
+        }};
     }
 
     @Test
     public void should_log_only_mutation_statements_when_only_mutation_type_logging_is_enabled()
-            throws InterruptedException, ConfigurationException {
-        final ModuleConfiguration configuration = new ModuleConfiguration();
-        configuration.measurement = SLOW_QUERY_MESUREMENT_NAME;
-        configuration.module = "io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule";
-        configuration.options.put("slowQueryThresholdInMilliseconds", 0);
-        configuration.options.put("slowQueryReportEnabled", true);
-        configuration.options.put("slowQueryCountReportEnabled", false);
-        configuration.options.put("queryTypesToLog", Arrays.asList("UPDATE"));
+            throws NoSuchMethodException, ClassNotFoundException {
+        final ModuleConfiguration conf = new ModuleConfiguration();
+        conf.measurement = SLOW_QUERY_MESUREMENT_NAME;
+        conf.module = MODULE_NAME;
+        conf.options.put("slowQueryThresholdInMilliseconds", 0);
+        conf.options.put("slowQueryReportEnabled", true);
+        conf.options.put("slowQueryCountReportEnabled", false);
+        conf.options.put("queryTypesToLog", Arrays.asList("UPDATE"));
+        conf.reporters.add(TEST_REPORTER_NAME);
 
-        final CountDownLatch latch = new CountDownLatch(500);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
-                latch);
-        final List<Reporter> reporters = new ArrayList<Reporter>() {
-            {
-                add(latchTestReporter);
+        final Configuration configuration = testConfiguration(conf);
+
+        new TestKit(system) {{
+            final int expected = 500;
+            final CountDownLatch latch = new CountDownLatch(expected);
+            final TestActorRef<TestReporter> testReporter = TestActorRef
+                    .create(system, ActorFactory.reporterProps(TEST_REPORTER_NAME, configuration));
+            testReporter.underlyingActor().latch = latch;
+
+            final TestActorRef<SlowQueryModule> testModule = TestActorRef
+                    .create(system, ActorFactory.moduleProps(MODULE_NAME, configuration));
+
+            final Query selectQuery = mock(Query.class);
+            when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+            when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+            final Query updateQuery = mock(Query.class);
+            when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+            when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+
+            final TestKit probe = new TestKit(system);
+            testReporter.tell(probe.getRef(), getRef());
+            expectMsg(duration("1 second"), "done");
+
+            testModule.underlyingActor().start();
+
+            final long numberOfSlowQueries = 1000;
+            for (int i = 0; i < numberOfSlowQueries / 2; i++) {
+                testModule.underlyingActor().process(selectQuery);
+                testModule.underlyingActor().process(updateQuery);
             }
-        };
 
-        final Query selectQuery = mock(Query.class);
-        when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
-        when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
-        final Query updateQuery = mock(Query.class);
-        when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
-        when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+            within(dilated(duration("1100 milliseconds")), () -> {
+                for (int i = 0; i < expected; i++) {
+                    probe.expectMsgAnyClassOf(Measurement.class);
+                }
 
-        final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
+                testModule.underlyingActor().stop();
 
-        final long numberOfSlowQueries = 1000;
-        for (int i = 0; i < numberOfSlowQueries / 2; i++) {
-            module.process(selectQuery);
-            module.process(updateQuery);
-        }
+                return null;
+            });
 
-        boolean waited = latch.await(1000, TimeUnit.MILLISECONDS);
-        module.stop();
-
-        assertThat(waited).isTrue();
-        assertThat(latchTestReporter.getReported().size()).isEqualTo(500);
-        for (Measurement measurement : latchTestReporter.getReported()) {
-            assertThat(measurement.tags().get("statementType")).isEqualTo("UPDATE");
-        }
+            assertThat(testReporter.underlyingActor().getReported().size()).isEqualTo(expected);
+            for (Measurement measurement : testReporter.underlyingActor().getReported()) {
+                assertThat(measurement.tags.get("statementType")).isEqualTo("UPDATE");
+            }
+        }};
     }
 
     @Test
     public void should_log_all_statements_when_all_types_logging_is_enabled()
-            throws InterruptedException, ConfigurationException {
-        final ModuleConfiguration configuration = new ModuleConfiguration();
-        configuration.measurement = SLOW_QUERY_MESUREMENT_NAME;
-        configuration.module = "io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule";
-        configuration.options.put("slowQueryThresholdInMilliseconds", 0);
-        configuration.options.put("slowQueryReportEnabled", true);
-        configuration.options.put("slowQueryCountReportEnabled", false);
-        configuration.options.put("queryTypesToLog", Arrays.asList("ALL"));
+            throws NoSuchMethodException, ClassNotFoundException {
+        final ModuleConfiguration conf = new ModuleConfiguration();
+        conf.measurement = SLOW_QUERY_MESUREMENT_NAME;
+        conf.module = MODULE_NAME;
+        conf.options.put("slowQueryThresholdInMilliseconds", 0);
+        conf.options.put("slowQueryReportEnabled", true);
+        conf.options.put("slowQueryCountReportEnabled", false);
+        conf.options.put("queryTypesToLog", Arrays.asList("ALL"));
+        conf.reporters.add(TEST_REPORTER_NAME);
 
-        final CountDownLatch latch = new CountDownLatch(100);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
-                latch);
-        final List<Reporter> reporters = new ArrayList<Reporter>() {
-            {
-                add(latchTestReporter);
+        final Configuration configuration = testConfiguration(conf);
+
+        new TestKit(system) {{
+            final CountDownLatch latch = new CountDownLatch(100);
+            final TestActorRef<TestReporter> testReporter = TestActorRef
+                    .create(system, ActorFactory.reporterProps(TEST_REPORTER_NAME, configuration));
+            testReporter.underlyingActor().latch = latch;
+
+            final TestActorRef<SlowQueryModule> testModule = TestActorRef
+                    .create(system, ActorFactory.moduleProps(MODULE_NAME, configuration));
+
+            final Query selectQuery = mock(Query.class);
+            when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+            when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+            final Query updateQuery = mock(Query.class);
+            when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+            when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+
+            testModule.underlyingActor().start();
+
+            final long numberOfSlowQueries = 100;
+            for (int i = 0; i < numberOfSlowQueries / 2; i++) {
+                testModule.underlyingActor().process(selectQuery);
+                testModule.underlyingActor().process(updateQuery);
             }
-        };
 
-        final Query selectQuery = mock(Query.class);
-        when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
-        when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
-        final Query updateQuery = mock(Query.class);
-        when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
-        when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+            within(dilated(duration("1100 milliseconds")), () -> {
+                try {
+                    boolean waited = testReporter.underlyingActor().latch.await(1000, TimeUnit.MILLISECONDS);
+                    assertThat(waited).isTrue();
+                } catch (InterruptedException e) {
+                    assert false;
+                }
 
-        final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
+                testModule.underlyingActor().stop();
 
-        final long numberOfSlowQueries = 100;
-        for (int i = 0; i < numberOfSlowQueries / 2; i++) {
-            module.process(selectQuery);
-            module.process(updateQuery);
-        }
+                return null;
+            });
 
-        boolean waited = latch.await(1000, TimeUnit.MILLISECONDS);
-        module.stop();
-
-        assertThat(waited).isTrue();
-        assertThat(latchTestReporter.getReported().size()).isEqualTo(100);
-        int numberOfMutationsReported = 0;
-        int numberOfSelectsReported = 0;
-        for (Measurement measurement : latchTestReporter.getReported()) {
-            if (measurement.tags().get("statementType").equals("UPDATE")) {
-                numberOfMutationsReported++;
-            } else if (measurement.tags().get("statementType").equals("SELECT")) {
-                numberOfSelectsReported++;
+            assertThat(testReporter.underlyingActor().getReported().size()).isEqualTo(100);
+            int numberOfMutationsReported = 0;
+            int numberOfSelectsReported = 0;
+            for (Measurement measurement : testReporter.underlyingActor().getReported()) {
+                if (measurement.tags.get("statementType").equals("UPDATE")) {
+                    numberOfMutationsReported++;
+                } else if (measurement.tags.get("statementType").equals("SELECT")) {
+                    numberOfSelectsReported++;
+                }
             }
-        }
-        assertThat(numberOfMutationsReported).isEqualTo(50);
-        assertThat(numberOfSelectsReported).isEqualTo(50);
+
+            assertThat(numberOfMutationsReported).isEqualTo(50);
+            assertThat(numberOfSelectsReported).isEqualTo(50);
+        }};
     }
 
     @Test
     public void should_log_mutation_and_select_statements_when_mutation_and_select_types_logging_is_enabled()
-            throws InterruptedException, ConfigurationException {
-        final ModuleConfiguration configuration = new ModuleConfiguration();
-        configuration.measurement = SLOW_QUERY_MESUREMENT_NAME;
-        configuration.module = "io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule";
-        configuration.options.put("slowQueryThresholdInMilliseconds", 0);
-        configuration.options.put("slowQueryReportEnabled", true);
-        configuration.options.put("slowQueryCountReportEnabled", false);
-        configuration.options.put("queryTypesToLog", Arrays.asList("UPDATE", "SELECT"));
+            throws NoSuchMethodException, ClassNotFoundException {
+        final ModuleConfiguration conf = new ModuleConfiguration();
+        conf.measurement = SLOW_QUERY_MESUREMENT_NAME;
+        conf.module = MODULE_NAME;
+        conf.options.put("slowQueryThresholdInMilliseconds", 0);
+        conf.options.put("slowQueryReportEnabled", true);
+        conf.options.put("slowQueryCountReportEnabled", false);
+        conf.options.put("queryTypesToLog", Arrays.asList("UPDATE", "SELECT"));
+        conf.reporters.add(TEST_REPORTER_NAME);
 
-        final CountDownLatch latch = new CountDownLatch(100);
-        final LatchTestReporter latchTestReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(),
-                latch);
-        final List<Reporter> reporters = new ArrayList<Reporter>() {
-            {
-                add(latchTestReporter);
+        final Configuration configuration = testConfiguration(conf);
+
+        new TestKit(system) {{
+            final CountDownLatch latch = new CountDownLatch(100);
+            final TestActorRef<TestReporter> testReporter = TestActorRef
+                    .create(system, ActorFactory.reporterProps(TEST_REPORTER_NAME, configuration));
+            testReporter.underlyingActor().latch = latch;
+
+            final TestActorRef<SlowQueryModule> testModule = TestActorRef
+                    .create(system, ActorFactory.moduleProps(MODULE_NAME, configuration));
+
+            final Query selectQuery = mock(Query.class);
+            when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
+            when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+            final Query updateQuery = mock(Query.class);
+            when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
+            when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+
+            testModule.underlyingActor().start();
+
+            final long numberOfSlowQueries = 100;
+            for (int i = 0; i < numberOfSlowQueries / 2; i++) {
+                testModule.underlyingActor().process(selectQuery);
+                testModule.underlyingActor().process(updateQuery);
             }
-        };
 
-        final Query selectQuery = mock(Query.class);
-        when(selectQuery.statementType()).thenReturn(Query.StatementType.SELECT);
-        when(selectQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
-        final Query updateQuery = mock(Query.class);
-        when(updateQuery.statementType()).thenReturn(Query.StatementType.UPDATE);
-        when(updateQuery.consistencyLevel()).thenReturn(Query.ConsistencyLevel.ALL);
+            within(dilated(duration("1100 milliseconds")), () -> {
+                try {
+                    boolean waited = testReporter.underlyingActor().latch.await(1000, TimeUnit.MILLISECONDS);
+                    assertThat(waited).isTrue();
+                } catch (InterruptedException e) {
+                    assert false;
+                }
 
-        final SlowQueryModule module = new SlowQueryModule(configuration, reporters, GlobalConfiguration.getDefault());
+                testModule.underlyingActor().stop();
 
-        final long numberOfSlowQueries = 100;
-        for (int i = 0; i < numberOfSlowQueries / 2; i++) {
-            module.process(selectQuery);
-            module.process(updateQuery);
-        }
+                return null;
+            });
 
-        boolean waited = latch.await(1000, TimeUnit.MILLISECONDS);
-        module.stop();
-
-        assertThat(waited).isTrue();
-        assertThat(latchTestReporter.getReported().size()).isEqualTo(100);
-        int numberOfMutationsReported = 0;
-        int numberOfSelectsReported = 0;
-        for (Measurement measurement : latchTestReporter.getReported()) {
-            if (measurement.tags().get("statementType").equals("UPDATE")) {
-                numberOfMutationsReported++;
-            } else if (measurement.tags().get("statementType").equals("SELECT")) {
-                numberOfSelectsReported++;
+            assertThat(testReporter.underlyingActor().getReported().size()).isEqualTo(100);
+            int numberOfMutationsReported = 0;
+            int numberOfSelectsReported = 0;
+            for (Measurement measurement : testReporter.underlyingActor().getReported()) {
+                if (measurement.tags.get("statementType").equals("UPDATE")) {
+                    numberOfMutationsReported++;
+                } else if (measurement.tags.get("statementType").equals("SELECT")) {
+                    numberOfSelectsReported++;
+                }
             }
-        }
-        assertThat(numberOfMutationsReported).isEqualTo(50);
-        assertThat(numberOfSelectsReported).isEqualTo(50);
+
+            assertThat(numberOfMutationsReported).isEqualTo(50);
+            assertThat(numberOfSelectsReported).isEqualTo(50);
+        }};
     }
 
-    private ModuleConfiguration testConfiguration(final int period) {
+    private Configuration testConfiguration(final int period) {
+        return testConfiguration(testModuleConfiguration(period));
+    }
+
+    private Configuration testConfiguration(final ModuleConfiguration moduleConfiguration) {
+        final Configuration config = new Configuration();
+        config.modules.add(moduleConfiguration);
+        config.reporters.add(testReporterConfiguration());
+        return config;
+    }
+
+    private ModuleConfiguration testModuleConfiguration(final int period) {
         final ModuleConfiguration configuration = new ModuleConfiguration();
         configuration.measurement = SLOW_QUERY_MESUREMENT_NAME;
-        configuration.module = "io.smartcat.cassandra.diagnostics.module.slowquery.SlowQueryModule";
+        configuration.module = MODULE_NAME;
         configuration.options.put("slowQueryThresholdInMilliseconds", 0);
         configuration.options.put("slowQueryReportEnabled", true);
         configuration.options.put("slowQueryCountReportEnabled", true);
         configuration.options.put("slowQueryCountReportPeriod", period);
         configuration.options.put("slowQueryCountReportTimeunit", "SECONDS");
+        configuration.reporters.add(TEST_REPORTER_NAME);
         return configuration;
     }
 
-    private List<Reporter> testReporters(final Reporter reporter) {
-        return new ArrayList<Reporter>() {
-            {
-                add(reporter);
-            }
-        };
+    private ReporterConfiguration testReporterConfiguration() {
+        final ReporterConfiguration reporterConfiguration = new ReporterConfiguration();
+        reporterConfiguration.reporter = TEST_REPORTER_NAME;
+        return reporterConfiguration;
     }
 }

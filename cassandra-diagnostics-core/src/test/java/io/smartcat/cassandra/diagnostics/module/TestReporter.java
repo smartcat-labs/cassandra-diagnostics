@@ -2,6 +2,7 @@ package io.smartcat.cassandra.diagnostics.module;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import akka.actor.ActorRef;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
@@ -15,11 +16,9 @@ public class TestReporter extends ReporterActor {
 
     private ActorRef target = null;
 
-    public static final class QueryReports {
+    public CountDownLatch latch;
 
-    }
-
-    public final List<Measurement> reported = new ArrayList<Measurement>();
+    private final List<Measurement> reported = new ArrayList<>();
 
     /**
      * Constructor.
@@ -35,15 +34,27 @@ public class TestReporter extends ReporterActor {
         return defaultReceive().match(ActorRef.class, actorRef -> {
             target = actorRef;
             getSender().tell("done", getSelf());
-        }).match(QueryReports.class, o -> {
-            getSender().tell(reported, getSelf());
         }).build();
     }
 
     @Override
     protected void report(Measurement measurement) {
-        if (target != null) target.tell(measurement, getSelf());
+        if (target != null) {
+            target.tell(measurement, getSelf());
+        }
         reported.add(measurement);
+        if (latch != null) {
+            latch.countDown();
+        }
+    }
+
+    /**
+     * Prevent concurrency issues and return always copy of reported values.
+     *
+     * @return copy of all reported values.
+     */
+    public List<Measurement> getReported() {
+        return new ArrayList<>(reported);
     }
 
 }

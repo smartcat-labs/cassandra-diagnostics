@@ -36,24 +36,15 @@ public abstract class QueryResponse {
     }
 
     /**
-     * Compaction settings info query response.
-     */
-    public static final class CompactionSettingsInfoResp extends QueryResponse {
-        public final CompactionSettingsInfo compactionSettingsInfo;
-
-        public CompactionSettingsInfoResp(final CompactionSettingsInfo compactionSettingsInfo) {
-            this.compactionSettingsInfo = compactionSettingsInfo;
-        }
-    }
-
-    /**
      * Compactions info query response.
      */
     public static final class CompactionsResp extends QueryResponse {
+        public final CompactionSettingsInfo compactionSettingsInfo;
         public final List<CompactionInfo> compactionInfo;
 
-        public CompactionsResp(final List<CompactionInfo> compactionInfo) {
+        public CompactionsResp(final CompactionSettingsInfo compactionSettingsInfo, final List<CompactionInfo> compactionInfo) {
             this.compactionInfo = compactionInfo;
+            this.compactionSettingsInfo = compactionSettingsInfo;
         }
     }
 

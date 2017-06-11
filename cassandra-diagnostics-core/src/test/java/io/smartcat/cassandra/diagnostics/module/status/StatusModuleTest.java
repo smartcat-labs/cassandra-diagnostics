@@ -1,218 +1,285 @@
 package io.smartcat.cassandra.diagnostics.module.status;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-import io.smartcat.cassandra.diagnostics.DiagnosticsAgent;
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
+import akka.actor.ActorRef;
+import akka.testkit.TestActorRef;
+import akka.testkit.javadsl.TestKit;
+import io.smartcat.cassandra.diagnostics.BaseActorTest;
+import io.smartcat.cassandra.diagnostics.actor.ActorFactory;
+import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.info.CompactionInfo;
 import io.smartcat.cassandra.diagnostics.info.CompactionSettingsInfo;
-import io.smartcat.cassandra.diagnostics.info.InfoProvider;
 import io.smartcat.cassandra.diagnostics.info.NodeInfo;
 import io.smartcat.cassandra.diagnostics.info.TPStatsInfo;
-import io.smartcat.cassandra.diagnostics.module.LatchTestReporter;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
+import io.smartcat.cassandra.diagnostics.module.TestInfoProvider;
 import io.smartcat.cassandra.diagnostics.module.TestReporter;
-import io.smartcat.cassandra.diagnostics.reporter.Reporter;
+import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
 
 /**
  * Status module test.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(DiagnosticsAgent.class)
-public class StatusModuleTest {
+public class StatusModuleTest extends BaseActorTest {
+
+    private static final String MODULE_NAME = "io.smartcat.cassandra.diagnostics.module.status.StatusModule";
+    private static final String TEST_REPORTER_NAME = "io.smartcat.cassandra.diagnostics.module.TestReporter";
 
     @Test
-    public void should_load_default_configuration_and_initialize() throws ConfigurationException {
-        InfoProvider infoProvider = mock(InfoProvider.class);
-        when(infoProvider.getCompactions()).thenReturn(new ArrayList<CompactionInfo>());
-        when(infoProvider.getCompactionSettingsInfo()).thenReturn(getCompactionSettingsInfo());
-        PowerMockito.mockStatic(DiagnosticsAgent.class);
-        PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
+    public void should_load_default_configuration_and_initialize()
+            throws NoSuchMethodException, ClassNotFoundException {
+        new TestKit(system) {{
+            int periodInMinutes = 1;
+            boolean compactionsEnabled = true;
+            boolean tpStatsEnabled = true;
+            boolean repairsEnabled = true;
+            boolean nodeInfoEnabled = true;
+            final Configuration configuration = testConfiguration(periodInMinutes, compactionsEnabled, tpStatsEnabled,
+                    repairsEnabled, nodeInfoEnabled);
 
-        final StatusModule module = new StatusModule(testConfiguration(1, true, true, true, true), testReporters(),
-                GlobalConfiguration.getDefault());
-        module.stop();
-
-        PowerMockito.verifyStatic();
+            final ActorRef module = system.actorOf(ActorFactory.moduleProps(MODULE_NAME, configuration));
+        }};
     }
 
     @Test
-    public void should_report_compaction_info_when_started() throws ConfigurationException, InterruptedException {
-        InfoProvider infoProvider = mock(InfoProvider.class);
-        when(infoProvider.getCompactions()).thenReturn(getCompactions());
-        when(infoProvider.getCompactionSettingsInfo()).thenReturn(getCompactionSettingsInfo());
-        PowerMockito.mockStatic(DiagnosticsAgent.class);
-        PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
+    public void should_report_compaction_info_when_started() throws NoSuchMethodException, ClassNotFoundException {
+        final Configuration configuration = testConfiguration(1, true, false, false, false);
 
-        final CountDownLatch latch = new CountDownLatch(2);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
-        final List<Reporter> reporters = new ArrayList<Reporter>() {
-            {
-                add(testReporter);
-            }
-        };
+        new TestKit(system) {{
+            final ActorRef testInfoProvider = system.actorOf(TestInfoProvider
+                    .props(getCompactions(), null, 0, getCompactionSettingsInfo(), null, null, configuration));
 
-        final StatusModule module = new StatusModule(testConfiguration(1, true, false, false, false), reporters,
-                GlobalConfiguration.getDefault());
-        boolean wait = latch.await(1000, TimeUnit.MILLISECONDS);
-        module.stop();
-        assertThat(wait).isTrue();
-        assertThat(testReporter.getReported().size()).isEqualTo(2);
+            final int expected = 2;
+            final CountDownLatch latch = new CountDownLatch(expected);
+            final TestActorRef<TestReporter> testReporter = TestActorRef
+                    .create(system, ActorFactory.reporterProps(TEST_REPORTER_NAME, configuration));
+            testReporter.underlyingActor().latch = latch;
+
+            final TestActorRef<StatusModule> testModule = TestActorRef
+                    .create(system, ActorFactory.moduleProps(MODULE_NAME, configuration));
+
+            final TestKit probe = new TestKit(system);
+            testReporter.tell(probe.getRef(), getRef());
+            expectMsg(duration("1 second"), "done");
+
+            testModule.underlyingActor().start();
+
+            within(dilated(duration("1100 milliseconds")), () -> {
+                for (int i = 0; i < expected; i++) {
+                    probe.expectMsgAnyClassOf(Measurement.class);
+                }
+
+                testModule.underlyingActor().stop();
+
+                return null;
+            });
+
+            assertThat(testReporter.underlyingActor().getReported().size()).isEqualTo(expected);
+        }};
     }
 
     @Test
-    public void should_report_thread_pool_info_when_started() throws ConfigurationException, InterruptedException {
-        InfoProvider infoProvider = mock(InfoProvider.class);
-        when(infoProvider.getTPStats()).thenReturn(getTPStats());
-        PowerMockito.mockStatic(DiagnosticsAgent.class);
-        PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
+    public void should_report_thread_pool_info_when_started() throws NoSuchMethodException, ClassNotFoundException {
+        final Configuration configuration = testConfiguration(1, false, true, false, false);
 
-        final CountDownLatch latch = new CountDownLatch(3);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
-        final List<Reporter> reporters = new ArrayList<Reporter>() {
-            {
-                add(testReporter);
-            }
-        };
+        new TestKit(system) {{
+            final ActorRef testInfoProvider = system
+                    .actorOf(TestInfoProvider.props(null, getTPStats(), 0, null, null, null, configuration));
 
-        final StatusModule module = new StatusModule(testConfiguration(1, false, true, false, false), reporters,
-                GlobalConfiguration.getDefault());
-        boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
-        module.stop();
-        assertThat(wait).isTrue();
-        assertThat(testReporter.getReported().size()).isEqualTo(3);
+            final int expected = 3;
+            final CountDownLatch latch = new CountDownLatch(expected);
+            final TestActorRef<TestReporter> testReporter = TestActorRef
+                    .create(system, ActorFactory.reporterProps(TEST_REPORTER_NAME, configuration));
+            testReporter.underlyingActor().latch = latch;
+
+            final TestActorRef<StatusModule> testModule = TestActorRef
+                    .create(system, ActorFactory.moduleProps(MODULE_NAME, configuration));
+
+            final TestKit probe = new TestKit(system);
+            testReporter.tell(probe.getRef(), getRef());
+            expectMsg(duration("1 second"), "done");
+
+            testModule.underlyingActor().start();
+
+            within(dilated(duration("1100 milliseconds")), () -> {
+                for (int i = 0; i < expected; i++) {
+                    probe.expectMsgAnyClassOf(Measurement.class);
+                }
+
+                testModule.underlyingActor().stop();
+
+                return null;
+            });
+
+            assertThat(testReporter.underlyingActor().getReported().size()).isEqualTo(expected);
+        }};
     }
 
     @Test
-    public void should_report_repair_info_when_started() throws ConfigurationException, InterruptedException {
-        InfoProvider infoProvider = mock(InfoProvider.class);
-        when(infoProvider.getRepairSessions()).thenReturn(getRepairSessions());
-        PowerMockito.mockStatic(DiagnosticsAgent.class);
-        PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
+    public void should_report_repair_info_when_started() throws NoSuchMethodException, ClassNotFoundException {
+        final Configuration configuration = testConfiguration(1, false, false, true, false);
 
-        final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
-        final List<Reporter> reporters = new ArrayList<Reporter>() {
-            {
-                add(testReporter);
-            }
-        };
+        new TestKit(system) {{
+            final ActorRef testInfoProvider = system
+                    .actorOf(TestInfoProvider.props(null, null, getRepairSessions(), null, null, null, configuration));
 
-        final StatusModule module = new StatusModule(testConfiguration(1, false, false, true, false), reporters,
-                GlobalConfiguration.getDefault());
-        boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
-        module.stop();
-        assertThat(wait).isTrue();
-        assertThat(testReporter.getReported().size()).isEqualTo(1);
+            final CountDownLatch latch = new CountDownLatch(1);
+            final TestActorRef<TestReporter> testReporter = TestActorRef
+                    .create(system, ActorFactory.reporterProps(TEST_REPORTER_NAME, configuration));
+            testReporter.underlyingActor().latch = latch;
+
+            final TestActorRef<StatusModule> testModule = TestActorRef
+                    .create(system, ActorFactory.moduleProps(MODULE_NAME, configuration));
+
+            final TestKit probe = new TestKit(system);
+            testReporter.tell(probe.getRef(), getRef());
+            expectMsg(duration("1 second"), "done");
+
+            testModule.underlyingActor().start();
+
+            within(dilated(duration("1100 milliseconds")), () -> {
+                probe.expectMsgAnyClassOf(Measurement.class);
+
+                testModule.underlyingActor().stop();
+
+                return null;
+            });
+
+            assertThat(testReporter.underlyingActor().getReported().size()).isEqualTo(1);
+        }};
     }
 
     @Test
-    public void should_not_report_compactions_when_disabled() throws ConfigurationException, InterruptedException {
-        InfoProvider infoProvider = mock(InfoProvider.class);
-        when(infoProvider.getCompactions()).thenReturn(getCompactions());
-        PowerMockito.mockStatic(DiagnosticsAgent.class);
-        PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
+    public void should_not_report_compactions_when_disabled() throws NoSuchMethodException, ClassNotFoundException {
+        final Configuration configuration = testConfiguration(1, false, false, false, false);
 
-        final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
-        final List<Reporter> reporters = new ArrayList<Reporter>() {
-            {
-                add(testReporter);
-            }
-        };
+        new TestKit(system) {{
+            final ActorRef testInfoProvider = system.actorOf(TestInfoProvider
+                    .props(getCompactions(), null, 0, getCompactionSettingsInfo(), null, null, configuration));
 
-        final StatusModule module = new StatusModule(testConfiguration(1, false, false, false, false), reporters,
-                GlobalConfiguration.getDefault());
-        boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
-        module.stop();
-        assertThat(wait).isFalse();
-        assertThat(testReporter.getReported().size()).isEqualTo(0);
+            final CountDownLatch latch = new CountDownLatch(1);
+            final TestActorRef<TestReporter> testReporter = TestActorRef
+                    .create(system, ActorFactory.reporterProps(TEST_REPORTER_NAME, configuration));
+            testReporter.underlyingActor().latch = latch;
+
+            final TestActorRef<StatusModule> testModule = TestActorRef
+                    .create(system, ActorFactory.moduleProps(MODULE_NAME, configuration));
+
+            final TestKit probe = new TestKit(system);
+            testReporter.tell(probe.getRef(), getRef());
+            expectMsg(duration("1 second"), "done");
+
+            testModule.underlyingActor().start();
+
+            within(dilated(duration("100 milliseconds")), () -> {
+                expectNoMsg();
+
+                testModule.underlyingActor().stop();
+
+                return null;
+            });
+
+            assertThat(testReporter.underlyingActor().getReported().size()).isEqualTo(0);
+        }};
     }
 
     @Test
-    public void should_not_report_node_info_when_disabled()
-            throws ConfigurationException, InterruptedException {
-        InfoProvider infoProvider = mock(InfoProvider.class);
-        NodeInfo nodeInfo = new NodeInfo(false, false, false, 0);
-        when(infoProvider.getNodeInfo()).thenReturn(nodeInfo);
-        PowerMockito.mockStatic(DiagnosticsAgent.class);
-        PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
+    public void should_not_report_node_info_when_disabled() throws NoSuchMethodException, ClassNotFoundException {
+        final Configuration configuration = testConfiguration(1, false, false, false, false);
 
-        final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
-        final List<Reporter> reporters = new ArrayList<Reporter>() {
-            {
-                add(testReporter);
-            }
-        };
+        new TestKit(system) {{
+            final ActorRef testInfoProvider = system
+                    .actorOf(TestInfoProvider.props(null, null, 0, null, null, getNodeInfo(), configuration));
 
-        final StatusModule module = new StatusModule(testConfiguration(1, false, false, false, false), reporters,
-                GlobalConfiguration.getDefault());
-        boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
-        module.stop();
-        assertThat(wait).isFalse();
-        assertThat(testReporter.getReported().size()).isEqualTo(0);
+            final CountDownLatch latch = new CountDownLatch(1);
+            final TestActorRef<TestReporter> testReporter = TestActorRef
+                    .create(system, ActorFactory.reporterProps(TEST_REPORTER_NAME, configuration));
+            testReporter.underlyingActor().latch = latch;
+
+            final TestActorRef<StatusModule> testModule = TestActorRef
+                    .create(system, ActorFactory.moduleProps(MODULE_NAME, configuration));
+
+            final TestKit probe = new TestKit(system);
+            testReporter.tell(probe.getRef(), getRef());
+            expectMsg(duration("1 second"), "done");
+
+            testModule.underlyingActor().start();
+
+            within(dilated(duration("100 milliseconds")), () -> {
+                expectNoMsg();
+
+                testModule.underlyingActor().stop();
+
+                return null;
+            });
+
+            assertThat(testReporter.underlyingActor().getReported().size()).isEqualTo(0);
+        }};
     }
 
     @Test
-    public void should_report_node_info_when_enabled()
-            throws ConfigurationException, InterruptedException {
-        InfoProvider infoProvider = mock(InfoProvider.class);
-        NodeInfo nodeInfo = new NodeInfo(true, false, true, 10);
-        when(infoProvider.getNodeInfo()).thenReturn(nodeInfo);
-        PowerMockito.mockStatic(DiagnosticsAgent.class);
-        PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
+    public void should_report_node_info_when_enabled() throws NoSuchMethodException, ClassNotFoundException {
+        final Configuration configuration = testConfiguration(1, false, false, false, true);
 
-        final CountDownLatch latch = new CountDownLatch(1);
-        final LatchTestReporter testReporter = new LatchTestReporter(null, GlobalConfiguration.getDefault(), latch);
-        final List<Reporter> reporters = new ArrayList<Reporter>() {
-            {
-                add(testReporter);
-            }
-        };
+        new TestKit(system) {{
+            final ActorRef testInfoProvider = system.actorOf(TestInfoProvider
+                    .props(null, null, 0, null, null, getNodeInfo(), configuration));
 
-        final StatusModule module = new StatusModule(testConfiguration(1, false, false, false, true), reporters,
-                GlobalConfiguration.getDefault());
-        boolean wait = latch.await(1100, TimeUnit.MILLISECONDS);
-        module.stop();
-        assertThat(wait).isTrue();
-        assertThat(testReporter.getReported().size()).isEqualTo(1);
+            final CountDownLatch latch = new CountDownLatch(1);
+            final TestActorRef<TestReporter> testReporter = TestActorRef
+                    .create(system, ActorFactory.reporterProps(TEST_REPORTER_NAME, configuration));
+            testReporter.underlyingActor().latch = latch;
+
+            final TestActorRef<StatusModule> testModule = TestActorRef
+                    .create(system, ActorFactory.moduleProps(MODULE_NAME, configuration));
+
+            final TestKit probe = new TestKit(system);
+            testReporter.tell(probe.getRef(), getRef());
+            expectMsg(duration("1 second"), "done");
+
+            testModule.underlyingActor().start();
+
+            within(dilated(duration("100 milliseconds")), () -> {
+                probe.expectMsgAnyClassOf(Measurement.class);
+
+                testModule.underlyingActor().stop();
+
+                return null;
+            });
+
+            assertThat(testReporter.underlyingActor().getReported().size()).isEqualTo(1);
+        }};
     }
 
-    private ModuleConfiguration testConfiguration(final int period, final boolean compactionsEnabled,
+    private Configuration testConfiguration(final int period, final boolean compactionsEnabled,
             final boolean tpStatsEnabled, final boolean repairsEnabled, final boolean nodeInfoEnabled) {
         final ModuleConfiguration configuration = new ModuleConfiguration();
         configuration.measurement = "test_measurement";
-        configuration.module = "io.smartcat.cassandra.diagnostics.module.status.StatusModule";
+        configuration.module = MODULE_NAME;
         configuration.options.put("period", period);
         configuration.options.put("timeunit", "MINUTES");
         configuration.options.put("compactionsEnabled", compactionsEnabled);
         configuration.options.put("tpStatsEnabled", tpStatsEnabled);
         configuration.options.put("repairsEnabled", repairsEnabled);
         configuration.options.put("nodeInfoEnabled", nodeInfoEnabled);
-        return configuration;
+        configuration.reporters.add(TEST_REPORTER_NAME);
+        final Configuration config = new Configuration();
+        config.modules.add(configuration);
+        config.reporters.add(testReporterConfiguration());
+        return config;
     }
 
-    private List<Reporter> testReporters() {
-        return new ArrayList<Reporter>() {
-            {
-                add(new TestReporter(null, GlobalConfiguration.getDefault()));
-            }
-        };
+    private ReporterConfiguration testReporterConfiguration() {
+        final ReporterConfiguration reporterConfiguration = new ReporterConfiguration();
+        reporterConfiguration.reporter = TEST_REPORTER_NAME;
+        return reporterConfiguration;
     }
 
     private List<CompactionInfo> getCompactions() {
@@ -241,6 +308,10 @@ public class StatusModuleTest {
 
     private long getRepairSessions() {
         return 39;
+    }
+
+    private NodeInfo getNodeInfo() {
+        return new NodeInfo(true, false, true, 10);
     }
 
 }

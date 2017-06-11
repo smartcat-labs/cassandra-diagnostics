@@ -93,7 +93,7 @@ public class ClusterHealthModule extends ModuleActor {
                         .result(future, timeout.duration());
                 report(createMeasurement(result.unreachableNodes.size()));
             } catch (Exception e) {
-                logger.error("Failed to query/report unreachable nodes from info provider.");
+                logger.error("Failed to query/report unreachable nodes from info provider.", e);
             }
         }
     }

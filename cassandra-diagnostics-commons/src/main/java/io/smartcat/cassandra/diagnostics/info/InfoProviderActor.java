@@ -31,13 +31,12 @@ public abstract class InfoProviderActor extends BaseActor {
         return receiveBuilder().match(DistributedPubSubMediator.SubscribeAck.class, msg -> logger.info("Subscribed"))
                 .match(Command.Start.class, o -> start()).match(Command.Stop.class, o -> stop())
                 .match(Query.InfoProviderRef.class, o -> getInfoProviderReference()).match(Query.Compactions.class,
-                        o -> getSender().tell(new QueryResponse.CompactionsResp(getCompactions()), getSelf()))
-                .match(Query.TPStats.class,
+                        o -> getSender()
+                                .tell(new QueryResponse.CompactionsResp(getCompactionSettingsInfo(), getCompactions()),
+                                        getSelf())).match(Query.TPStats.class,
                         o -> getSender().tell(new QueryResponse.TPStatsResp(getTPStats()), getSelf()))
                 .match(Query.RepairSessions.class,
                         o -> getSender().tell(new QueryResponse.RepairSessionsResp(getRepairSessions()), getSelf()))
-                .match(Query.CompactionSettingsInfo.class, o -> getSender()
-                        .tell(new QueryResponse.CompactionSettingsInfoResp(getCompactionSettingsInfo()), getSelf()))
                 .match(Query.UnreachableNodes.class,
                         o -> getSender().tell(new QueryResponse.UnreachableNodesResp(getUnreachableNodes()), getSelf()))
                 .match(Query.NodeInfo.class,

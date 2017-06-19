@@ -151,7 +151,7 @@ public class QueryProcessorWrapper extends AbstractEventProcessor {
 
                     Query query = createQuery(startTime, execTime, cqlQuery, cqlStatement, queryState, options);
                     logger.trace("Reporting query: {}.", query);
-                    connector.tell(query, null);
+                    connector.tell(query, ActorRef.noSender());
                 } catch (Exception e) {
                     logger.warn("An error occured while reporting query", e);
                 }

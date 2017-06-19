@@ -20,6 +20,11 @@ public abstract class InfoProviderActor extends BaseActor {
      */
     protected final ConnectorConfiguration configuration;
 
+    /**
+     * Constructor.
+     *
+     * @param configuration configuration
+     */
     public InfoProviderActor(final ConnectorConfiguration configuration) {
         this.configuration = configuration;
 

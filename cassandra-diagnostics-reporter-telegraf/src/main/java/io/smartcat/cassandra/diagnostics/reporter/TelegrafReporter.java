@@ -11,14 +11,16 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.influxdb.dto.Point;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import io.smartcat.cassandra.diagnostics.config.Configuration;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
  * Reporter implementation for Telegraf.
  */
-public class TelegrafReporter extends ReporterActor {
+public class TelegrafReporter extends Reporter {
 
     private static final String HOST_PROP = "telegrafHost";
 
@@ -26,23 +28,25 @@ public class TelegrafReporter extends ReporterActor {
 
     private static final int DEFAULT_PORT = 8084;
 
+    private static final Logger logger = LoggerFactory.getLogger(TelegrafReporter.class);
+
     private static TcpClient telegrafClient;
 
     /**
      * Constructor.
      *
-     * @param reporterName  Reporter class name
-     * @param configuration Configuration
+     * @param reporterConfiguration reporter specific configuration
+     * @param globalConfiguration   Global diagnostics configuration
      */
-    public TelegrafReporter(final String reporterName, final Configuration configuration) {
-        super(reporterName, configuration);
+    public TelegrafReporter(final ReporterConfiguration reporterConfiguration,
+            final GlobalConfiguration globalConfiguration) {
+        super(reporterConfiguration, globalConfiguration);
 
-        logger.debug("Initializing Telegraf reporter with config: {}", configuration.toString());
+        logger.debug("Initializing Telegraf reporter with config: {}", reporterConfiguration.toString());
 
         if (!reporterConfiguration.options.containsKey(HOST_PROP)) {
-            logger.warning(
-                    "Telegraf reporter initialization failed. Missing required property {}. Aborting initialization.",
-                    HOST_PROP);
+            logger.warn("Telegraf reporter initialization failed. Missing required property " + HOST_PROP
+                    + ". Aborting initialization.");
             return;
         }
 
@@ -53,24 +57,24 @@ public class TelegrafReporter extends ReporterActor {
             telegrafClient = new TcpClient(new InetSocketAddress(host, port)) {
                 @Override
                 protected void onConnected() {
-                    logger.info("Telegraf client connected to {}:{}.", host, port);
+                    logger.info("Telegraf client connected to " + host + ":" + port);
                 }
 
                 @Override
                 protected void onDisconnected() {
-                    logger.info("Telegraf client disconnected from {}:{}.", host, port);
+                    logger.info("Telegraf client disconnected from " + host + ":" + port);
                 }
             };
             telegrafClient.start();
         } catch (IOException e) {
-            logger.warning("Telegraf reporter cannot be initialized", e);
+            logger.warn("Telegraf reporter cannot be initialized", e);
         }
     }
 
     @Override
-    protected void report(Measurement measurement) {
+    public void report(final Measurement measurement) {
         if (telegrafClient == null || !telegrafClient.isConnected()) {
-            logger.warning("Telegraf client is not connected. Skipping measurement {} with value {}.", measurement.name,
+            logger.warn("Telegraf client is not connected. Skipping measurement {} with value {}.", measurement.name,
                     measurement.value);
             return;
         }
@@ -99,7 +103,7 @@ public class TelegrafReporter extends ReporterActor {
     }
 
     @Override
-    protected void stop() {
+    public void stop() {
         try {
             telegrafClient.stop();
         } catch (IOException | InterruptedException e) {
@@ -128,7 +132,7 @@ public class TelegrafReporter extends ReporterActor {
             CharsetEncoder encoder = charset.newEncoder();
             return encoder.encode(CharBuffer.wrap(builder.build().lineProtocol().concat("\r\n").toCharArray()));
         } catch (Exception e) {
-            logger.warning("Failed to send report to influx", e);
+            logger.warn("Failed to send report to influx", e);
             return null;
         }
     }

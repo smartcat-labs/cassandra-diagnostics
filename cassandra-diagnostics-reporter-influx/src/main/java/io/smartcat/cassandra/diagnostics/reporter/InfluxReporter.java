@@ -6,14 +6,21 @@ import java.util.concurrent.TimeUnit;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import io.smartcat.cassandra.diagnostics.config.Configuration;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
- * An InfluxDB based {@link ReporterActor} implementation. Query reports are sent to influxdb.
+ * An InfluxDB based {@link Reporter} implementation. Query reports are sent to influxdb.
  */
-public class InfluxReporter extends ReporterActor {
+public class InfluxReporter extends Reporter {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger logger = LoggerFactory.getLogger(InfluxReporter.class);
 
     private static final String ADDRESS_PROP = "influxDbAddress";
 
@@ -52,24 +59,25 @@ public class InfluxReporter extends ReporterActor {
     /**
      * Constructor.
      *
-     * @param reporterName  Reporter class name
-     * @param configuration Configuration
+     * @param reporterConfiguration reporter specific configuration
+     * @param globalConfiguration   global configuration
      */
-    public InfluxReporter(final String reporterName, final Configuration configuration) {
-        super(reporterName, configuration);
+    public InfluxReporter(final ReporterConfiguration reporterConfiguration,
+            final GlobalConfiguration globalConfiguration) {
+        super(reporterConfiguration, globalConfiguration);
 
         if (!reporterConfiguration.options.containsKey(ADDRESS_PROP)) {
-            logger.warning("Not properly configured. Missing influx address. Aborting initialization.");
+            logger.warn("Not properly configured. Missing influx address. Aborting initialization.");
             return;
         }
 
         if (!reporterConfiguration.options.containsKey(USERNAME_PROP)) {
-            logger.warning("Not properly configured. Missing influx username. Aborting initialization.");
+            logger.warn("Not properly configured. Missing influx username. Aborting initialization.");
             return;
         }
 
         if (!reporterConfiguration.options.containsKey(DB_NAME_PROP)) {
-            logger.warning("Not properly configured. Missing influx db name. Aborting initialization.");
+            logger.warn("Not properly configured. Missing influx db name. Aborting initialization.");
             return;
         }
 
@@ -91,14 +99,14 @@ public class InfluxReporter extends ReporterActor {
     }
 
     @Override
-    protected void stop() {
+    public void stop() {
         influx.close();
     }
 
     @Override
-    protected void report(Measurement measurement) {
+    public void report(Measurement measurement) {
         if (influx == null) {
-            logger.warning("InfluxDB client is not initialized");
+            logger.warn("InfluxDB client is not initialized");
             return;
         }
 
@@ -119,7 +127,7 @@ public class InfluxReporter extends ReporterActor {
 
             influx.write(dbName, retentionPolicy, builder.build());
         } catch (Exception e) {
-            logger.warning("Failed to send report to influx", e);
+            logger.warn("Failed to send report to influx", e);
         }
     }
 

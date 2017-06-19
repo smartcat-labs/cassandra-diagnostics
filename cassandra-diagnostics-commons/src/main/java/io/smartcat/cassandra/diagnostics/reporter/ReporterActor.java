@@ -8,6 +8,7 @@ import akka.japi.pf.ReceiveBuilder;
 import io.smartcat.cassandra.diagnostics.actor.BaseActor;
 import io.smartcat.cassandra.diagnostics.actor.messages.Command;
 import io.smartcat.cassandra.diagnostics.config.Configuration;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
@@ -17,15 +18,12 @@ public abstract class ReporterActor extends BaseActor {
 
     private final String reporterName;
 
+    private final Reporter reporterInstance;
+
     /**
      * System configuration.
      */
-    protected Configuration configuration;
-
-    /**
-     * Reporter specific configuration.
-     */
-    protected final ReporterConfiguration reporterConfiguration;
+    protected final Configuration configuration;
 
     /**
      * Constructor.
@@ -42,8 +40,18 @@ public abstract class ReporterActor extends BaseActor {
 
         Optional<ReporterConfiguration> optional = configuration.reporters.stream()
                 .filter(rconf -> rconf.reporter.equals(reporterName)).findFirst();
+
         if (optional.isPresent()) {
-            reporterConfiguration = optional.get();
+            final ReporterConfiguration reporterConfiguration = optional.get();
+
+            logger.info("Creating reporter for class name {}", reporterName);
+            try {
+                reporterInstance = (Reporter) Class.forName(reporterName)
+                        .getConstructor(ReporterConfiguration.class, GlobalConfiguration.class)
+                        .newInstance(reporterConfiguration, configuration.global);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to create reporter for class name " + reporterName, e);
+            }
         } else {
             throw new RuntimeException("No reporter configuration present for reporter class " + reporterName);
         }
@@ -66,32 +74,12 @@ public abstract class ReporterActor extends BaseActor {
      */
     protected ReceiveBuilder defaultReceive() {
         return receiveBuilder().match(DistributedPubSubMediator.SubscribeAck.class,
-                msg -> logger.info("Subscribed to topic {}", reporterName)).match(Command.Start.class, o -> start())
-                .match(Command.Stop.class, o -> stop()).match(Measurement.class, this::report)
-                .match(Terminated.class, o -> terminate());
+                msg -> logger.info("Subscribed to topic {}", reporterName))
+                .match(Command.Start.class, o -> reporterInstance.start())
+                .match(Command.Stop.class, o -> reporterInstance.stop())
+                .match(Measurement.class, reporterInstance::report).match(Terminated.class, o -> terminate());
 
     }
-
-    /**
-     * Module start method.
-     */
-    protected void start() {
-
-    }
-
-    /**
-     * Module stop method.
-     */
-    protected void stop() {
-
-    }
-
-    /**
-     * Report measurement.
-     *
-     * @param measurement measurement object
-     */
-    protected abstract void report(Measurement measurement);
 
     private void terminate() {
 

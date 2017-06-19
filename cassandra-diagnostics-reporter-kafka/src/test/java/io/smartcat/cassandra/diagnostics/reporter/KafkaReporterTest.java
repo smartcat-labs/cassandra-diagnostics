@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -77,7 +76,7 @@ public class KafkaReporterTest {
         Map<String, String> fields = new HashMap<>();
         fields.put("v2", "abc");
 
-        Measurement measurement = Measurement.createSimple("m1", 1.0, 1434055662, TimeUnit.SECONDS, tags, fields);
+        Measurement measurement = Measurement.createSimple("m1", 1.0, 1434055662, tags, fields);
         reporter.report(measurement);
 
         // setup consumer

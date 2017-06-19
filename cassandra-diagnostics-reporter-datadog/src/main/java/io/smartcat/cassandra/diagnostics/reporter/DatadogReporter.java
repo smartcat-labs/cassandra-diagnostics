@@ -4,16 +4,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 
-import io.smartcat.cassandra.diagnostics.config.Configuration;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
- * A Datadog based {@link ReporterActor} implementation. Query reports are reporter via Datadog HTTP API
+ * A Datadog based {@link Reporter} implementation. Query reports are reporter via Datadog HTTP API
  */
-public class DatadogReporter extends ReporterActor {
+public class DatadogReporter extends Reporter {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger logger = LoggerFactory.getLogger(DatadogReporter.class);
 
     private static final String STATSD_HOST_KEY = "statsDHost";
 
@@ -36,17 +44,18 @@ public class DatadogReporter extends ReporterActor {
     /**
      * Constructor.
      *
-     * @param reporterName  Reporter class name
-     * @param configuration Configuration
+     * @param reporterConfiguration reporter specific configuration
+     * @param globalConfiguration   global configuration
      */
-    public DatadogReporter(final String reporterName, final Configuration configuration) {
-        super(reporterName, configuration);
+    public DatadogReporter(final ReporterConfiguration reporterConfiguration,
+            final GlobalConfiguration globalConfiguration) {
+        super(reporterConfiguration, globalConfiguration);
 
-        logger.debug("Initializing datadog client with config: {}", configuration.toString());
+        logger.debug("Initializing datadog client with config: {}", reporterConfiguration.toString());
 
-        hostname = configuration.global.hostname;
+        hostname = globalConfiguration.hostname;
         if (hostname == null || hostname.isEmpty()) {
-            logger.warning("Failed to init Datadog client: cannot resolve hostname. Aborting initialization.");
+            logger.warn("Failed to init Datadog client: cannot resolve hostname. Aborting initialization.");
             return;
         }
 
@@ -62,15 +71,15 @@ public class DatadogReporter extends ReporterActor {
     }
 
     @Override
-    protected void stop() {
+    public void stop() {
         logger.debug("Stopping DataDog reporter.");
         client.stop();
     }
 
     @Override
-    protected void report(Measurement measurement) {
+    public void report(Measurement measurement) {
         if (client == null) {
-            logger.warning("Datadog client is not initialized. Skipping measurement {} with value {}.",
+            logger.warn("Datadog client is not initialized. Skipping measurement {} with value {}.",
                     measurement.name, measurement.value);
             return;
         }
@@ -92,7 +101,7 @@ public class DatadogReporter extends ReporterActor {
             }
 
         } catch (Exception e) {
-            logger.warning("Sending measurement failed: execTime={}, exception: {}", measurement.time, e.getMessage());
+            logger.warn("Sending measurement failed: execTime={}, exception: {}", measurement.time, e.getMessage());
         }
     }
 

@@ -75,7 +75,7 @@ public class ConnectorProxyImpl implements ConnectorProxy {
      * signal that Cassandra setup process is completed.
      */
     public static void cassandraSetupComplete() {
-        connector.tell(new Notification.CassandraStartupComplete(), null);
+        connector.tell(new Notification.CassandraStartupComplete(), ActorRef.noSender());
     }
 
     /**

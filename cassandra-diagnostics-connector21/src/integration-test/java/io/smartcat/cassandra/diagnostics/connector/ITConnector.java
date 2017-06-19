@@ -1,7 +1,6 @@
 package io.smartcat.cassandra.diagnostics.connector;
 
 import java.io.IOException;
-import java.lang.instrument.Instrumentation;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -11,15 +10,10 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.instrument.InstrumentationSavingAgent;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
-
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Query;
-import io.smartcat.cassandra.diagnostics.utils.EmbeddedCassandraServerHelper;
 
 public class ITConnector {
 
@@ -32,36 +26,36 @@ public class ITConnector {
 
     @BeforeClass
     public static void setUp() throws ConfigurationException, TTransportException, IOException, InterruptedException {
-        preparedQueryIntercepted = false;
-        unpreparedQueryIntercepted = false;
-
-        final Instrumentation inst = InstrumentationSavingAgent.getInstrumentation();
-        ConnectorConfiguration configuration = new ConnectorConfiguration();
-        GlobalConfiguration globalConfiguration = GlobalConfiguration.getDefault();
-        configuration.enableTracing = true;
-        final Connector connector = new ConnectorImpl();
-        connector.init(inst, new QueryReporter() {
-            @Override
-            public void report(Query query) {
-                if (Query.StatementType.SELECT.equals(query.statementType()) && "test_keyspace"
-                        .equalsIgnoreCase(query.keyspace()) && "test_table_prepared".equalsIgnoreCase(query.tableName()) &&
-                        query.statement().equalsIgnoreCase("SELECT uid FROM test_keyspace.test_table_prepared")) {
-                    preparedQueryIntercepted = true;
-                    lockForPreparedStatement.countDown();
-                }
-                if (Query.StatementType.SELECT.equals(query.statementType()) && "test_keyspace"
-                        .equalsIgnoreCase(query.keyspace()) && "test_table_unprepared".equalsIgnoreCase(query.tableName()) &&
-                        query.statement().equalsIgnoreCase("SELECT uid FROM test_keyspace.test_table_unprepared")) {
-                    unpreparedQueryIntercepted = true;
-                    lockForUnpreparedStatement.countDown();
-                }
-            }
-        }, configuration, globalConfiguration);
-        
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-        connector.waitForSetupCompleted();
-        cluster = Cluster.builder().addContactPoint("127.0.0.1").withPort(9142).build();
-        session = cluster.connect();
+//        preparedQueryIntercepted = false;
+//        unpreparedQueryIntercepted = false;
+//
+//        final Instrumentation inst = InstrumentationSavingAgent.getInstrumentation();
+//        ConnectorConfiguration configuration = new ConnectorConfiguration();
+//        GlobalConfiguration globalConfiguration = GlobalConfiguration.getDefault();
+//        configuration.enableTracing = true;
+//        final Connector connector = new ConnectorImpl();
+//        connector.init(inst, new QueryReporter() {
+//            @Override
+//            public void report(Query query) {
+//                if (Query.StatementType.SELECT.equals(query.statementType()) && "test_keyspace"
+//                        .equalsIgnoreCase(query.keyspace()) && "test_table_prepared".equalsIgnoreCase(query.tableName()) &&
+//                        query.statement().equalsIgnoreCase("SELECT uid FROM test_keyspace.test_table_prepared")) {
+//                    preparedQueryIntercepted = true;
+//                    lockForPreparedStatement.countDown();
+//                }
+//                if (Query.StatementType.SELECT.equals(query.statementType()) && "test_keyspace"
+//                        .equalsIgnoreCase(query.keyspace()) && "test_table_unprepared".equalsIgnoreCase(query.tableName()) &&
+//                        query.statement().equalsIgnoreCase("SELECT uid FROM test_keyspace.test_table_unprepared")) {
+//                    unpreparedQueryIntercepted = true;
+//                    lockForUnpreparedStatement.countDown();
+//                }
+//            }
+//        }, configuration, globalConfiguration);
+//
+//        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+//        connector.waitForSetupCompleted();
+//        cluster = Cluster.builder().addContactPoint("127.0.0.1").withPort(9142).build();
+//        session = cluster.connect();
     }
 
     @AfterClass

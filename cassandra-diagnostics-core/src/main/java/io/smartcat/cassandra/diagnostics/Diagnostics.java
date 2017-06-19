@@ -111,7 +111,7 @@ public class Diagnostics {
      * Completes the initialization and activates the query processing.
      */
     public void activate() {
-        nodeGuardian.tell(new Command.Start(), null);
+        nodeGuardian.tell(new Command.Start(), ActorRef.noSender());
 
         //        this.diagnosticsProcessor = new DiagnosticsProcessor(config);
         //        this.isRunning.set(true);

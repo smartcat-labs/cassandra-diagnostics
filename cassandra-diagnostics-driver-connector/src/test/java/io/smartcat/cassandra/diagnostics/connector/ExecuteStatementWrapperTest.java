@@ -18,8 +18,8 @@ import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
+import io.smartcat.cassandra.diagnostics.query.Query;
 
 public class ExecuteStatementWrapperTest {
 

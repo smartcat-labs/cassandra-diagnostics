@@ -37,8 +37,7 @@ public class TestReporter extends ReporterActor {
         }).build();
     }
 
-    @Override
-    protected void report(Measurement measurement) {
+    protected void report(final Measurement measurement) {
         if (target != null) {
             target.tell(measurement, getSelf());
         }

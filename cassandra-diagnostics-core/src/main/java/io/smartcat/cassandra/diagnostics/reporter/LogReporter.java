@@ -1,33 +1,42 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
-import io.smartcat.cassandra.diagnostics.config.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
- * A SLF4J based {@link ReporterActor} implementation. This reporter is using log output to print query reports to a
+ * A SLF4J based {@link Reporter} implementation. This reporter is using log output to print query reports to a
  * log at {@code INFO} level.
  */
-public class LogReporter extends ReporterActor {
+public class LogReporter extends Reporter {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger logger = LoggerFactory.getLogger(LogReporter.class);
 
     /**
      * String template for logging query report.
      */
-    private static final String LOG_TEMPLATE = "%s Measurement %s [time=%s, value=%s, tags=%s, fields=%s]";
+    private static final String LOG_TEMPLATE = "{} Measurement {} [time={}, value={}, tags={}, fields={}]";
 
     /**
      * Constructor.
      *
-     * @param reporterName  reporter class name
-     * @param configuration reporter configuration
+     * @param reporterConfiguration reporter specific configuration
+     * @param globalConfiguration   global configuration
      */
-    public LogReporter(final String reporterName, final Configuration configuration) {
-        super(reporterName, configuration);
+    public LogReporter(final ReporterConfiguration reporterConfiguration,
+            final GlobalConfiguration globalConfiguration) {
+        super(reporterConfiguration, globalConfiguration);
     }
 
     @Override
-    protected void report(Measurement measurement) {
-        logger.info(String.format(LOG_TEMPLATE, measurement.type, measurement.name.toUpperCase(), measurement.time,
-                measurement.value, measurement.tags.toString(), measurement.fields.toString()));
+    public void report(Measurement measurement) {
+        logger.info(LOG_TEMPLATE, measurement.type.toString(), measurement.name.toUpperCase(), measurement.time,
+                measurement.value, measurement.tags.toString(), measurement.fields.toString());
     }
 
 }

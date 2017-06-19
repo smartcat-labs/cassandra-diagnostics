@@ -7,15 +7,22 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import io.smartcat.cassandra.diagnostics.config.Configuration;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
- * Apache Kafka based {@link ReporterActor} implementation. All measurements are written into Kafka based on
+ * Apache Kafka based {@link Reporter} implementation. All measurements are written into Kafka based on
  * measurements name and time of the measurement.
  */
-public class KafkaReporter extends ReporterActor {
+public class KafkaReporter extends Reporter {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger logger = LoggerFactory.getLogger(KafkaReporter.class);
 
     private static final String SERVERS_PROP = "kafkaBootstrapServers";
     private static final String TOPIC_PROP = "kafkaTopic";
@@ -28,21 +35,22 @@ public class KafkaReporter extends ReporterActor {
     /**
      * Constructor.
      *
-     * @param reporterName  Reporter class name
-     * @param configuration Configuration
+     * @param reporterConfiguration reporter specific configuration
+     * @param globalConfiguration   global configuration
      */
-    public KafkaReporter(final String reporterName, final Configuration configuration) {
-        super(reporterName, configuration);
+    public KafkaReporter(final ReporterConfiguration reporterConfiguration,
+            final GlobalConfiguration globalConfiguration) {
+        super(reporterConfiguration, globalConfiguration);
 
         final String servers = reporterConfiguration.getDefaultOption(SERVERS_PROP, "");
         if (servers.isEmpty()) {
-            logger.warning("Missing required property {}. Aborting initialization.", SERVERS_PROP);
+            logger.warn("Missing required property {}. Aborting initialization.", SERVERS_PROP);
             return;
         }
 
         topic = reporterConfiguration.getDefaultOption(TOPIC_PROP, "");
         if (topic.isEmpty()) {
-            logger.warning("Missing required property {}. Aborting initialization.", TOPIC_PROP);
+            logger.warn("Missing required property {}. Aborting initialization.", TOPIC_PROP);
             return;
         }
 
@@ -52,13 +60,13 @@ public class KafkaReporter extends ReporterActor {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
         producer = new KafkaProducer<>(properties);
-        partitionKey = configuration.global.systemName + "_" + configuration.global.hostname;
+        partitionKey = globalConfiguration.systemName + "_" + globalConfiguration.hostname;
     }
 
     @Override
-    protected void report(Measurement measurement) {
+    public void report(Measurement measurement) {
         if (producer == null) {
-            logger.warning("Kafka producer is not initialized.");
+            logger.warn("Kafka producer is not initialized.");
             return;
         }
 
@@ -66,7 +74,7 @@ public class KafkaReporter extends ReporterActor {
     }
 
     @Override
-    protected void stop() {
+    public void stop() {
         if (producer != null) {
             producer.close();
         }

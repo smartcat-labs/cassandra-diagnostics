@@ -107,6 +107,15 @@ public class ActorFactory {
         }
     }
 
+    /**
+     * Create actor props for info provider actor.
+     *
+     * @param type          Info provider actor implementation class
+     * @param configuration configuration
+     * @param <T>           class type
+     * @return Info provider actor instance
+     * @throws NoSuchMethodException no such method
+     */
     public static <T extends InfoProviderActor> Props infoProviderProps(final Class<T> type,
             final ConnectorConfiguration configuration) throws NoSuchMethodException {
         Constructor<?> constructor = type.getConstructor(ConnectorConfiguration.class);

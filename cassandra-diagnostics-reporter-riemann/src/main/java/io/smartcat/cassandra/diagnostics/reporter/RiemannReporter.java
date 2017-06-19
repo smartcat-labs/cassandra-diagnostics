@@ -4,19 +4,27 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.riemann.riemann.client.EventDSL;
 import io.riemann.riemann.client.IRiemannClient;
 import io.riemann.riemann.client.RiemannBatchClient;
 import io.riemann.riemann.client.RiemannClient;
 import io.riemann.riemann.client.UnsupportedJVMException;
-import io.smartcat.cassandra.diagnostics.config.Configuration;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
- * A Riemann based {@link ReporterActor} implementation. Query reports are sending towards the configured Riemann server
+ * A Riemann based {@link Reporter} implementation. Query reports are sending towards the configured Riemann server
  * as Riemann events.
  */
-public class RiemannReporter extends ReporterActor {
+public class RiemannReporter extends Reporter {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger logger = LoggerFactory.getLogger(RiemannReporter.class);
 
     private static final String HOST_PROP = "riemannHost";
 
@@ -33,16 +41,17 @@ public class RiemannReporter extends ReporterActor {
     /**
      * Constructor.
      *
-     * @param reporterName  Reporter class name
-     * @param configuration Configuration
+     * @param reporterConfiguration reporter specific configuration
+     * @param globalConfiguration   global configuration
      */
-    public RiemannReporter(final String reporterName, final Configuration configuration) {
-        super(reporterName, configuration);
+    public RiemannReporter(final ReporterConfiguration reporterConfiguration,
+            final GlobalConfiguration globalConfiguration) {
+        super(reporterConfiguration, globalConfiguration);
 
-        logger.debug("Initializing riemann client with config: {}", configuration.toString());
+        logger.debug("Initializing riemann client with config: {}", reporterConfiguration.toString());
 
         if (!reporterConfiguration.options.containsKey(HOST_PROP)) {
-            logger.warning("Tried to init Riemann client. Not properly configured. Aborting initialization.");
+            logger.warn("Tried to init Riemann client. Not properly configured. Aborting initialization.");
             return;
         }
 
@@ -56,25 +65,25 @@ public class RiemannReporter extends ReporterActor {
                     batchEventSize);
             riemannClient.connect();
         } catch (IOException e) {
-            logger.warning("Riemann client cannot be initialized", e);
+            logger.warn("Riemann client cannot be initialized", e);
         } catch (UnsupportedJVMException e) {
-            logger.warning("Riemann Batch client not supported, faling back to riemann client.");
+            logger.warn("Riemann Batch client not supported, faling back to riemann client.");
             try {
                 riemannClient = RiemannClient.tcp(new InetSocketAddress(host, port));
             } catch (IOException e1) {
-                logger.warning("Riemann client cannot be initialized", e);
+                logger.warn("Riemann client cannot be initialized", e);
             }
         }
     }
 
     @Override
-    protected void report(Measurement measurement) {
+    public void report(final Measurement measurement) {
         if (!riemannClient.isConnected()) {
-            logger.warning("Riemann client dropped connection, reconnecting.");
+            logger.warn("Riemann client dropped connection, reconnecting.");
             try {
                 riemannClient.reconnect();
             } catch (IOException e) {
-                logger.warning("Cannot reconnect, skipping measurement {} with value {}.", measurement.name,
+                logger.warn("Cannot reconnect, skipping measurement {} with value {}.", measurement.name,
                         measurement.value);
                 return;
             }
@@ -119,7 +128,7 @@ public class RiemannReporter extends ReporterActor {
     }
 
     @Override
-    protected void stop() {
+    public void stop() {
         riemannClient.close();
     }
 

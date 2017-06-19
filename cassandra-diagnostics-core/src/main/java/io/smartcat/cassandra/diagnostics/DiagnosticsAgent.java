@@ -13,11 +13,7 @@ public class DiagnosticsAgent {
 
     private static final Logger logger = LoggerFactory.getLogger(DiagnosticsAgent.class);
 
-//    private static final String INITIALIZATION_THREAD_NAME = "cassandra-diagnostics-agent";
-
     private static Diagnostics diagnostics;
-
-//    private static ConnectorProxy connectorProxy;
 
     /**
      * Prevents class instantiation.
@@ -34,27 +30,6 @@ public class DiagnosticsAgent {
     public static void premain(final String args, final Instrumentation inst) {
         logger.info("Cassandra Diagnostics starting.");
         diagnostics = new Diagnostics();
-
-//        connectorProxy = ConnectorProxyFactory.getImplementation();
-//        connectorProxy.init(inst, diagnostics.getSystem(), diagnostics.getConfiguration());
-
-//        Thread th = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                connectorProxy.waitForSetupCompleted();
-//                diagnostics.activate();
-//                logger.info("Cassandra Diagnostics initialized.");
-//            }
-//        });
-//        th.setName(INITIALIZATION_THREAD_NAME);
-//        th.setDaemon(true);
-//        th.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-//            @Override
-//            public void uncaughtException(Thread t, Throwable e) {
-//                logger.error(e.getMessage(), e);
-//            }
-//        });
-//        th.start();
     }
 
 }

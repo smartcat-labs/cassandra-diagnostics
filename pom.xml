@@ -27,7 +27,7 @@
         <module>cassandra-diagnostics-reporter-telegraf</module>
         <module>cassandra-diagnostics-reporter-kafka</module>
         <module>cassandra-diagnostics-reporter-datadog</module>
-        <module>cassandra-diagnostics-ft</module>        
+        <module>cassandra-diagnostics-ft</module>
     </modules>
 
     <licenses>
@@ -74,10 +74,11 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <source.level>1.7</source.level>
-        <code.level>1.7</code.level>
-        <version.junit>4.12</version.junit>
+        <source.level>1.8</source.level>
+        <code.level>1.8</code.level>
+        <version.akka>2.5.2</version.akka>
         <version.assertj>2.4.1</version.assertj>
+        <version.junit>4.12</version.junit>
         <version.mockito>1.10.19</version.mockito>
         <version.slf4j>1.7.21</version.slf4j>
         <version.plugin.bundle>2.5.4</version.plugin.bundle>

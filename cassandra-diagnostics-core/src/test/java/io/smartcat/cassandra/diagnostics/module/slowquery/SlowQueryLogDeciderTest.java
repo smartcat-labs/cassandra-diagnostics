@@ -8,9 +8,9 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import io.smartcat.cassandra.diagnostics.Query;
-import io.smartcat.cassandra.diagnostics.Query.ConsistencyLevel;
-import io.smartcat.cassandra.diagnostics.Query.StatementType;
+import io.smartcat.cassandra.diagnostics.query.Query;
+import io.smartcat.cassandra.diagnostics.query.Query.ConsistencyLevel;
+import io.smartcat.cassandra.diagnostics.query.Query.StatementType;
 
 /**
  * Test for slow query log decider.

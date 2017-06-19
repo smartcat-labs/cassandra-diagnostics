@@ -10,14 +10,17 @@ import org.slf4j.LoggerFactory;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
  * A Datadog based {@link Reporter} implementation. Query reports are reporter via Datadog HTTP API
  */
 public class DatadogReporter extends Reporter {
 
+    /**
+     * Class logger.
+     */
     private static final Logger logger = LoggerFactory.getLogger(DatadogReporter.class);
 
     private static final String STATSD_HOST_KEY = "statsDHost";
@@ -41,13 +44,14 @@ public class DatadogReporter extends Reporter {
     /**
      * Constructor.
      *
-     * @param configuration        Reporter configuration
-     * @param globalConfiguration  Global configuration
+     * @param reporterConfiguration reporter specific configuration
+     * @param globalConfiguration   global configuration
      */
-    public DatadogReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
-        super(configuration, globalConfiguration);
+    public DatadogReporter(final ReporterConfiguration reporterConfiguration,
+            final GlobalConfiguration globalConfiguration) {
+        super(reporterConfiguration, globalConfiguration);
 
-        logger.debug("Initializing datadog client with config: {}", configuration.toString());
+        logger.debug("Initializing datadog client with config: {}", reporterConfiguration.toString());
 
         hostname = globalConfiguration.hostname;
         if (hostname == null || hostname.isEmpty()) {
@@ -55,10 +59,10 @@ public class DatadogReporter extends Reporter {
             return;
         }
 
-        final String statsdHost = configuration.getDefaultOption(STATSD_HOST_KEY, hostname);
-        final int statsdPort = configuration.getDefaultOption(STATSD_PORT_KEY, DEFAULT_STATSD_PORT);
-        final String keysPrefix = configuration.getDefaultOption(KEYS_PREFIX_KEY, DEFAULT_KEYS_PREFIX);
-        final List<String> fixedTags = configuration.getDefaultOption(FIXED_TAGS_KEY, DEFAULT_FIXED_TAGS);
+        final String statsdHost = reporterConfiguration.getDefaultOption(STATSD_HOST_KEY, hostname);
+        final int statsdPort = reporterConfiguration.getDefaultOption(STATSD_PORT_KEY, DEFAULT_STATSD_PORT);
+        final String keysPrefix = reporterConfiguration.getDefaultOption(KEYS_PREFIX_KEY, DEFAULT_KEYS_PREFIX);
+        final List<String> fixedTags = reporterConfiguration.getDefaultOption(FIXED_TAGS_KEY, DEFAULT_FIXED_TAGS);
 
         client = new NonBlockingStatsDClient(keysPrefix, statsdHost, statsdPort,
                 fixedTags.toArray(new String[fixedTags.size()]));
@@ -67,31 +71,37 @@ public class DatadogReporter extends Reporter {
     }
 
     @Override
+    public void stop() {
+        logger.debug("Stopping DataDog reporter.");
+        client.stop();
+    }
+
+    @Override
     public void report(Measurement measurement) {
         if (client == null) {
-            logger.warn("Datadog client is not initialized. Skipping measurement {} with value {}.", measurement.name(),
-                    measurement.getOrDefault(null));
+            logger.warn("Datadog client is not initialized. Skipping measurement {} with value {}.",
+                    measurement.name, measurement.value);
             return;
         }
 
         try {
             if (measurement.isSimple()) {
-                client.recordGaugeValue(measurement.name(), measurement.getValue(), convertTagsMap(measurement.tags()));
-                logger.debug("Reporting measurement {}, value {} and tags {}", measurement.name(),
-                        measurement.getValue(), convertTagsMap(measurement.tags()));
+                client.recordGaugeValue(measurement.name, measurement.value, convertTagsMap(measurement.tags));
+                logger.debug("Reporting measurement {}, value {} and tags {}", measurement.name, measurement.value,
+                        convertTagsMap(measurement.tags));
             } else {
-                for (String key : measurement.fields().keySet()) {
-                    if (!isNumeric(measurement.fields().get(key))) {
+                for (String key : measurement.fields.keySet()) {
+                    if (!isNumeric(measurement.fields.get(key))) {
                         continue;
                     }
 
-                    client.recordGaugeValue(measurement.name() + "." + key,
-                            Double.parseDouble(measurement.fields().get(key)), convertTagsMap(measurement.tags()));
+                    client.recordGaugeValue(measurement.name + "." + key,
+                            Double.parseDouble(measurement.fields.get(key)), convertTagsMap(measurement.tags));
                 }
             }
 
         } catch (Exception e) {
-            logger.warn("Sending measurement failed: execTime={}, exception: {}", measurement.time(), e.getMessage());
+            logger.warn("Sending measurement failed: execTime={}, exception: {}", measurement.time, e.getMessage());
         }
     }
 
@@ -109,12 +119,6 @@ public class DatadogReporter extends Reporter {
 
     private static boolean isNumeric(String string) {
         return string.matches("-?\\d+(\\.\\d+)?");
-    }
-
-    @Override
-    public void stop() {
-        logger.trace("Stopping DataDog reporter.");
-        client.stop();
     }
 
 }

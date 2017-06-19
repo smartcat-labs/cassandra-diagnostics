@@ -13,7 +13,7 @@
 
     <properties>
         <version.powermock>1.6.5</version.powermock>
-        <version.influxdb-java>2.2</version.influxdb-java>
+        <version.influxdb-java>2.5</version.influxdb-java>
     </properties>
 
     <dependencies>

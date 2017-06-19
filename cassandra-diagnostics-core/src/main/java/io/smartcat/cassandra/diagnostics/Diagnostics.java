@@ -2,6 +2,7 @@ package io.smartcat.cassandra.diagnostics;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -16,7 +17,16 @@ import javax.management.StandardMBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
+import akka.cluster.Cluster;
+import akka.dispatch.OnSuccess;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
 import fi.iki.elonen.NanoHTTPD;
+import io.smartcat.cassandra.diagnostics.actor.ActorFactory;
+import io.smartcat.cassandra.diagnostics.actor.NodeGuardianActor;
+import io.smartcat.cassandra.diagnostics.actor.messages.Command;
 import io.smartcat.cassandra.diagnostics.api.DiagnosticsApi;
 import io.smartcat.cassandra.diagnostics.api.DiagnosticsApiImpl;
 import io.smartcat.cassandra.diagnostics.api.HttpHandler;
@@ -24,13 +34,13 @@ import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationLoader;
 import io.smartcat.cassandra.diagnostics.config.YamlConfigurationLoader;
-import io.smartcat.cassandra.diagnostics.connector.QueryReporter;
 import io.smartcat.cassandra.diagnostics.utils.Utils;
 
 /**
  * This class implements the Diagnostics module initialization.
  */
-public class Diagnostics implements QueryReporter {
+public class Diagnostics {
+
     /**
      * Class logger.
      */
@@ -46,13 +56,45 @@ public class Diagnostics implements QueryReporter {
 
     private HttpHandler httpApi;
 
+    private final ActorSystem system;
+
+    private final Cluster cluster;
+
+    private final ActorRef nodeGuardian;
+
+    private final Timeout timeout = new Timeout(5, TimeUnit.SECONDS);
+
+    private final AtomicBoolean isTerminated = new AtomicBoolean(false);
+
     /**
      * Constructor.
      */
     public Diagnostics() {
+        system = ActorSystem.create("diagnostics-system");
+        system.registerOnTermination(this::shutdown);
+        cluster = Cluster.get(system);
+
         config = loadConfiguration();
         if (config.global.hostname == null || config.global.hostname.isEmpty()) {
             config.global.hostname = Utils.resolveHostname();
+        }
+
+        try {
+            nodeGuardian = system.actorOf(ActorFactory.props(NodeGuardianActor.class, config), "node-guardian");
+        } catch (Exception e) {
+            logger.error("Failed to initialize diagnostics", e);
+            throw new RuntimeException("Failed to initialize diagnostics");
+        }
+    }
+
+    private void shutdown() {
+        if (isTerminated.compareAndSet(false, true)) {
+            Patterns.ask(nodeGuardian, new Command.GracefulShutdown(), timeout).onComplete(new OnSuccess() {
+                @Override
+                public void onSuccess(Object result) throws Throwable {
+                    system.terminate();
+                }
+            }, system.dispatcher());
         }
     }
 
@@ -69,9 +111,11 @@ public class Diagnostics implements QueryReporter {
      * Completes the initialization and activates the query processing.
      */
     public void activate() {
-        this.diagnosticsProcessor = new DiagnosticsProcessor(config);
-        this.isRunning.set(true);
-        initEndpoints();
+        nodeGuardian.tell(new Command.Start(), ActorRef.noSender());
+
+        //        this.diagnosticsProcessor = new DiagnosticsProcessor(config);
+        //        this.isRunning.set(true);
+        //        initEndpoints();
     }
 
     private Configuration loadConfiguration() {
@@ -123,13 +167,6 @@ public class Diagnostics implements QueryReporter {
             server.unregisterMBean(mxbeanName);
         } catch (MBeanRegistrationException | InstanceNotFoundException e) {
             logger.error("Unable to unregister DiagnosticsMBean", e);
-        }
-    }
-
-    @Override
-    public void report(Query query) {
-        if (isRunning.get()) {
-            diagnosticsProcessor.process(query);
         }
     }
 

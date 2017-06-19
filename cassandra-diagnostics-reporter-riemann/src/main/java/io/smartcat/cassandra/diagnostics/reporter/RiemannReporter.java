@@ -7,21 +7,23 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.aphyr.riemann.client.EventDSL;
-import com.aphyr.riemann.client.IRiemannClient;
-import com.aphyr.riemann.client.RiemannBatchClient;
-import com.aphyr.riemann.client.RiemannClient;
-import com.aphyr.riemann.client.UnsupportedJVMException;
-
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
+import io.riemann.riemann.client.EventDSL;
+import io.riemann.riemann.client.IRiemannClient;
+import io.riemann.riemann.client.RiemannBatchClient;
+import io.riemann.riemann.client.RiemannClient;
+import io.riemann.riemann.client.UnsupportedJVMException;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
- * A Riemann based {@link Reporter} implementation. Query reports are sending towards the configured Riemann server as
- * Riemann events.
+ * A Riemann based {@link Reporter} implementation. Query reports are sending towards the configured Riemann server
+ * as Riemann events.
  */
 public class RiemannReporter extends Reporter {
 
+    /**
+     * Class logger.
+     */
     private static final Logger logger = LoggerFactory.getLogger(RiemannReporter.class);
 
     private static final String HOST_PROP = "riemannHost";
@@ -39,22 +41,24 @@ public class RiemannReporter extends Reporter {
     /**
      * Constructor.
      *
-     * @param configuration         configuration
-     * @param globalConfiguration   Global diagnostics configuration
+     * @param reporterConfiguration reporter specific configuration
+     * @param globalConfiguration   global configuration
      */
-    public RiemannReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
-        super(configuration, globalConfiguration);
+    public RiemannReporter(final ReporterConfiguration reporterConfiguration,
+            final GlobalConfiguration globalConfiguration) {
+        super(reporterConfiguration, globalConfiguration);
 
-        logger.debug("Initializing riemann client with config: {}", configuration.toString());
+        logger.debug("Initializing riemann client with config: {}", reporterConfiguration.toString());
 
-        if (!configuration.options.containsKey(HOST_PROP)) {
+        if (!reporterConfiguration.options.containsKey(HOST_PROP)) {
             logger.warn("Tried to init Riemann client. Not properly configured. Aborting initialization.");
             return;
         }
 
-        final String host = configuration.getOption(HOST_PROP);
-        final int port = configuration.getDefaultOption(PORT_PROP, DEFAULT_PORT);
-        final int batchEventSize = configuration.getDefaultOption(BATCH_EVENT_SIZE_PROP, DEFAULT_BATCH_EVENT_SIZE);
+        final String host = reporterConfiguration.getOption(HOST_PROP);
+        final int port = reporterConfiguration.getDefaultOption(PORT_PROP, DEFAULT_PORT);
+        final int batchEventSize = reporterConfiguration
+                .getDefaultOption(BATCH_EVENT_SIZE_PROP, DEFAULT_BATCH_EVENT_SIZE);
 
         try {
             riemannClient = new RiemannBatchClient(RiemannClient.tcp(new InetSocketAddress(host, port)),
@@ -73,24 +77,24 @@ public class RiemannReporter extends Reporter {
     }
 
     @Override
-    public void report(Measurement measurement) {
+    public void report(final Measurement measurement) {
         if (!riemannClient.isConnected()) {
             logger.warn("Riemann client dropped connection, reconnecting.");
             try {
                 riemannClient.reconnect();
             } catch (IOException e) {
-                logger.warn("Cannot reconnect, skipping measurement {} with value {}.", measurement.name(),
-                        measurement.getOrDefault(0d));
+                logger.warn("Cannot reconnect, skipping measurement {} with value {}.", measurement.name,
+                        measurement.value);
                 return;
             }
         }
 
-        logger.debug("Sending Measurement: name={}, value={}, time={}", measurement.name(),
-                measurement.getOrDefault(0d), measurement.time());
+        logger.debug("Sending Measurement: name={}, value={}, time={}", measurement.name, measurement.value,
+                measurement.time);
         try {
             sendEvent(measurement);
         } catch (Exception e) {
-            logger.debug("Sending Query failed, trying one more time: execTime={}, exception: {}", measurement.time(),
+            logger.debug("Sending Query failed, trying one more time: execTime={}, exception: {}", measurement.time,
                     e.getMessage());
         }
     }
@@ -103,20 +107,20 @@ public class RiemannReporter extends Reporter {
      */
     private void sendEvent(Measurement measurement) throws IOException {
         final EventDSL event = riemannClient.event();
-        event.service(measurement.name());
+        event.service(measurement.name);
         event.state("ok");
         if (measurement.isSimple()) {
-            event.metric(measurement.getValue());
+            event.metric(measurement.value);
         }
-        event.time(measurement.time());
+        event.time(measurement.time);
         event.ttl(30);
-        for (Map.Entry<String, String> tag : measurement.tags().entrySet()) {
+        for (Map.Entry<String, String> tag : measurement.tags.entrySet()) {
             event.tag(tag.getKey());
             event.attribute(tag.getKey(), tag.getValue());
         }
         event.tag("type");
-        event.attribute("type", measurement.type().toString());
-        for (Map.Entry<String, String> field : measurement.fields().entrySet()) {
+        event.attribute("type", measurement.type.toString());
+        for (Map.Entry<String, String> field : measurement.fields.entrySet()) {
             event.attribute(field.getKey(), field.getValue());
         }
 

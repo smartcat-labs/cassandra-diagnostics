@@ -10,14 +10,15 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
- * Apache Kafka based {@link Reporter} implementation. All measurements are written into Kafka based on measurements
- * name and time of the measurement.
+ * Apache Kafka based {@link Reporter} implementation. All measurements are written into Kafka based on
+ * measurements name and time of the measurement.
  */
 public class KafkaReporter extends Reporter {
+
     /**
      * Class logger.
      */
@@ -34,21 +35,22 @@ public class KafkaReporter extends Reporter {
     /**
      * Constructor.
      *
-     * @param configuration        Reporter configuration
-     * @param globalConfiguration  Global diagnostics configuration
+     * @param reporterConfiguration reporter specific configuration
+     * @param globalConfiguration   global configuration
      */
-    public KafkaReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
-        super(configuration, globalConfiguration);
+    public KafkaReporter(final ReporterConfiguration reporterConfiguration,
+            final GlobalConfiguration globalConfiguration) {
+        super(reporterConfiguration, globalConfiguration);
 
-        final String servers = configuration.getDefaultOption(SERVERS_PROP, "");
+        final String servers = reporterConfiguration.getDefaultOption(SERVERS_PROP, "");
         if (servers.isEmpty()) {
-            logger.warn("Missing required property " + SERVERS_PROP + ". Aborting initialization.");
+            logger.warn("Missing required property {}. Aborting initialization.", SERVERS_PROP);
             return;
         }
 
-        topic = configuration.getDefaultOption(TOPIC_PROP, "");
+        topic = reporterConfiguration.getDefaultOption(TOPIC_PROP, "");
         if (topic.isEmpty()) {
-            logger.warn("Missing required property " + TOPIC_PROP + ". Aborting initialization.");
+            logger.warn("Missing required property {}. Aborting initialization.", TOPIC_PROP);
             return;
         }
 

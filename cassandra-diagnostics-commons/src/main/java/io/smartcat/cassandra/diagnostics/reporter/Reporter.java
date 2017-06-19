@@ -1,45 +1,53 @@
 package io.smartcat.cassandra.diagnostics.reporter;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
- * Reporter abstraction that forces a constructor signature. All valid reporters should extend this class.
+ * Reporter abstract class.
  */
 public abstract class Reporter {
 
     /**
      * Reporter configuration.
      */
-    protected ReporterConfiguration configuration;
+    protected ReporterConfiguration reporterConfiguration;
 
     /**
-     * Diagnostics global configuration.
+     * Global configuration.
      */
     protected GlobalConfiguration globalConfiguration;
 
     /**
      * Constructor.
      *
-     * @param configuration        Reporter configuration
-     * @param globalConfiguration  Diagnostics configuration
+     * @param reporterConfiguration reporter configuration
+     * @param globalConfiguration   global configuration
      */
-    public Reporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
-        this.configuration = configuration;
+    public Reporter(final ReporterConfiguration reporterConfiguration, final GlobalConfiguration globalConfiguration) {
+        this.reporterConfiguration = reporterConfiguration;
         this.globalConfiguration = globalConfiguration;
     }
 
     /**
-     * Reports an intercepted query.
-     *
-     * @param measurement processed information about intercepted query
+     * Reporter start method.
      */
-    public abstract void report(Measurement measurement);
+    public void start() {
+
+    }
 
     /**
-     * Used to gracefully stop reporter.
+     * Reporter stop method.
      */
     public void stop() {
 
     }
+
+    /**
+     * Report measurement.
+     *
+     * @param measurement measurement object
+     */
+    public abstract void report(final Measurement measurement);
+
 }

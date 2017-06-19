@@ -3,12 +3,12 @@ package io.smartcat.cassandra.diagnostics.reporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
- * A SLF4J based {@link Reporter} implementation. This reporter is using {@link Logger} to print query reports to a log
- * at {@code INFO} level.
+ * A SLF4J based {@link Reporter} implementation. This reporter is using log output to print query reports to a
+ * log at {@code INFO} level.
  */
 public class LogReporter extends Reporter {
 
@@ -25,17 +25,18 @@ public class LogReporter extends Reporter {
     /**
      * Constructor.
      *
-     * @param configuration        configuration
-     * @param globalConfiguration  Global diagnostics configuration
+     * @param reporterConfiguration reporter specific configuration
+     * @param globalConfiguration   global configuration
      */
-    public LogReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
-        super(configuration, globalConfiguration);
+    public LogReporter(final ReporterConfiguration reporterConfiguration,
+            final GlobalConfiguration globalConfiguration) {
+        super(reporterConfiguration, globalConfiguration);
     }
 
     @Override
     public void report(Measurement measurement) {
-        logger.info(LOG_TEMPLATE, measurement.type().toString(), measurement.name().toUpperCase(), measurement.time(),
-                measurement.getOrDefault(0d), measurement.tags().toString(), measurement.fields().toString());
+        logger.info(LOG_TEMPLATE, measurement.type.toString(), measurement.name.toUpperCase(), measurement.time,
+                measurement.value, measurement.tags.toString(), measurement.fields.toString());
     }
 
 }

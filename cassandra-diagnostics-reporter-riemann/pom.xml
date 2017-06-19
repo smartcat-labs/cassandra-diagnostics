@@ -10,7 +10,7 @@
     <artifactId>cassandra-diagnostics-reporter-riemann</artifactId>
 
     <properties>
-        <version.riemann-java-client>0.4.1</version.riemann-java-client>
+        <version.riemann-java-client>0.4.5</version.riemann-java-client>
     </properties>
 
     <dependencies>
@@ -20,7 +20,7 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.aphyr</groupId>
+            <groupId>io.riemann</groupId>
             <artifactId>riemann-java-client</artifactId>
             <version>${version.riemann-java-client}</version>
         </dependency>

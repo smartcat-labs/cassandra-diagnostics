@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.query.Query;
 
 /**
  * Decider which will decide if query should be reported based on configuration.

@@ -15,8 +15,8 @@ import org.springframework.instrument.InstrumentationSavingAgent;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
+import io.smartcat.cassandra.diagnostics.query.Query;
 import io.smartcat.cassandra.utils.EmbeddedCassandraServerHelper;
 
 public class ITConnector {

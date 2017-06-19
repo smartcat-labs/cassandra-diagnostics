@@ -6,11 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
 import io.smartcat.cassandra.diagnostics.connector.ConnectorConfiguration;
 import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
-import io.smartcat.cassandra.diagnostics.module.heartbeat.HeartbeatModule;
-import io.smartcat.cassandra.diagnostics.reporter.LogReporter;
 import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
 
 /**
@@ -27,7 +24,7 @@ public class Configuration {
         return new Configuration() {
             {
                 final ReporterConfiguration reporter = new ReporterConfiguration();
-                reporter.reporter = LogReporter.class.getName();
+                reporter.reporter = "io.smartcat.cassandra.diagnostics.reporter.LogReporter";
                 reporters.add(reporter);
 
                 Map<String, Object> options = new HashMap<>();
@@ -35,13 +32,9 @@ public class Configuration {
                 options.put("timeunit", TimeUnit.MINUTES.name());
                 final ModuleConfiguration module = new ModuleConfiguration();
                 module.measurement = "heartbeat";
-                module.module = HeartbeatModule.class.getName();
+                module.module = "io.smartcat.cassandra.diagnostics.module.heartbeat.HeartbeatModule";
                 module.options = options;
                 modules.add(module);
-
-                connector = ConnectorConfiguration.getDefault();
-
-                global = GlobalConfiguration.getDefault();
             }
         };
     }
@@ -74,11 +67,11 @@ public class Configuration {
         sb.append(", httpApiEnabled: " + global.httpApiEnabled);
         sb.append(", httpApiPort: " + global.httpApiPort);
         sb.append(", reporters: ");
-        for (ReporterConfiguration reporter: reporters) {
+        for (ReporterConfiguration reporter : reporters) {
             sb.append(reporter.toString());
         }
         sb.append(", modules: ");
-        for (ModuleConfiguration module: modules) {
+        for (ModuleConfiguration module : modules) {
             sb.append(module.toString());
         }
         sb.append(" }");

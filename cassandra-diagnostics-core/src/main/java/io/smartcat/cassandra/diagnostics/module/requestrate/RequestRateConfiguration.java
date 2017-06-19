@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.yaml.snakeyaml.Yaml;
 
-import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.query.Query;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
 
 /**

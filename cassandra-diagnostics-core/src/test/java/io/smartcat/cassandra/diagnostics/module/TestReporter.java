@@ -2,26 +2,58 @@ package io.smartcat.cassandra.diagnostics.module;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
-import io.smartcat.cassandra.diagnostics.reporter.Reporter;
-import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
+import akka.actor.ActorRef;
+import io.smartcat.cassandra.diagnostics.config.Configuration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
+import io.smartcat.cassandra.diagnostics.reporter.ReporterActor;
 
 /**
  * Test reporter class.
  */
-public class TestReporter extends Reporter {
+public class TestReporter extends ReporterActor {
 
-    public final List<Measurement> reported = new ArrayList<Measurement>();
+    private ActorRef target = null;
 
-    public TestReporter(ReporterConfiguration configuration, GlobalConfiguration globalConfiguration) {
-        super(configuration, globalConfiguration);
+    public CountDownLatch latch;
+
+    private final List<Measurement> reported = new ArrayList<>();
+
+    /**
+     * Constructor.
+     *
+     * @param configuration reporter configuration
+     */
+    public TestReporter(final String reporterName, final Configuration configuration) {
+        super(reporterName, configuration);
     }
 
     @Override
-    public void report(Measurement measurement) {
+    public Receive createReceive() {
+        return defaultReceive().match(ActorRef.class, actorRef -> {
+            target = actorRef;
+            getSender().tell("done", getSelf());
+        }).build();
+    }
+
+    protected void report(final Measurement measurement) {
+        if (target != null) {
+            target.tell(measurement, getSelf());
+        }
         reported.add(measurement);
+        if (latch != null) {
+            latch.countDown();
+        }
+    }
+
+    /**
+     * Prevent concurrency issues and return always copy of reported values.
+     *
+     * @return copy of all reported values.
+     */
+    public List<Measurement> getReported() {
+        return new ArrayList<>(reported);
     }
 
 }

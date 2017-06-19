@@ -11,15 +11,14 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.timgroup.statsd.StatsDClient;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.config.GlobalConfiguration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 import io.smartcat.cassandra.diagnostics.reporter.DatadogReporter;
 import io.smartcat.cassandra.diagnostics.reporter.ReporterConfiguration;
 
@@ -88,12 +87,12 @@ public class DatadogReporterTest {
         fields.put("v2", "abc");
 
         final Measurement measurement = Measurement
-                .createSimple("test-metric", 909.0, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+                .createSimple("test-metric", 909.0, System.currentTimeMillis(), tags, fields);
 
         datadogReporterWithMockClient.report(measurement);
 
-        verify(mockClient).recordGaugeValue(eq(measurement.name()), eq(measurement.getValue()), eq("tag1:tv1"),
-                eq("tag2:tv2"));
+        verify(mockClient)
+                .recordGaugeValue(eq(measurement.name), eq(measurement.value), eq("tag1:tv1"), eq("tag2:tv2"));
     }
 
     @Test
@@ -109,7 +108,7 @@ public class DatadogReporterTest {
         fields.put("v4", "1234.0");
 
         final Measurement measurement = Measurement
-                .createComplex("test-metric", System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+                .createComplex("test-metric", System.currentTimeMillis(), tags, fields);
 
         datadogReporterWithMockClient.report(measurement);
 
@@ -130,12 +129,13 @@ public class DatadogReporterTest {
         fields.put("v5", "-");
 
         final Measurement measurement = Measurement
-                .createComplex("test-metric", System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+                .createComplex("test-metric", System.currentTimeMillis(), tags, fields);
 
         datadogReporterWithMockClient.report(measurement);
 
-        verify(mockClient).recordGaugeValue(eq(measurement.name() + ".v4"),
-                eq(Double.parseDouble(measurement.fields().get("v4"))), eq("tag1:tv1"), eq("tag2:tv2"));
+        verify(mockClient)
+                .recordGaugeValue(eq(measurement.name + ".v4"), eq(Double.parseDouble(measurement.fields.get("v4"))),
+                        eq("tag1:tv1"), eq("tag2:tv2"));
     }
 
     private void setField(Object target, Field field, Object newValue) throws Exception {

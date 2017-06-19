@@ -23,7 +23,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import io.smartcat.cassandra.diagnostics.Query;
+import io.smartcat.cassandra.diagnostics.query.Query;
 
 @RunWith(PowerMockRunner.class)
 @SuppressStaticInitializationFor("org.apache.cassandra.service.ClientState")

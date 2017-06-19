@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import javax.management.InstanceNotFoundException;
@@ -28,8 +27,8 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
+import io.smartcat.cassandra.diagnostics.config.Configuration;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
 
 /**
  * Metrics collector class. Handles mbeans, jmx connection and collecting metrics.
@@ -46,7 +45,7 @@ public class MetricsCollector {
 
     private final MetricsConfiguration config;
 
-    private final GlobalConfiguration globalConfiguration;
+    private final Configuration configuration;
 
     private JMXConnector jmxc;
 
@@ -57,15 +56,15 @@ public class MetricsCollector {
     /**
      * Constructor.
      *
-     * @param service             service name for measurements
-     * @param config              metrics configuration
-     * @param globalConfiguration Global diagnostics configuration
+     * @param service       service name for measurements
+     * @param config        metrics configuration
+     * @param configuration diagnostics configuration
      */
     public MetricsCollector(final String service, final MetricsConfiguration config,
-            final GlobalConfiguration globalConfiguration) {
+            final Configuration configuration) {
         this.service = service;
         this.config = config;
-        this.globalConfiguration = globalConfiguration;
+        this.configuration = configuration;
     }
 
     /**
@@ -137,8 +136,8 @@ public class MetricsCollector {
 
                         if (value != null) {
                             measurements.add(createMeasurement(
-                                    service + config.metricsSeparator() + mbean.getMeasurementName()
-                                            + config.metricsSeparator() + attribute.getName(),
+                                    service + config.metricsSeparator() + mbean.getMeasurementName() + config
+                                            .metricsSeparator() + attribute.getName(),
                                     Double.parseDouble(value.toString())));
                         }
                     }
@@ -155,10 +154,9 @@ public class MetricsCollector {
 
     private Measurement createMeasurement(final String service, final double value) {
         final Map<String, String> tags = new HashMap<>(2);
-        tags.put("host", globalConfiguration.hostname);
-        tags.put("systemName", globalConfiguration.systemName);
-        return Measurement.createSimple(service, value, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags,
-                new HashMap<String, String>());
+        tags.put("host", configuration.global.hostname);
+        tags.put("systemName", configuration.global.systemName);
+        return Measurement.createSimple(service, value, System.currentTimeMillis(), tags);
     }
 
     private Set<MetricsMBean> filterMBeans(final String packageName, final Set<ObjectInstance> mbeanObjectInstances)

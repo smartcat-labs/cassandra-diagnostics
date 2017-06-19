@@ -1,77 +1,78 @@
 package io.smartcat.cassandra.diagnostics.module.health;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.smartcat.cassandra.diagnostics.DiagnosticsAgent;
-import io.smartcat.cassandra.diagnostics.GlobalConfiguration;
-import io.smartcat.cassandra.diagnostics.Measurement;
+import akka.actor.ActorRef;
+import akka.cluster.pubsub.DistributedPubSubMediator;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
+import io.smartcat.cassandra.diagnostics.actor.Topics;
+import io.smartcat.cassandra.diagnostics.actor.messages.Query;
+import io.smartcat.cassandra.diagnostics.actor.messages.QueryResponse;
+import io.smartcat.cassandra.diagnostics.config.Configuration;
 import io.smartcat.cassandra.diagnostics.config.ConfigurationException;
-import io.smartcat.cassandra.diagnostics.info.InfoProvider;
-import io.smartcat.cassandra.diagnostics.module.Module;
-import io.smartcat.cassandra.diagnostics.module.ModuleConfiguration;
-import io.smartcat.cassandra.diagnostics.reporter.Reporter;
+import io.smartcat.cassandra.diagnostics.measurement.Measurement;
+import io.smartcat.cassandra.diagnostics.module.ModuleActor;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
 
 /**
  * Cluster health module collecting information about the liveness of the nodes in the cluster.
  */
-public class ClusterHealthModule extends Module {
-
-    private static final Logger logger = LoggerFactory.getLogger(ClusterHealthModule.class);
+public class ClusterHealthModule extends ModuleActor {
 
     private static final String STATUS_THREAD_NAME = "unreachable-nodes-module";
 
     private static final String DEFAULT_NUMBER_OF_UNREACHABLE_NODES_MEASUREMENT_NAME = "number_of_unreachable_nodes";
 
-    private final int period;
+    private final Timeout timeout = new Timeout(500, TimeUnit.MILLISECONDS);
 
-    private final TimeUnit timeunit;
+    private ClusterHealthConfiguration config;
 
-    private final boolean numberOfUnreachableNodesEnabled;
+    private ActorRef infoProvider;
 
-    private final Timer timer;
-
-    private final InfoProvider infoProvider;
+    private Timer timer;
 
     /**
      * Constructor.
      *
-     * @param configuration        Module configuration
-     * @param reporters            Reporter list
-     * @param globalConfiguration  Global diagnostics configuration
+     * @param moduleName    Module class name
+     * @param configuration configuration
      * @throws ConfigurationException configuration parsing exception
      */
-    public ClusterHealthModule(ModuleConfiguration configuration, List<Reporter> reporters,
-            final GlobalConfiguration globalConfiguration)
+    public ClusterHealthModule(final String moduleName, final Configuration configuration)
             throws ConfigurationException {
-        super(configuration, reporters, globalConfiguration);
+        super(moduleName, configuration);
 
-        ClusterHealthConfiguration config = ClusterHealthConfiguration.create(configuration.options);
-        period = config.period();
-        timeunit = config.timeunit();
-        numberOfUnreachableNodesEnabled = config.numberOfUnreachableNodesEnabled();
-
-        infoProvider = DiagnosticsAgent.getInfoProvider();
-        if (infoProvider == null) {
-            logger.warn("Failed to initialize StatusModule. Info provider is null");
-            timer = null;
-        } else {
-            timer = new Timer(STATUS_THREAD_NAME);
-            timer.scheduleAtFixedRate(new ClusterHealthTask(), 0, config.reportingRateInMillis());
-        }
+        config = ClusterHealthConfiguration.create(moduleConfiguration.options);
     }
 
     @Override
-    public void stop() {
-        logger.trace("Stopping status module.");
+    public Receive createReceive() {
+        return defaultReceive().match(QueryResponse.InfoProviderRef.class, this::infoProviderResponse).build();
+    }
+
+    @Override
+    protected void start() {
+        mediator.tell(new DistributedPubSubMediator.Publish(Topics.INFO_PROVIDER_TOPIC, new Query.InfoProviderRef()),
+                getSelf());
+    }
+
+    @Override
+    protected void stop() {
+        logger.debug("Stopping status module.");
         timer.cancel();
+    }
+
+    private void infoProviderResponse(final QueryResponse.InfoProviderRef response) {
+        this.infoProvider = response.infoProvider;
+
+        timer = new Timer(STATUS_THREAD_NAME);
+        timer.scheduleAtFixedRate(new ClusterHealthTask(), 0, config.reportingRateInMillis());
     }
 
     /**
@@ -80,21 +81,31 @@ public class ClusterHealthModule extends Module {
     private class ClusterHealthTask extends TimerTask {
         @Override
         public void run() {
-            if (numberOfUnreachableNodesEnabled) {
-                report(createMeasurement(infoProvider.getUnreachableNodes().size()));
+            if (config.numberOfUnreachableNodesEnabled()) {
+                queryUnreachableNodes();
+            }
+        }
+
+        private void queryUnreachableNodes() {
+            final Future<Object> future = Patterns.ask(infoProvider, new Query.UnreachableNodes(), timeout);
+            try {
+                final QueryResponse.UnreachableNodesResp result = (QueryResponse.UnreachableNodesResp) Await
+                        .result(future, timeout.duration());
+                report(createMeasurement(result.unreachableNodes.size()));
+            } catch (Exception e) {
+                logger.error("Failed to query/report unreachable nodes from info provider.", e);
             }
         }
     }
 
     private Measurement createMeasurement(long numberOfUnreachableNode) {
         final Map<String, String> tags = new HashMap<>(1);
-        tags.put("host", globalConfiguration.hostname);
-        tags.put("systemName", globalConfiguration.systemName);
+        tags.put("host", configuration.global.hostname);
+        tags.put("systemName", configuration.global.systemName);
 
-        final Map<String, String> fields = new HashMap<>();
-
-        return Measurement.createSimple(DEFAULT_NUMBER_OF_UNREACHABLE_NODES_MEASUREMENT_NAME,
-                (double) numberOfUnreachableNode, System.currentTimeMillis(), TimeUnit.MILLISECONDS, tags, fields);
+        return Measurement
+                .createSimple(DEFAULT_NUMBER_OF_UNREACHABLE_NODES_MEASUREMENT_NAME, (double) numberOfUnreachableNode,
+                        System.currentTimeMillis(), tags);
     }
 
 }

@@ -44,32 +44,32 @@ Please read [core modules README](cassandra-diagnostics-core/COREMODULES.md) for
 
 #### Heartbeat Module
 
-Heartbeat module produces messages to provide feedback that the diagnostics agent is loaded and working. Typical usage is with Log Reporter where it produces INFO message in configured intervals.
+[Heartbeat Module](cassandra-diagnostics-core/COREMODULES.md#heartbeat-module) produces messages to provide feedback that the diagnostics agent is loaded and working. Typical usage is with Log Reporter where it produces INFO message in configured intervals.
 Default reporting interval is 15 minutes.
 
 #### Slow Query Module
 
-Slow Query module is monitoring execution time of each query and if it is above configured threshold it reports the value and query type using configured reporters.
+[Slow Query Module](cassandra-diagnostics-core/COREMODULES.md#slow-query-module) is monitoring execution time of each query and if it is above configured threshold it reports the value and query type using configured reporters.
 Default query execution time threshold is 25 milliseconds.
 
 #### Request Rate Module
 
-Request Rate Module uses codahale metrics library to create rate measurement of executed queries. Rates are reported for configurable statement types and consistency levels using configured reporters in configured periods.
+[Request Rate Module](cassandra-diagnostics-core/COREMODULES.md#request-rate-module) uses codahale metrics library to create rate measurement of executed queries. Rates are reported for configurable statement types and consistency levels using configured reporters in configured periods.
 Default reporting interval is 1 second.
 
 #### Metrics Module
 
-Cassandra internal metrics are exposed over JMX. This module collects JMX metrics and ships them using predefined reporters. Metrics package names configuration is the same as a default metrics config reporter uses.
+[Metrics Module](cassandra-diagnostics-core/COREMODULES.md#metrics-module) collects Cassandra's metrics, which are exposed over JMX, and ships them using predefined reporters. Metrics package names configuration is the same as a default metrics config reporter uses.
 Default reporting interval is 1 second.
 
 #### Status Module
 
-Status module is used to report Cassandra information exposed over JMX. It reports compaction information as a single measurement.
+[Status Module](cassandra-diagnostics-core/COREMODULES.md#status-module) is used to report Cassandra information exposed over JMX. It reports compaction information as a single measurement.
 Default reporting interval is 1 minute.
 
 #### Cluster Health Module
 
-Cluster health module is used to report the health status of the nodes such as which nodes are marked as DOWN by gossiper. It uses the information exposed over JMX.
+[Cluster Health Module](cassandra-diagnostics-core/COREMODULES.md#cluster-health-module) is used to report the health status of the nodes such as which nodes are marked as DOWN by gossiper. It uses the information exposed over JMX.
 Default reporting interval is 10 seconds.
 
 #### Hiccup Module

@@ -147,7 +147,7 @@ public class StatusModuleTest {
     public void should_not_report_node_info_when_disabled()
             throws ConfigurationException, InterruptedException {
         InfoProvider infoProvider = mock(InfoProvider.class);
-        NodeInfo nodeInfo = new NodeInfo(false, false, false, 0);
+        NodeInfo nodeInfo = new NodeInfo(false, false, false, 0, 0);
         when(infoProvider.getNodeInfo()).thenReturn(nodeInfo);
         PowerMockito.mockStatic(DiagnosticsAgent.class);
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);
@@ -172,7 +172,7 @@ public class StatusModuleTest {
     public void should_report_node_info_when_enabled()
             throws ConfigurationException, InterruptedException {
         InfoProvider infoProvider = mock(InfoProvider.class);
-        NodeInfo nodeInfo = new NodeInfo(true, false, true, 10);
+        NodeInfo nodeInfo = new NodeInfo(true, false, true, 10, 10);
         when(infoProvider.getNodeInfo()).thenReturn(nodeInfo);
         PowerMockito.mockStatic(DiagnosticsAgent.class);
         PowerMockito.when(DiagnosticsAgent.getInfoProvider()).thenReturn(infoProvider);

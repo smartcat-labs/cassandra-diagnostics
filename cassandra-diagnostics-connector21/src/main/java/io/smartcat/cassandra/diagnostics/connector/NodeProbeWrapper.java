@@ -134,15 +134,16 @@ public class NodeProbeWrapper implements InfoProvider {
     }
 
     /**
-     * Get the information if the native transport is active on the node.
-     * Get the information about node such as which protocols are active and uptime.
+     * Get the information if the native transport is active on the node. Get the information about node such as which
+     * protocols are active, uptime, and exception count.
      *
      * @return NodeInfo for the node
      */
     @Override
     public NodeInfo getNodeInfo() {
         NodeInfo nodeInfo = new NodeInfo(this.nodeProbe.isGossipRunning(), this.nodeProbe.isThriftServerRunning(),
-                this.nodeProbe.isNativeTransportRunning(), this.nodeProbe.getUptime());
+                this.nodeProbe.isNativeTransportRunning(), this.nodeProbe.getUptime(),
+                this.nodeProbe.getExceptionCount());
         return nodeInfo;
     }
 }

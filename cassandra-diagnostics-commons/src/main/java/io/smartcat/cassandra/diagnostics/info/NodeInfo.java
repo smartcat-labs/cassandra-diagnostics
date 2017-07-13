@@ -14,29 +14,39 @@ public class NodeInfo {
      * Information about status of the thrift (active or not).
      */
     public final boolean thriftActive;
+
     /**
      * Information about status of the native transport (active or not).
      */
     public final boolean nativeTransportActive;
+
     /**
      * Node uptime in seconds.
      */
     public final long uptimeInSeconds;
 
     /**
+     * Count of uncaught exceptions.
+     */
+    public final int exceptionCount;
+
+    /**
      * NodeInfo class constructor.
      *
-     * @param gossipActive              info if gossip is active
-     * @param thriftActive              info if thrift is active
-     * @param nativeTransportActive     info if native transport is active
-     * @param uptimeInSeconds           uptime in seconds
+     * @param gossipActive info if gossip is active
+     * @param thriftActive info if thrift is active
+     * @param nativeTransportActive info if native transport is active
+     * @param uptimeInSeconds uptime in seconds
+     * @param exceptionCount count of uncaught exceptions
      */
-    public NodeInfo(boolean gossipActive, boolean thriftActive, boolean nativeTransportActive, long uptimeInSeconds) {
+    public NodeInfo(boolean gossipActive, boolean thriftActive, boolean nativeTransportActive, long uptimeInSeconds,
+            int exceptionCount) {
         super();
         this.gossipActive = gossipActive;
         this.thriftActive = thriftActive;
         this.nativeTransportActive = nativeTransportActive;
         this.uptimeInSeconds = uptimeInSeconds;
+        this.exceptionCount = exceptionCount;
     }
 
     /**

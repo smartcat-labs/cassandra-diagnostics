@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.smartcat</groupId>
         <artifactId>cassandra-diagnostics-ft</artifactId>
-        <version>1.4.7</version>
+        <version>1.4.8</version>
     </parent>
     <artifactId>cassandra-diagnostics-ft-influx</artifactId>
     <description>Cassandra Diagnostics functional test for Influx reporter</description>

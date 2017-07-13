@@ -191,6 +191,7 @@ public class StatusModule extends Module {
         fields.put("thriftActive", Integer.toString(nodeInfo.isThriftActive()));
         fields.put("nativeTransportActive", Integer.toString(nodeInfo.isNativeTransportActive()));
         fields.put("uptimeInSeconds", Long.toString(nodeInfo.uptimeInSeconds));
+        fields.put("exceptionCount", Integer.toString(nodeInfo.exceptionCount));
 
         return Measurement.createComplex(DEFAULT_NODE_INFO_MEASUREMENT_NAME, System.currentTimeMillis(),
                 TimeUnit.MILLISECONDS, tags, fields);

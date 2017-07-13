@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.smartcat</groupId>
         <artifactId>cassandra-diagnostics</artifactId>
-        <version>1.4.7</version>
+        <version>1.4.8</version>
     </parent>
     <artifactId>cassandra-diagnostics-core</artifactId>
     <packaging>jar</packaging>
@@ -14,6 +14,7 @@
         <version.commons.lang3>3.4</version.commons.lang3>
         <version.nanohttpd>2.3.1</version.nanohttpd>
         <version.powermock>1.6.5</version.powermock>
+        <version.hdrhistogram>2.1.9</version.hdrhistogram>
     </properties>
 
     <dependencies>
@@ -30,6 +31,11 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hdrhistogram</groupId>
+            <artifactId>HdrHistogram</artifactId>
+            <version>${version.hdrhistogram}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -104,6 +110,7 @@
                                 <includes>
                                     <include>io.smartcat:*</include>
                                     <include>org.nanohttpd:*</include>
+                                    <include>org.hdrhistogram:*</include>
                                 </includes>
                             </artifactSet>
                             <transformers>

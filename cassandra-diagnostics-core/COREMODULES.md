@@ -154,3 +154,25 @@ Default reporting interval is set to 10s in order to detect these short outages.
     - io.smartcat.cassandra.diagnostics.reporter.LogReporter
 ```
 
+## Hiccup module
+
+Module based on [jHiccup](https://github.com/giltene/jHiccup) that logs and reports platform hiccups including JVM stalls. Default reporting period is 5 seconds and reporter values and percentiles from 90 to 100 and Mean and Max values.
+Hiccup measurement name is by default `hiccup`.
+
+#### Configuration
+
+```
+- module: io.smartcat.cassandra.diagnostics.module.hiccup.HiccupModule
+  options:
+    resolutionInMs: 1.0d #optional
+    startDelayInMs: 30000 #optional
+    allocateObjects: false #optional Allocate an object to make sure potential allocation stalls are measured.
+    lowestTrackableValueInNanos: 1000L * 20L #optional
+    highestTrackableValueInNanos: 3600 * 1000L * 1000L * 1000L #optional
+    numberOfSignificantValueDigits: 2 #optional
+    period: 5 #optional
+    timeunit: SECONDS #optional
+  reporters:
+    - io.smartcat.cassandra.diagnostics.reporter.LogReporter
+```
+

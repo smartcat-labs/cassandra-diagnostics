@@ -47,3 +47,10 @@ modules:
       numberOfUnreachableNodesEnabled: true #optional
     reporters:
       - io.smartcat.cassandra.diagnostics.reporter.LogReporter
+  - module: io.smartcat.cassandra.diagnostics.module.hiccup.HiccupModule
+    options:
+      period: 1
+      timeunit: SECONDS
+      startDelayInMs: 0
+    reporters:
+      - io.smartcat.cassandra.diagnostics.reporter.LogReporter

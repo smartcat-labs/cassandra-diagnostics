@@ -1,0 +1,82 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>cassandra-diagnostics</artifactId>
+    <groupId>io.smartcat</groupId>
+    <version>1.4.9</version>
+  </parent>
+  <artifactId>cassandra-diagnostics-reporter-prometheus</artifactId>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <dogstatsd.client.version>2.3</dogstatsd.client.version>
+    <version.powermock>1.6.5</version.powermock>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.smartcat</groupId>
+      <artifactId>cassandra-diagnostics-commons</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>${version.powermock}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- The client -->
+    <dependency>
+      <groupId>io.prometheus</groupId>
+      <artifactId>simpleclient</artifactId>
+      <version>0.0.26</version>
+    </dependency>
+    <dependency>
+      <groupId>io.prometheus</groupId>
+      <artifactId>simpleclient_httpserver</artifactId>
+      <version>0.0.26</version>
+    </dependency>
+
+    <!-- <dependency> <groupId>io.prometheus</groupId> <artifactId>simpleclient_hotspot</artifactId> <version>0.0.26</version> </dependency> 
+      Exposition servlet <dependency> <groupId>io.prometheus</groupId> <artifactId>simpleclient_servlet</artifactId> <version>0.0.26</version> </dependency> 
+      Pushgateway exposition <dependency> <groupId>io.prometheus</groupId> <artifactId>simpleclient_pushgateway</artifactId> <version>0.0.26</version> 
+      </dependency> -->
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>all</shadedClassifierName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

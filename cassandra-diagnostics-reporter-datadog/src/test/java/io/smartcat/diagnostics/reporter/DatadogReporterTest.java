@@ -41,19 +41,6 @@ public class DatadogReporterTest {
                 mockClient);
     }
 
-    @Test
-    public void should_load_configuration() throws Exception {
-        final ReporterConfiguration config = new ReporterConfiguration();
-        config.options.put("statsDHost", "localhost");
-        config.options.put("statsDPort", 7000);
-        config.options.put("keysPrefix", "");
-        config.options.put("fixedTags", Arrays.asList("host:hostname"));
-
-        final DatadogReporter reporter = new DatadogReporter(config, GlobalConfiguration.getDefault());
-
-        reporter.stop();
-    }
-
     @Test(expected = ClassCastException.class)
     public void should_fail_to_load_configuration_port() {
         final ReporterConfiguration config = new ReporterConfiguration();

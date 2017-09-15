@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.smartcat</groupId>
@@ -27,7 +27,8 @@
         <module>cassandra-diagnostics-reporter-telegraf</module>
         <module>cassandra-diagnostics-reporter-kafka</module>
         <module>cassandra-diagnostics-reporter-datadog</module>
-        <module>cassandra-diagnostics-ft</module>        
+        <module>cassandra-diagnostics-reporter-prometheus</module>
+        <module>cassandra-diagnostics-ft</module>
     </modules>
 
     <licenses>

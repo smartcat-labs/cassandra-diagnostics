@@ -112,6 +112,10 @@ Values for `time` is given in milliseconds. `tags` are used to better specify me
 
 [Kafka Reporter](cassandra-diagnostics-reporter-kafka/README.md) sends measurements towards [Kafka](https://kafka.apache.org/).
 
+#### Prometheus Reporter
+
+[Prometheus Reporter](cassandra-diagnostics-reporter-prometheus/README.md) exposes measurements to be scraped by [Prometheus server](https://prometheus.io).
+
 ## Configuration
 
 Cassandra Diagnostics uses an external configuration file in YAML format. You can see default configuration in [cassandra-diagnostics-default.yml](https://github.com/smartcat-labs/cassandra-diagnostics/blob/dev/cassandra-diagnostics-core/src/main/resources/cassandra-diagnostics-default.yml). The default name of the config file is `cassandra-diagnostics.yml` and it is expected to be found on the classpath. This can be changed using property `cassandra.diagnostics.config`.

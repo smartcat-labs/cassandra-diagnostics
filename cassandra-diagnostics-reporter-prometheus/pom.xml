@@ -4,7 +4,7 @@
   <parent>
     <artifactId>cassandra-diagnostics</artifactId>
     <groupId>io.smartcat</groupId>
-    <version>1.4.10-SNAPSHOP</version>
+    <version>1.4.10</version>
   </parent>
   <artifactId>cassandra-diagnostics-reporter-prometheus</artifactId>
 

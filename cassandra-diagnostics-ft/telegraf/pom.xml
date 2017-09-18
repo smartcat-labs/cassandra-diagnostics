@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.smartcat</groupId>
         <artifactId>cassandra-diagnostics-ft</artifactId>
-        <version>1.4.9</version>
+        <version>1.4.10-SNAPSHOP</version>
     </parent>
     <artifactId>cassandra-diagnostics-ft-telegraf</artifactId>
     <description>Cassandra Diagnostics functional test for Telegraf integration</description>

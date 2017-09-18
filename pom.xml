@@ -5,7 +5,7 @@
 
     <groupId>io.smartcat</groupId>
     <artifactId>cassandra-diagnostics</artifactId>
-    <version>1.4.9</version>
+    <version>1.4.10-SNAPSHOP</version>
     <packaging>pom</packaging>
 
     <name>Cassandra Diagnostics</name>

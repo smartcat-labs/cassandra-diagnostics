@@ -17,5 +17,6 @@ DIAGNOSTICS_REPORTER_URLS=(
 ["RiemannReporter"]="$DIAGNOSTICS_BASE_URL/cassandra-diagnostics-reporter-riemann/$CASSANDRA_DIAGNOSTICS_VERSION/cassandra-diagnostics-reporter-riemann-$CASSANDRA_DIAGNOSTICS_VERSION-all.jar" \
 ["TelegrafReporter"]="$DIAGNOSTICS_BASE_URL/cassandra-diagnostics-reporter-telegraf/$CASSANDRA_DIAGNOSTICS_VERSION/cassandra-diagnostics-reporter-telegraf-$CASSANDRA_DIAGNOSTICS_VERSION-all.jar" \
 ["DatadogReporter"]="$DIAGNOSTICS_BASE_URL/cassandra-diagnostics-reporter-datadog/$CASSANDRA_DIAGNOSTICS_VERSION/cassandra-diagnostics-reporter-datadog-$CASSANDRA_DIAGNOSTICS_VERSION-all.jar" \
+["PrometheusReporter"]="$DIAGNOSTICS_BASE_URL/cassandra-diagnostics-reporter-prometheus/$CASSANDRA_DIAGNOSTICS_VERSION/cassandra-diagnostics-reporter-prometheus-$CASSANDRA_DIAGNOSTICS_VERSION-all.jar" \
 ["KafkaReporter"]="$DIAGNOSTICS_BASE_URL/cassandra-diagnostics-reporter-kafka/$CASSANDRA_DIAGNOSTICS_VERSION/cassandra-diagnostics-reporter-kafka-$CASSANDRA_DIAGNOSTICS_VERSION.jar"
 )
